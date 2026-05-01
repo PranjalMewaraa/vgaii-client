@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "WebFetch(domain:docs.dataforseo.com)",
+      "Bash(mkdir -p \"C:/client-vgaii/src/app/api/feedback/public/[token]\")",
+      "Bash(mv \"C:/client-vgaii/src/app/api/feedback/[token]/route.ts\" \"C:/client-vgaii/src/app/api/feedback/public/[token]/route.ts\")",
+      "Bash(rmdir \"C:/client-vgaii/src/app/api/feedback/[token]\")"
+    ]
+  }
+}

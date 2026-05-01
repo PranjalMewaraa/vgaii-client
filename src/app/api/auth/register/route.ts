@@ -62,7 +62,7 @@ export async function POST(req: Request) {
       const client = await Client.create({
         name: clientName,
         subscriptionStatus: "trial",
-        calendlyWebhookKey: webhookKey,
+        webhookKey,
       });
 
       newClientId = client._id;

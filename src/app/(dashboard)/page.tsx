@@ -2,17 +2,18 @@
 
 import StatCard from "@/components/StatCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
+import BusinessInfoCard, { BusinessInfo } from "@/components/BusinessInfoCard";
 import { useEffect, useState } from "react";
 
 type DashboardData = {
   leadsCount: number;
   todayLeads: number;
+  patientsCount: number;
   appointments: number;
   openFeedback: number;
-  positiveReviews: number;
-  negativeReviews: number;
   subscription?: string;
   renewalDate?: string | null;
+  businessInfo: BusinessInfo | null;
 };
 
 export default function Dashboard() {
@@ -28,44 +29,38 @@ export default function Dashboard() {
       .then(setData);
   }, []);
 
-  if (!data) return <p>Loading...</p>;
+  if (!data) {
+    return <p className="text-sm text-slate-500">Loading…</p>;
+  }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <p className="text-sm text-slate-500">
+          Overview of your leads, patients, and reputation.
+        </p>
+      </header>
 
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <BusinessInfoCard
+        businessInfo={data.businessInfo}
+        onRefreshed={next =>
+          setData(d => (d ? { ...d, businessInfo: next } : d))
+        }
+      />
 
-      {/* 🔢 STATS GRID */}
-      <div className="grid grid-cols-4 gap-4">
-
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         <StatCard title="Total Leads" value={data.leadsCount} />
         <StatCard title="Today Leads" value={data.todayLeads} />
-        <StatCard title="Appointments" value={data.appointments} />
+        <StatCard title="Patients" value={data.patientsCount} />
+        <StatCard title="Upcoming Appts" value={data.appointments} />
         <StatCard title="Open Issues" value={data.openFeedback} />
-
       </div>
 
-      {/* ⭐ REVIEWS SECTION */}
-      <div className="grid grid-cols-2 gap-4">
-        <StatCard
-          title="Positive Reviews"
-          value={data.positiveReviews}
-          color="green"
-        />
-
-        <StatCard
-          title="Negative Reviews"
-          value={data.negativeReviews}
-          color="red"
-        />
-      </div>
-
-      {/* 💳 SUBSCRIPTION */}
       <SubscriptionCard
         status={data.subscription}
         renewalDate={data.renewalDate}
       />
-
     </div>
   );
 }

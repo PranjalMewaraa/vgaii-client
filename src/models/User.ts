@@ -1,4 +1,5 @@
 import mongoose, { Schema, model, models } from "mongoose";
+import { ASSIGNABLE_MODULES } from "@/lib/rbac";
 
 const UserSchema = new Schema(
   {
@@ -19,13 +20,23 @@ const UserSchema = new Schema(
     },
 
     assignedModules: {
-      type: [String],
+      type: [
+        {
+          type: String,
+          enum: ASSIGNABLE_MODULES,
+        },
+      ],
       default: [],
+    },
+
+    createdBy: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
     },
 
     lastLoginIP: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default models.User || model("User", UserSchema);

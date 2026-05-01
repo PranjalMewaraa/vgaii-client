@@ -10,29 +10,21 @@ export async function GET(req: Request) {
 
     const user = getUser(req);
 
-    // ❌ SUPER_ADMIN should not use this endpoint
     if (user.role === "SUPER_ADMIN") {
-      return NextResponse.json(
-        { error: "Use admin APIs" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Use admin APIs" }, { status: 403 });
     }
 
     if (!user.clientId) {
-      return NextResponse.json(
-        { error: "Client not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
     const client = await Client.findById(user.clientId);
 
     if (!client) {
-      return NextResponse.json(
-        { error: "Client not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
+
+    const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 
     return NextResponse.json({
       client: {
@@ -42,14 +34,21 @@ export async function GET(req: Request) {
         subscriptionStatus: client.subscriptionStatus,
         renewalDate: client.renewalDate,
         googlePlaceId: client.googlePlaceId,
-        calendlyWebhookKey: client.calendlyWebhookKey, // ✅ important
+        calendlySchedulingUrl: client.calendlySchedulingUrl,
+        webhookKey: client.webhookKey,
+      },
+      integrations: {
+        leadWebhookUrl: `${origin}/api/webhooks/leads`,
+        leadStatusWebhookUrl: `${origin}/api/webhooks/leads/status`,
+        calendlyWebhookUrl: `${origin}/api/webhooks/calendly`,
+        feedbackUrlPattern: `${origin}/feedback/<token>`,
       },
     });
 
   } catch (err: unknown) {
     return NextResponse.json(
       { error: getErrorMessage(err) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

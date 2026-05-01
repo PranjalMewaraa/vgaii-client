@@ -1,5 +1,14 @@
 import type { AuthUser, UserRole } from "@/lib/auth";
 
+export const ASSIGNABLE_MODULES = [
+  "leads",
+  "patients",
+  "appointments",
+  "feedback",
+] as const;
+
+export type AssignableModule = (typeof ASSIGNABLE_MODULES)[number];
+
 export const checkRole = (user: AuthUser, allowedRoles: UserRole[]) => {
   if (!allowedRoles.includes(user.role)) {
     throw new Error("Forbidden");
@@ -8,6 +17,7 @@ export const checkRole = (user: AuthUser, allowedRoles: UserRole[]) => {
 
 export const checkModule = (user: AuthUser, module: string) => {
   if (user.role === "SUPER_ADMIN") return;
+  if (user.role === "CLIENT_ADMIN") return;
 
   if (!user.assignedModules?.includes(module)) {
     throw new Error("Module access denied");

@@ -61,12 +61,40 @@ const clientSchema = new mongoose.Schema(
     },
     renewalDate: Date,
     googlePlaceId: String,
+    calendlySchedulingUrl: String,
     reviewsTaskId: String,
+    profile: new mongoose.Schema(
+      {
+        enabled: { type: Boolean, default: false },
+        doctorName: String,
+        specialty: String,
+        credentials: String,
+        heroTitleLine1: String,
+        heroTitleLine2: String,
+        heroTagline: String,
+        heroImageUrl: String,
+        aboutImageUrl: String,
+        aboutBio: String,
+        achievements: [String],
+        servicesTitle: String,
+        servicesSubtitle: String,
+        services: [
+          new mongoose.Schema(
+            { title: String, description: String },
+            { _id: false },
+          ),
+        ],
+        address: String,
+        phone: String,
+        hours: String,
+      },
+      { _id: false },
+    ),
     plan: {
       type: String,
       default: "basic",
     },
-    calendlyWebhookKey: {
+    webhookKey: {
       type: String,
       unique: true,
       sparse: true,
@@ -102,8 +130,26 @@ const userSchema = new mongoose.Schema(
 const leadSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    mobile: { type: String, required: true },
+    phone: { type: String, required: true, index: true },
     area: String,
+    source: String,
+    status: {
+      type: String,
+      enum: [
+        "new",
+        "contacted",
+        "qualified",
+        "appointment_booked",
+        "visited",
+        "lost",
+      ],
+      default: "new",
+    },
+    statusUpdatedAt: Date,
+    outcomeRating: Number,
+    feedbackToken: { type: String, unique: true, sparse: true },
+    feedbackTokenUsed: { type: Boolean, default: false },
+    notes: { type: String, default: "" },
     clientId: {
       type: mongoose.Types.ObjectId,
       ref: "Client",
@@ -121,16 +167,27 @@ const leadSchema = new mongoose.Schema(
 const appointmentSchema = new mongoose.Schema(
   {
     name: String,
-    mobile: String,
+    phone: String,
     email: String,
     gender: String,
     age: Number,
     date: Date,
+    status: {
+      type: String,
+      enum: ["scheduled", "completed", "no_show", "cancelled"],
+      default: "scheduled",
+    },
+    completedAt: Date,
+    notes: { type: String, default: "" },
     clientId: {
       type: mongoose.Types.ObjectId,
       ref: "Client",
       required: true,
       index: true,
+    },
+    leadId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Lead",
     },
     source: {
       type: String,
@@ -140,36 +197,18 @@ const appointmentSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const reviewSchema = new mongoose.Schema(
-  {
-    rating: Number,
-    reviewText: String,
-    reviewerName: String,
-    sentiment: {
-      type: String,
-      enum: ["positive", "negative"],
-    },
-    reviewId: {
-      type: String,
-      unique: true,
-    },
-    clientId: {
-      type: mongoose.Types.ObjectId,
-      ref: "Client",
-      index: true,
-    },
-    createdAtSource: Date,
-  },
-  { timestamps: true },
-);
-
 const feedbackSchema = new mongoose.Schema(
   {
     clientName: String,
-    clientMobile: String,
+    clientPhone: String,
     reviewText: String,
     remark: String,
-    reviewId: String,
+    rating: Number,
+    leadId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Lead",
+    },
+    submittedAt: Date,
     status: {
       type: String,
       enum: ["open", "resolved"],
@@ -191,7 +230,6 @@ const models = {
   Appointment:
     mongoose.models.Appointment ||
     mongoose.model("Appointment", appointmentSchema),
-  Review: mongoose.models.Review || mongoose.model("Review", reviewSchema),
   Feedback:
     mongoose.models.Feedback || mongoose.model("Feedback", feedbackSchema),
 };
@@ -207,9 +245,6 @@ async function resetSeedDocs() {
   await Promise.all([
     models.Feedback.deleteMany({
       _id: { $in: Object.values(seed.ids.feedback).map(objectId) },
-    }),
-    models.Review.deleteMany({
-      _id: { $in: Object.values(seed.ids.reviews).map(objectId) },
     }),
     models.Appointment.deleteMany({
       _id: { $in: Object.values(seed.ids.appointments).map(objectId) },
@@ -248,9 +283,11 @@ async function main() {
   await upsertMany(models.Client, seed.clients);
   await upsertMany(models.User, users, ["clientId"]);
   await upsertMany(models.Lead, seed.leads, ["clientId", "createdBy"]);
-  await upsertMany(models.Appointment, seed.appointments, ["clientId"]);
-  await upsertMany(models.Review, seed.reviews, ["clientId"]);
-  await upsertMany(models.Feedback, seed.feedback, ["clientId"]);
+  await upsertMany(models.Appointment, seed.appointments, [
+    "clientId",
+    "leadId",
+  ]);
+  await upsertMany(models.Feedback, seed.feedback, ["clientId", "leadId"]);
 
   console.log("Seed data ready.");
   console.table(
@@ -262,9 +299,9 @@ async function main() {
       modules: user.assignedModules.join(", ") || "-",
     })),
   );
-  console.log("Calendly test keys:");
+  console.log("Webhook keys (used for Calendly + lead webhooks):");
   for (const client of seed.clients) {
-    console.log(`${client.name}: ${client.calendlyWebhookKey}`);
+    console.log(`${client.name}: ${client.webhookKey}`);
   }
 }
 

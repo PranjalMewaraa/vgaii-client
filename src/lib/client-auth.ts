@@ -1,6 +1,57 @@
+import { useSyncExternalStore } from "react";
+
 type JwtPayload = {
   exp?: number;
 };
+
+export type StoredUser = {
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: "SUPER_ADMIN" | "CLIENT_ADMIN" | "STAFF";
+  clientId?: string | null;
+  assignedModules?: string[];
+};
+
+const userListeners = new Set<() => void>();
+
+const subscribeUser = (cb: () => void) => {
+  userListeners.add(cb);
+  const handleStorage = (e: StorageEvent) => {
+    if (e.key === "user" || e.key === null) cb();
+  };
+  window.addEventListener("storage", handleStorage);
+  return () => {
+    userListeners.delete(cb);
+    window.removeEventListener("storage", handleStorage);
+  };
+};
+
+let cachedUserRaw: string | null = null;
+let cachedUser: StoredUser | null = null;
+
+const getUserSnapshot = (): StoredUser | null => {
+  const raw = localStorage.getItem("user");
+  if (raw === cachedUserRaw) return cachedUser;
+  cachedUserRaw = raw;
+  if (!raw) {
+    cachedUser = null;
+    return null;
+  }
+  try {
+    cachedUser = JSON.parse(raw) as StoredUser;
+  } catch {
+    cachedUser = null;
+  }
+  return cachedUser;
+};
+
+export const useStoredUser = (): StoredUser | null =>
+  useSyncExternalStore(
+    subscribeUser,
+    getUserSnapshot,
+    () => null,
+  );
 
 const decodePayload = (token: string): JwtPayload | null => {
   const payload = token.split(".")[1];
@@ -29,6 +80,9 @@ export const getStoredToken = () => {
 export const clearStoredAuth = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  cachedUserRaw = null;
+  cachedUser = null;
+  userListeners.forEach(cb => cb());
 };
 
 export const isTokenUsable = (token: string | null) => {

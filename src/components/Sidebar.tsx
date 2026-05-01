@@ -1,0 +1,109 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useStoredUser, type StoredUser } from "@/lib/client-auth";
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: string;
+  module?: string;
+  adminOnly?: boolean;
+};
+
+const NAV: NavItem[] = [
+  { href: "/", label: "Dashboard", icon: "■" },
+  { href: "/leads", label: "Leads", icon: "▤", module: "leads" },
+  { href: "/patients", label: "Patients", icon: "◉", module: "patients" },
+  { href: "/appointments", label: "Appointments", icon: "▦", module: "appointments" },
+  { href: "/feedbacks", label: "Feedbacks", icon: "✎", module: "feedback" },
+  { href: "/staff", label: "Team", icon: "♦", adminOnly: true },
+  { href: "/profile", label: "Profile", icon: "❖", adminOnly: true },
+  { href: "/settings", label: "Settings", icon: "⚙", adminOnly: true },
+];
+
+const isVisible = (item: NavItem, user: StoredUser | null) => {
+  if (!user) return !item.adminOnly;
+  if (item.adminOnly) return user.role === "CLIENT_ADMIN";
+  if (user.role === "SUPER_ADMIN" || user.role === "CLIENT_ADMIN") return true;
+  if (!item.module) return true;
+  return user.assignedModules?.includes(item.module) ?? false;
+};
+
+export default function Sidebar({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const pathname = usePathname();
+  const user = useStoredUser();
+
+  const sectionLabel =
+    user?.role === "SUPER_ADMIN" ? "PLATFORM" : "CLIENT";
+
+  return (
+    <>
+      {open && (
+        <div
+          className="fixed inset-0 z-30 bg-slate-900/40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-slate-200 bg-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
+            V
+          </div>
+          <span className="text-sm font-bold tracking-wide text-slate-900">
+            VGAII-CRM
+          </span>
+        </div>
+
+        <div className="flex-1 px-3 py-5">
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            {sectionLabel}
+          </p>
+
+          <nav className="space-y-1">
+            {NAV.filter(item => isVisible(item, user)).map(item => {
+              const active =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname?.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                    active
+                      ? "bg-indigo-50 font-semibold text-indigo-700"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  }`}
+                >
+                  <span
+                    className={`text-base ${
+                      active ? "text-indigo-600" : "text-slate-400"
+                    }`}
+                  >
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+    </>
+  );
+}

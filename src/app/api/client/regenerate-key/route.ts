@@ -11,40 +11,31 @@ export async function PATCH(req: Request) {
 
     const user = getUser(req);
 
-    // 🔐 Only client admin allowed
     if (user.role !== "CLIENT_ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (!user.clientId) {
-      return NextResponse.json(
-        { error: "Client not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
     const newKey = randomBytes(16).toString("hex");
 
     const client = await Client.findByIdAndUpdate(
       user.clientId,
-      {
-        calendlyWebhookKey: newKey,
-      },
-      { new: true }
+      { webhookKey: newKey },
+      { new: true },
     );
 
     return NextResponse.json({
       message: "Webhook key regenerated",
-      calendlyWebhookKey: client?.calendlyWebhookKey,
+      webhookKey: client?.webhookKey,
     });
 
   } catch (err: unknown) {
     return NextResponse.json(
       { error: getErrorMessage(err) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
