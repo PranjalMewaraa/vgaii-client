@@ -5,10 +5,22 @@ const APP_HOSTS = (process.env.APP_HOSTS ?? "localhost,localhost:3000")
   .map(s => s.trim().toLowerCase())
   .filter(Boolean);
 
-const isMainHost = (host: string) =>
-  APP_HOSTS.includes(host) ||
-  // also strip any leading "www." prefix to match "www.<configured>"
-  APP_HOSTS.includes(host.replace(/^www\./, ""));
+// Vercel deployments (production + previews) all live on *.vercel.app. We
+// treat them as the main app by default so the panel works out of the box
+// after a deploy without requiring APP_HOSTS to be set.
+const isVercelAppHost = (host: string) => host.endsWith(".vercel.app");
+
+// VERCEL_URL is auto-populated by Vercel with the current deployment's URL
+// (e.g. "client-vgaii-abc.vercel.app"). Treat it as a main host too.
+const VERCEL_URL = (process.env.VERCEL_URL ?? "").toLowerCase();
+
+const isMainHost = (host: string) => {
+  if (APP_HOSTS.includes(host)) return true;
+  if (APP_HOSTS.includes(host.replace(/^www\./, ""))) return true;
+  if (isVercelAppHost(host)) return true;
+  if (VERCEL_URL && host === VERCEL_URL) return true;
+  return false;
+};
 
 export function middleware(req: NextRequest) {
   const host = (req.headers.get("host") ?? "").toLowerCase();
