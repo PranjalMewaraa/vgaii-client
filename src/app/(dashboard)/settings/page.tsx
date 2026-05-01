@@ -223,63 +223,194 @@ function SettingsPageInner() {
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="text-base font-semibold text-slate-900">
-            Webhook key
+            Webhook key &amp; URLs
           </h2>
           <p className="text-xs text-slate-500">
-            Single secret used for the lead-capture webhook, the lead-status
-            webhook, and the Calendly webhook. Treat it like a password.
+            One secret per client. Every webhook below identifies your client
+            by this key — sent either as the{" "}
+            <code className="rounded bg-slate-100 px-1">x-webhook-key</code>{" "}
+            header (preferred) or as a{" "}
+            <code className="rounded bg-slate-100 px-1">?key=…</code> query
+            parameter (for tools that don&apos;t allow custom headers, like
+            Calendly). Treat it like a password.
           </p>
         </div>
-        <div className="px-6 py-5">
-          <div className="rounded-lg bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
-            {settings.webhookKey || "(not set)"}
-          </div>
-          {integrations && (
-            <dl className="mt-4 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-              {integrations.leadWebhookUrl && (
-                <div>
-                  <dt className="font-semibold uppercase tracking-wider text-slate-500">
-                    Lead capture
-                  </dt>
-                  <dd className="font-mono text-slate-700">
-                    POST {integrations.leadWebhookUrl}
-                  </dd>
-                </div>
-              )}
-              {integrations.leadStatusWebhookUrl && (
-                <div>
-                  <dt className="font-semibold uppercase tracking-wider text-slate-500">
-                    Lead status update
-                  </dt>
-                  <dd className="font-mono text-slate-700">
-                    PATCH {integrations.leadStatusWebhookUrl}
-                  </dd>
-                </div>
-              )}
-              {integrations.calendlyWebhookUrl && (
-                <div>
-                  <dt className="font-semibold uppercase tracking-wider text-slate-500">
-                    Calendly webhook
-                  </dt>
-                  <dd className="font-mono text-slate-700">
-                    POST {integrations.calendlyWebhookUrl}
-                  </dd>
-                </div>
-              )}
-              {integrations.feedbackUrlPattern && (
-                <div>
-                  <dt className="font-semibold uppercase tracking-wider text-slate-500">
-                    Customer feedback URL
-                  </dt>
-                  <dd className="font-mono text-slate-700">
-                    {integrations.feedbackUrlPattern}
-                  </dd>
-                </div>
-              )}
-            </dl>
+
+        <div className="space-y-5 px-6 py-5">
+          <CopyRow
+            label="Webhook key"
+            value={settings.webhookKey || "(not set)"}
+            copyable={!!settings.webhookKey}
+          />
+
+          {integrations?.leadWebhookUrl && settings.webhookKey && (
+            <WebhookRow
+              method="POST"
+              label="Lead capture"
+              hint="Used by your landing-page backend to create new leads."
+              url={integrations.leadWebhookUrl}
+              webhookKey={settings.webhookKey}
+            />
+          )}
+          {integrations?.leadStatusWebhookUrl && settings.webhookKey && (
+            <WebhookRow
+              method="PATCH"
+              label="Lead status update"
+              hint="Used by external automations to advance a lead through the funnel."
+              url={integrations.leadStatusWebhookUrl}
+              webhookKey={settings.webhookKey}
+            />
+          )}
+          {integrations?.calendlyWebhookUrl && settings.webhookKey && (
+            <WebhookRow
+              method="POST"
+              label="Calendly webhook"
+              hint={
+                "In Calendly's webhook settings paste the URL with the ?key=… form — Calendly can't send custom headers."
+              }
+              url={integrations.calendlyWebhookUrl}
+              webhookKey={settings.webhookKey}
+              defaultMode="query"
+            />
+          )}
+          {integrations?.feedbackUrlPattern && (
+            <CopyRow
+              label="Customer feedback URL pattern"
+              value={integrations.feedbackUrlPattern}
+              copyable={false}
+              hint="The token portion is generated per-lead and returned by the lead-capture webhook response."
+            />
           )}
         </div>
       </div>
     </div>
+  );
+}
+
+function CopyRow({
+  label,
+  value,
+  copyable = true,
+  hint,
+}: {
+  label: string;
+  value: string;
+  copyable?: boolean;
+  hint?: string;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        {label}
+      </p>
+      <div className="mt-1 flex items-stretch gap-2">
+        <code className="flex-1 truncate rounded-lg bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
+          {value}
+        </code>
+        {copyable && <CopyButton value={value} />}
+      </div>
+      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+    </div>
+  );
+}
+
+function WebhookRow({
+  method,
+  label,
+  hint,
+  url,
+  webhookKey,
+  defaultMode = "header",
+}: {
+  method: "POST" | "PATCH";
+  label: string;
+  hint?: string;
+  url: string;
+  webhookKey: string;
+  defaultMode?: "header" | "query";
+}) {
+  const [mode, setMode] = useState<"header" | "query">(defaultMode);
+  const queryUrl = `${url}?key=${webhookKey}`;
+  const display = mode === "query" ? queryUrl : url;
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {label}
+          </p>
+          {hint && <p className="text-xs text-slate-500">{hint}</p>}
+        </div>
+        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-[11px]">
+          <button
+            type="button"
+            onClick={() => setMode("header")}
+            className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
+              mode === "header"
+                ? "bg-indigo-600 text-white"
+                : "text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Header
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("query")}
+            className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
+              mode === "query"
+                ? "bg-indigo-600 text-white"
+                : "text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            Query
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-stretch gap-2">
+        <code className="flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs text-slate-700">
+          <span className="text-indigo-600">{method}</span> {display}
+        </code>
+        <CopyButton value={display} />
+      </div>
+
+      {mode === "header" && (
+        <p className="mt-2 text-xs text-slate-500">
+          Send header{" "}
+          <code className="rounded bg-slate-100 px-1">
+            x-webhook-key: {webhookKey}
+          </code>
+        </p>
+      )}
+      {mode === "query" && (
+        <p className="mt-2 text-xs text-slate-500">
+          The key is in the URL — anyone with this URL can post leads, so
+          don&apos;t share it publicly.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+    >
+      {copied ? "Copied" : "Copy"}
+    </button>
   );
 }
