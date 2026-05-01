@@ -35,6 +35,8 @@ export async function GET(req: Request) {
         renewalDate: client.renewalDate,
         googlePlaceId: client.googlePlaceId,
         calendlySchedulingUrl: client.calendlySchedulingUrl,
+        profileSlug: client.profileSlug,
+        customDomain: client.customDomain,
         webhookKey: client.webhookKey,
       },
       integrations: {

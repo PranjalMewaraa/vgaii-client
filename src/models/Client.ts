@@ -31,6 +31,7 @@ const ProfileSchema = new Schema(
     heroImageUrl: String,
 
     aboutImageUrl: String,
+    faviconUrl: String,
     aboutBio: String,
     achievements: [String],
 
@@ -75,6 +76,8 @@ const ClientSchema = new Schema(
     renewalDate: Date,
     googlePlaceId: String,
     calendlySchedulingUrl: String,
+    profileSlug: { type: String, unique: true, sparse: true, lowercase: true },
+    customDomain: { type: String, unique: true, sparse: true, lowercase: true },
     googleBusinessInfo: GoogleBusinessInfoSchema,
     profile: ProfileSchema,
     plan: {

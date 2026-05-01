@@ -62,6 +62,8 @@ const clientSchema = new mongoose.Schema(
     renewalDate: Date,
     googlePlaceId: String,
     calendlySchedulingUrl: String,
+    profileSlug: { type: String, unique: true, sparse: true, lowercase: true },
+    customDomain: { type: String, unique: true, sparse: true, lowercase: true },
     reviewsTaskId: String,
     profile: new mongoose.Schema(
       {
@@ -74,6 +76,7 @@ const clientSchema = new mongoose.Schema(
         heroTagline: String,
         heroImageUrl: String,
         aboutImageUrl: String,
+        faviconUrl: String,
         aboutBio: String,
         achievements: [String],
         servicesTitle: String,

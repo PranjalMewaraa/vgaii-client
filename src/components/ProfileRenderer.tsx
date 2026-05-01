@@ -55,10 +55,12 @@ export default function ProfileRenderer({
   profile,
   ctaUrl,
   clientId,
+  leadSource,
 }: {
   profile: Partial<Profile>;
   ctaUrl?: string;
   clientId?: string;
+  leadSource?: string;
 }) {
   const v = {
     doctorName: orFallback(profile.doctorName, FALLBACK.doctorName),
@@ -341,7 +343,7 @@ export default function ProfileRenderer({
             </div>
 
             {clientId ? (
-              <ProfileContactForm clientId={clientId} />
+              <ProfileContactForm clientId={clientId} source={leadSource} />
             ) : (
               <div className="rounded-lg bg-white p-8 text-sm text-gray-500 shadow-2xl">
                 Form preview unavailable — pass a clientId to enable lead

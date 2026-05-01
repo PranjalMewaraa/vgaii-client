@@ -10,6 +10,8 @@ type Settings = {
   subscriptionStatus?: string;
   googlePlaceId?: string;
   calendlySchedulingUrl?: string;
+  profileSlug?: string;
+  customDomain?: string;
   webhookKey?: string;
 };
 
@@ -42,6 +44,8 @@ function SettingsPageInner() {
 
   const [placeId, setPlaceId] = useState("");
   const [calendlyUrl, setCalendlyUrl] = useState("");
+  const [profileSlug, setProfileSlug] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +59,8 @@ function SettingsPageInner() {
           setIntegrations(data.integrations ?? null);
           setPlaceId(data.client.googlePlaceId ?? "");
           setCalendlyUrl(data.client.calendlySchedulingUrl ?? "");
+          setProfileSlug(data.client.profileSlug ?? "");
+          setCustomDomain(data.client.customDomain ?? "");
         }
       })
       .finally(() => setLoading(false));
@@ -71,6 +77,8 @@ function SettingsPageInner() {
         body: JSON.stringify({
           googlePlaceId: placeId || null,
           calendlySchedulingUrl: calendlyUrl || null,
+          profileSlug: profileSlug || null,
+          customDomain: customDomain || null,
         }),
       });
       const data = await res.json();
@@ -149,6 +157,42 @@ function SettingsPageInner() {
               Embedded on the lead detail page when you click <em>Book
               appointment</em>. Lead status auto-advances once the customer
               books.
+            </p>
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              Profile slug
+            </span>
+            <input
+              value={profileSlug}
+              onChange={e => setProfileSlug(e.target.value)}
+              placeholder="aarogya-dental"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              Pretty URL for your landing page —{" "}
+              <code className="rounded bg-slate-100 px-1">
+                /p/{profileSlug || "<slug>"}
+              </code>
+              . Lowercase letters, digits, and hyphens only.
+            </p>
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              Custom domain
+            </span>
+            <input
+              value={customDomain}
+              onChange={e => setCustomDomain(e.target.value)}
+              placeholder="aarogyadental.com"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              Point your domain&apos;s DNS at our host, then enter the bare
+              hostname here (no <code>https://</code>, no path). Visitors of
+              that domain will see your landing page directly.
             </p>
           </label>
         </div>

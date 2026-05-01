@@ -5,6 +5,12 @@ import { clientSettingsSchema } from "@/lib/validators/client";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
+const cleanString = (v: string | null | undefined): string | undefined => {
+  if (v === null || v === undefined) return undefined;
+  const trimmed = v.trim();
+  return trimmed === "" ? "" : trimmed;
+};
+
 export async function PATCH(req: Request) {
   try {
     await connectDB();
@@ -38,8 +44,35 @@ export async function PATCH(req: Request) {
       client.calendlySchedulingUrl =
         parsed.data.calendlySchedulingUrl ?? undefined;
     }
+    if (parsed.data.profileSlug !== undefined) {
+      const slug = cleanString(parsed.data.profileSlug);
+      client.profileSlug = slug ? slug : undefined;
+    }
+    if (parsed.data.customDomain !== undefined) {
+      const host = cleanString(parsed.data.customDomain);
+      client.customDomain = host ? host : undefined;
+    }
 
-    await client.save();
+    try {
+      await client.save();
+    } catch (err: unknown) {
+      // Mongo duplicate-key error code 11000.
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code?: number }).code === 11000
+      ) {
+        const dup = (err as { keyPattern?: Record<string, unknown> })
+          .keyPattern;
+        const field = dup ? Object.keys(dup)[0] : "field";
+        return NextResponse.json(
+          { error: `That ${field} is already in use by another client.` },
+          { status: 409 },
+        );
+      }
+      throw err;
+    }
 
     return NextResponse.json({
       client: {
@@ -47,6 +80,8 @@ export async function PATCH(req: Request) {
         name: client.name,
         googlePlaceId: client.googlePlaceId,
         calendlySchedulingUrl: client.calendlySchedulingUrl,
+        profileSlug: client.profileSlug,
+        customDomain: client.customDomain,
       },
     });
   } catch (err: unknown) {

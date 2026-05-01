@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { connectDB } from "@/lib/db";
 import ProfileRenderer from "@/components/ProfileRenderer";
-import { resolveClientByPublicIdentifier } from "@/lib/public-client";
+import { resolveClientByCustomDomain } from "@/lib/public-client";
 import type { Profile } from "@/lib/validators/profile";
 
 type PageProps = {
-  params: Promise<{ clientId: string }>;
+  params: Promise<{ host: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
@@ -26,18 +26,15 @@ const firstParam = (
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ clientId: string }>;
+  params: Promise<{ host: string }>;
 }): Promise<Metadata> {
-  const { clientId } = await params;
+  const { host } = await params;
   await connectDB();
-  const client = (await resolveClientByPublicIdentifier(clientId)) as
-    | ResolvedClient
-    | null;
+  const client = (await resolveClientByCustomDomain(
+    decodeURIComponent(host),
+  )) as ResolvedClient | null;
   const p = client?.profile;
-
-  if (!client || !p?.enabled) {
-    return { title: "Page not found" };
-  }
+  if (!client || !p?.enabled) return { title: "Page not found" };
 
   const title = [p.doctorName, p.specialty].filter(Boolean).join(" | ") ||
     "Profile";
@@ -69,24 +66,20 @@ export async function generateMetadata({
   };
 }
 
-export default async function PublicProfilePage({
-  params,
-  searchParams,
-}: PageProps) {
-  const { clientId } = await params;
+export default async function HostPage({ params, searchParams }: PageProps) {
+  const { host } = await params;
   const sp = await searchParams;
 
   await connectDB();
-  const client = (await resolveClientByPublicIdentifier(clientId)) as
-    | ResolvedClient
-    | null;
-
-  if (!client?.profile?.enabled) {
-    notFound();
-  }
+  const client = (await resolveClientByCustomDomain(
+    decodeURIComponent(host),
+  )) as ResolvedClient | null;
+  if (!client?.profile?.enabled) notFound();
 
   const utmSource = firstParam(sp.utm_source) ?? firstParam(sp.source);
-  const source = utmSource ? `website-profile:${utmSource}` : "website-profile";
+  const source = utmSource
+    ? `website-profile:${utmSource}`
+    : "website-profile";
 
   return (
     <ProfileRenderer

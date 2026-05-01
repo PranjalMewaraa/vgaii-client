@@ -4,7 +4,13 @@ import { FormEvent, useState } from "react";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-export default function ProfileContactForm({ clientId }: { clientId: string }) {
+export default function ProfileContactForm({
+  clientId,
+  source,
+}: {
+  clientId: string;
+  source?: string;
+}) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
@@ -24,6 +30,7 @@ export default function ProfileContactForm({ clientId }: { clientId: string }) {
           name: name.trim(),
           phone: phone.trim(),
           message: message.trim() || undefined,
+          source: source || undefined,
         }),
       });
       if (!res.ok) {

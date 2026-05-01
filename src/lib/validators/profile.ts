@@ -15,6 +15,7 @@ export const profileSchema = z.object({
   heroImageUrl: trimmedString(2000).default(""),
 
   aboutImageUrl: trimmedString(2000).default(""),
+  faviconUrl: trimmedString(2000).default(""),
   aboutBio: trimmedString(3000).default(""),
   achievements: z.array(trimmedString(200)).max(10).default([]),
 

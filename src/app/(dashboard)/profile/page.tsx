@@ -15,6 +15,7 @@ const EMPTY: Profile = {
   heroTagline: "",
   heroImageUrl: "",
   aboutImageUrl: "",
+  faviconUrl: "",
   aboutBio: "",
   achievements: [],
   servicesTitle: "",
@@ -216,6 +217,7 @@ function ProfilePageInner() {
       {/* About */}
       <Section title="About" description="Bio + achievements.">
         <Field label="About image URL" value={profile.aboutImageUrl} onChange={v => set("aboutImageUrl", v)} placeholder="https://…/portrait.jpg" />
+        <Field label="Favicon URL (browser-tab icon)" value={profile.faviconUrl} onChange={v => set("faviconUrl", v)} placeholder="https://…/favicon.png" />
         <Textarea
           label="Bio"
           value={profile.aboutBio}
