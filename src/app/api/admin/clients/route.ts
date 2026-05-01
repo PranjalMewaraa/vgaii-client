@@ -6,7 +6,10 @@ import Appointment from "@/models/Appointment";
 import Feedback from "@/models/Feedback";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
+import { createClientSchema } from "@/lib/validators/admin-client";
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 
 const requireSuperAdmin = (user: ReturnType<typeof getUser>) => {
   if (user.role !== "SUPER_ADMIN") {
@@ -23,15 +26,62 @@ export async function POST(req: Request) {
     if (block) return block;
 
     const body = await req.json();
+    const parsed = createClientSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+
+    const existingUser = await User.findOne({ email: parsed.data.admin.email });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "Email already in use" },
+        { status: 409 },
+      );
+    }
+
     const client = await Client.create({
-      name: body.name,
-      subscriptionStatus: body.subscriptionStatus || "trial",
-      renewalDate: body.renewalDate,
-      googlePlaceId: body.googlePlaceId,
-      plan: body.plan || "basic",
+      name: parsed.data.name,
+      subscriptionStatus: parsed.data.subscriptionStatus ?? "trial",
+      renewalDate: parsed.data.renewalDate
+        ? new Date(parsed.data.renewalDate)
+        : undefined,
+      plan: parsed.data.plan ?? "basic",
+      webhookKey: randomBytes(16).toString("hex"),
     });
 
-    return NextResponse.json({ client });
+    let admin;
+    try {
+      admin = await User.create({
+        name: parsed.data.admin.name,
+        email: parsed.data.admin.email,
+        password: await bcrypt.hash(parsed.data.admin.password, 10),
+        role: "CLIENT_ADMIN",
+        clientId: client._id,
+        createdBy: user.id,
+      });
+    } catch (err) {
+      // Roll back the client if the admin couldn't be created.
+      await Client.deleteOne({ _id: client._id });
+      throw err;
+    }
+
+    return NextResponse.json(
+      {
+        client: {
+          _id: client._id,
+          name: client.name,
+          subscriptionStatus: client.subscriptionStatus,
+          plan: client.plan,
+          webhookKey: client.webhookKey,
+        },
+        admin: {
+          _id: admin._id,
+          name: admin.name,
+          email: admin.email,
+        },
+      },
+      { status: 201 },
+    );
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }

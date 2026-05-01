@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import RoleGuard from "@/components/RoleGuard";
 import { startImpersonation } from "@/lib/impersonation";
 
@@ -54,6 +54,13 @@ export default function AdminClientsPage() {
   );
 }
 
+const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${
+    typeof window !== "undefined" ? localStorage.getItem("token") : ""
+  }`,
+});
+
 function AdminClientsPageInner() {
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,14 +68,67 @@ function AdminClientsPageInner() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Create-client form state
+  const [showCreate, setShowCreate] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [adminName, setAdminName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [plan, setPlan] = useState<"basic" | "pro">("basic");
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  const refresh = () => {
+    fetch("/api/admin/clients", { headers: authHeaders() })
+      .then(res => res.json())
+      .then(d => setClients(d.clients ?? []));
+  };
+
   useEffect(() => {
-    fetch("/api/admin/clients", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
+    fetch("/api/admin/clients", { headers: authHeaders() })
       .then(res => res.json())
       .then(d => setClients(d.clients ?? []))
       .finally(() => setLoading(false));
   }, []);
+
+  const submitCreate = async (e: FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const res = await fetch("/api/admin/clients", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          name: clientName,
+          plan,
+          admin: {
+            name: adminName,
+            email: adminEmail,
+            password: adminPassword,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCreateError(
+          typeof data.error === "string" ? data.error : "Failed to create",
+        );
+        return;
+      }
+      setClientName("");
+      setAdminName("");
+      setAdminEmail("");
+      setAdminPassword("");
+      setPlan("basic");
+      setShowCreate(false);
+      refresh();
+    } catch {
+      setCreateError("Network error");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const toggle = (id: string) =>
     setExpanded(prev => {
@@ -92,18 +152,150 @@ function AdminClientsPageInner() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
-        <p className="text-sm text-slate-500">
-          Every client on the platform with their team. Click a row to expand
-          staff. Use Impersonate to view the panel as that user.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
+          <p className="text-sm text-slate-500">
+            Every client on the platform with their team. Click a row to
+            expand staff. Use Impersonate to view the panel as that user.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowCreate(o => !o)}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+        >
+          {showCreate ? "Cancel" : "+ New client"}
+        </button>
       </header>
 
       {error && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
+      )}
+
+      {showCreate && (
+        <form
+          onSubmit={submitCreate}
+          className="rounded-xl border border-slate-200 bg-white"
+        >
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-base font-semibold text-slate-900">
+              New client
+            </h2>
+            <p className="text-xs text-slate-500">
+              Creates the Client tenant + its first CLIENT_ADMIN user. A
+              webhook key is generated automatically.
+            </p>
+          </div>
+
+          <div className="space-y-4 px-6 py-5">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Client name
+                </span>
+                <input
+                  value={clientName}
+                  onChange={e => setClientName(e.target.value)}
+                  required
+                  minLength={2}
+                  placeholder="Aarogya Dental Studio"
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Plan
+                </span>
+                <select
+                  value={plan}
+                  onChange={e => setPlan(e.target.value as "basic" | "pro")}
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                >
+                  <option value="basic">Basic</option>
+                  <option value="pro">Pro</option>
+                </select>
+              </label>
+            </div>
+
+            <fieldset>
+              <legend className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Client admin (first user)
+              </legend>
+              <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <label className="block">
+                  <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                    Admin name
+                  </span>
+                  <input
+                    value={adminName}
+                    onChange={e => setAdminName(e.target.value)}
+                    required
+                    minLength={2}
+                    placeholder="Dr. Ananya Verma"
+                    className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                    Admin email
+                  </span>
+                  <input
+                    type="email"
+                    value={adminEmail}
+                    onChange={e => setAdminEmail(e.target.value)}
+                    required
+                    placeholder="admin@aarogyadental.com"
+                    className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                    Temporary password
+                  </span>
+                  <input
+                    type="text"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    required
+                    minLength={8}
+                    placeholder="At least 8 characters"
+                    className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                Share this password with the client admin after creation —
+                they can change it later.
+              </p>
+            </fieldset>
+          </div>
+
+          {createError && (
+            <p className="border-t border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
+              {createError}
+            </p>
+          )}
+
+          <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-6 py-3">
+            <button
+              type="button"
+              onClick={() => setShowCreate(false)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={creating}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {creating ? "Creating…" : "Create client"}
+            </button>
+          </div>
+        </form>
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white">
