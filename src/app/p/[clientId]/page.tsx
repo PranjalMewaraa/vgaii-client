@@ -30,6 +30,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
     <ProfileRenderer
       profile={client.profile}
       ctaUrl={client.calendlySchedulingUrl}
+      clientId={clientId}
     />
   );
 }

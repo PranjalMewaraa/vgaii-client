@@ -1,4 +1,5 @@
 import type { Profile } from "@/lib/validators/profile";
+import ProfileContactForm from "@/components/ProfileContactForm";
 
 const FALLBACK = {
   doctorName: "Dr. Jane Doe",
@@ -53,9 +54,11 @@ const orFallbackArray = <T,>(v: T[] | undefined, fallback: T[]): T[] =>
 export default function ProfileRenderer({
   profile,
   ctaUrl,
+  clientId,
 }: {
   profile: Partial<Profile>;
   ctaUrl?: string;
+  clientId?: string;
 }) {
   const v = {
     doctorName: orFallback(profile.doctorName, FALLBACK.doctorName),
@@ -337,63 +340,14 @@ export default function ProfileRenderer({
               </div>
             </div>
 
-            <div className="rounded-lg bg-white p-8 text-gray-800 shadow-2xl">
-              <form action="#" method="POST" className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-3 shadow-sm focus:border-sky-700 focus:ring-sky-700 sm:text-sm"
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-3 shadow-sm focus:border-sky-700 focus:ring-sky-700 sm:text-sm"
-                    placeholder="john@example.com"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    How can we help?
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-3 shadow-sm focus:border-sky-700 focus:ring-sky-700 sm:text-sm"
-                    placeholder="Briefly describe your concern…"
-                  />
-                </div>
-                <div>
-                  <button
-                    type="submit"
-                    className="flex w-full justify-center rounded-md border border-transparent bg-sky-700 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-700 focus:ring-offset-2"
-                  >
-                    Request Appointment
-                  </button>
-                </div>
-              </form>
-            </div>
+            {clientId ? (
+              <ProfileContactForm clientId={clientId} />
+            ) : (
+              <div className="rounded-lg bg-white p-8 text-sm text-gray-500 shadow-2xl">
+                Form preview unavailable — pass a clientId to enable lead
+                capture.
+              </div>
+            )}
           </div>
         </div>
       </section>
