@@ -134,6 +134,9 @@ const leadSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     phone: { type: String, required: true, index: true },
+    email: String,
+    age: Number,
+    gender: String,
     area: String,
     source: String,
     status: {
@@ -182,6 +185,8 @@ const appointmentSchema = new mongoose.Schema(
     },
     completedAt: Date,
     notes: { type: String, default: "" },
+    diagnosis: { type: String, default: "" },
+    medicines: { type: [String], default: [] },
     clientId: {
       type: mongoose.Types.ObjectId,
       ref: "Client",

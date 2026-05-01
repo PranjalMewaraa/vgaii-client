@@ -127,8 +127,18 @@ function LeadDetailPageInner({
   useEffect(() => {
     fetch(`/api/leads/${id}`, { headers: authHeaders() })
       .then(res => res.json())
-      .then(applyLead)
+      .then(data => {
+        // If this record is already a patient (qualified+), redirect to the
+        // patient detail page which has the medical history view.
+        const s = data.lead?.status;
+        if (s === "qualified" || s === "appointment_booked" || s === "visited") {
+          router.replace(`/patients/${id}`);
+          return;
+        }
+        applyLead(data);
+      })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const setStatus = async (status: LeadStatus) => {
@@ -147,8 +157,18 @@ function LeadDetailPageInner({
         );
         return;
       }
+      // If we just promoted them past contacted, send the user to the patient
+      // detail view which has the medical-history features.
+      const newStatus = data.lead?.status;
+      if (
+        newStatus === "qualified" ||
+        newStatus === "appointment_booked" ||
+        newStatus === "visited"
+      ) {
+        router.replace(`/patients/${id}`);
+        return;
+      }
       setLead(data.lead);
-      // close embed if status moved to a terminal or non-qualified state
       setBookingOpen(false);
     } finally {
       setBusy(false);

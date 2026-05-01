@@ -23,6 +23,8 @@ const AppointmentSchema = new Schema(
     },
     completedAt: Date,
     notes: { type: String, default: "" },
+    diagnosis: { type: String, default: "" },
+    medicines: { type: [String], default: [] },
 
     clientId: {
       type: mongoose.Types.ObjectId,

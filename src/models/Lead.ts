@@ -8,6 +8,9 @@ const LeadSchema = new Schema(
   {
     name: { type: String, required: true },
     phone: { type: String, required: true, index: true },
+    email: { type: String },
+    age: { type: Number, min: 0, max: 150 },
+    gender: { type: String },
     area: { type: String },
     source: { type: String },
 

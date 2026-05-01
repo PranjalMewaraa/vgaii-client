@@ -38,13 +38,19 @@ function LeadsPageInner() {
 
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [sourceFilter, setSourceFilter] = useState<string>("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/leads", { headers: authHeaders() })
-      .then(res => res.json())
-      .then(data => setLeads(data.leads ?? []))
-      .finally(() => setLoading(false));
-  }, []);
+    const t = setTimeout(() => {
+      const url = new URL("/api/leads", window.location.origin);
+      if (search) url.searchParams.set("search", search);
+      fetch(url.toString(), { headers: authHeaders() })
+        .then(res => res.json())
+        .then(data => setLeads(data.leads ?? []))
+        .finally(() => setLoading(false));
+    }, 250);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const sources = useMemo(() => {
     const seen = new Set<string>();
@@ -63,6 +69,7 @@ function LeadsPageInner() {
   const clearFilters = () => {
     setStatusFilter("");
     setSourceFilter("");
+    setSearch("");
   };
 
   return (
@@ -70,12 +77,25 @@ function LeadsPageInner() {
       <header>
         <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
         <p className="text-sm text-slate-500">
-          Track every customer that came through the funnel.
+          Early-funnel and dropped contacts. Once a lead is{" "}
+          <code className="rounded bg-slate-100 px-1">qualified</code>, they
+          move to the Patients tab.
         </p>
       </header>
 
       <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
         <div className="flex flex-wrap items-end gap-4">
+          <label className="block flex-1 min-w-[220px]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Search
+            </span>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Name or phone…"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Status
@@ -86,7 +106,12 @@ function LeadsPageInner() {
               className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
               <option value="">All statuses</option>
-              {LEAD_STATUSES.map(s => (
+              {LEAD_STATUSES.filter(
+                s =>
+                  s !== "qualified" &&
+                  s !== "appointment_booked" &&
+                  s !== "visited",
+              ).map(s => (
                 <option key={s} value={s}>
                   {s.replace(/_/g, " ")}
                 </option>

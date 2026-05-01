@@ -52,10 +52,24 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
     const source = url.searchParams.get("source");
+    const search = url.searchParams.get("search")?.trim();
+    const includeAll = url.searchParams.get("all") === "1";
 
     const filter: Record<string, unknown> = withClientFilter(user);
-    if (status) filter.status = status;
+    if (status) {
+      filter.status = status;
+    } else if (!includeAll) {
+      // By default exclude qualified+ since those records live in /patients.
+      filter.status = {
+        $nin: ["qualified", "appointment_booked", "visited"],
+      };
+    }
     if (source) filter.source = source;
+    if (search) {
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(escaped, "i");
+      filter.$or = [{ name: re }, { phone: re }];
+    }
 
     const leads = await Lead.find(filter)
       .sort({ createdAt: -1 })
