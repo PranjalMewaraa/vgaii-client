@@ -3,6 +3,8 @@
 import StatCard from "@/components/StatCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import BusinessInfoCard, { BusinessInfo } from "@/components/BusinessInfoCard";
+import AdminDashboard from "@/components/AdminDashboard";
+import { useStoredUser } from "@/lib/client-auth";
 import { useEffect, useState } from "react";
 
 type DashboardData = {
@@ -17,9 +19,11 @@ type DashboardData = {
 };
 
 export default function Dashboard() {
+  const user = useStoredUser();
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
+    if (user?.role === "SUPER_ADMIN") return;
     fetch("/api/dashboard", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -27,7 +31,11 @@ export default function Dashboard() {
     })
       .then(res => res.json())
       .then(setData);
-  }, []);
+  }, [user?.role]);
+
+  if (user?.role === "SUPER_ADMIN") {
+    return <AdminDashboard />;
+  }
 
   if (!data) {
     return <p className="text-sm text-slate-500">Loading…</p>;

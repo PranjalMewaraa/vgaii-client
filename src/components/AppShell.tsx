@@ -3,6 +3,7 @@
 import { ReactNode, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
 
 const APP_VERSION = "1.0.0";
 const YEAR = new Date().getFullYear();
@@ -17,6 +18,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
         <div className="flex min-h-screen flex-1 flex-col">
           <TopBar onMenuClick={() => setSidebarOpen(true)} />
+          <ImpersonationBanner />
 
           <main className="flex-1 px-6 py-8 md:px-8">{children}</main>
 

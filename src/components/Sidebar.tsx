@@ -12,7 +12,7 @@ type NavItem = {
   adminOnly?: boolean;
 };
 
-const NAV: NavItem[] = [
+const CLIENT_NAV: NavItem[] = [
   { href: "/", label: "Dashboard", icon: "■" },
   { href: "/leads", label: "Leads", icon: "▤", module: "leads" },
   { href: "/patients", label: "Patients", icon: "◉", module: "patients" },
@@ -21,6 +21,11 @@ const NAV: NavItem[] = [
   { href: "/staff", label: "Team", icon: "♦", adminOnly: true },
   { href: "/profile", label: "Profile", icon: "❖", adminOnly: true },
   { href: "/settings", label: "Settings", icon: "⚙", adminOnly: true },
+];
+
+const SUPER_ADMIN_NAV: NavItem[] = [
+  { href: "/", label: "Overview", icon: "■" },
+  { href: "/admin/clients", label: "Clients", icon: "◇" },
 ];
 
 const isVisible = (item: NavItem, user: StoredUser | null) => {
@@ -73,34 +78,36 @@ export default function Sidebar({
           </p>
 
           <nav className="space-y-1">
-            {NAV.filter(item => isVisible(item, user)).map(item => {
-              const active =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname?.startsWith(item.href);
+            {(user?.role === "SUPER_ADMIN" ? SUPER_ADMIN_NAV : CLIENT_NAV)
+              .filter(item => isVisible(item, user))
+              .map(item => {
+                const active =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname?.startsWith(item.href);
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                    active
-                      ? "bg-indigo-50 font-semibold text-indigo-700"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                  }`}
-                >
-                  <span
-                    className={`text-base ${
-                      active ? "text-indigo-600" : "text-slate-400"
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                      active
+                        ? "bg-indigo-50 font-semibold text-indigo-700"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     }`}
                   >
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+                    <span
+                      className={`text-base ${
+                        active ? "text-indigo-600" : "text-slate-400"
+                      }`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
           </nav>
         </div>
       </aside>

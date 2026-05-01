@@ -12,6 +12,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/staff": "Team",
   "/profile": "Profile",
   "/settings": "Settings",
+  "/admin/clients": "Clients",
 };
 
 const ROLE_LABELS: Record<string, string> = {
