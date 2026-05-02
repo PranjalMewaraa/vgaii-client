@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StatusPill from "@/components/StatusPill";
-import CalendlyEmbed from "@/components/CalendlyEmbed";
+import BookingEmbed from "@/components/BookingEmbed";
 import RoleGuard from "@/components/RoleGuard";
 import {
   LEAD_TRANSITIONS,
@@ -91,14 +91,14 @@ function LeadDetailPageInner({
   const [lead, setLead] = useState<Lead | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
-  const [calendlyUrl, setCalendlyUrl] = useState<string | null>(null);
+  const [bookingUrl, setBookingUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // notes editor
   const [notesDraft, setNotesDraft] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
-  // Calendly embed visibility
+  // Booking embed visibility
   const [bookingOpen, setBookingOpen] = useState(false);
 
   // generic action busy + transition error
@@ -109,14 +109,14 @@ function LeadDetailPageInner({
     lead?: Lead;
     appointments?: Appointment[];
     feedbacks?: Feedback[];
-    calendlySchedulingUrl?: string | null;
+    bookingUrl?: string | null;
   }) => {
     if (!data.lead) return;
     setLead(data.lead);
     setNotesDraft(data.lead.notes ?? "");
     setAppointments(data.appointments ?? []);
     setFeedbacks(data.feedbacks ?? []);
-    setCalendlyUrl(data.calendlySchedulingUrl ?? null);
+    setBookingUrl(data.bookingUrl ?? null);
   };
 
   const refreshLead = () =>
@@ -204,7 +204,7 @@ function LeadDetailPageInner({
   const status = (lead.status ?? "new") as LeadStatus;
   const allowed = LEAD_TRANSITIONS[status];
   const dirtyNotes = notesDraft !== (lead.notes ?? "");
-  const showCalendlyAction = status === "qualified";
+  const showBookingAction = status === "qualified";
 
   return (
     <div className="space-y-6">
@@ -253,7 +253,7 @@ function LeadDetailPageInner({
             </p>
           ) : (
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              {showCalendlyAction && (
+              {showBookingAction && (
                 <button
                   type="button"
                   onClick={() => setBookingOpen(o => !o)}
@@ -298,13 +298,13 @@ function LeadDetailPageInner({
         </div>
       </div>
 
-      {showCalendlyAction && bookingOpen && (
+      {showBookingAction && bookingOpen && (
         <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Book via Calendly
+              Book via Cal.com
             </p>
-            {calendlyUrl && (
+            {bookingUrl && (
               <p className="text-xs text-slate-500">
                 Status will move to{" "}
                 <span className="font-medium text-slate-700">
@@ -315,9 +315,9 @@ function LeadDetailPageInner({
             )}
           </div>
 
-          {!calendlyUrl ? (
+          {!bookingUrl ? (
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              No Calendly scheduling URL is configured for this client. Ask your
+              No Cal.com booking URL is configured for this client. Ask your
               admin to set it on the{" "}
               <Link href="/settings" className="font-semibold underline">
                 Settings
@@ -325,8 +325,8 @@ function LeadDetailPageInner({
               page.
             </div>
           ) : (
-            <CalendlyEmbed
-              url={calendlyUrl}
+            <BookingEmbed
+              url={bookingUrl}
               name={lead.name}
               email={lead.email}
               phone={lead.phone}

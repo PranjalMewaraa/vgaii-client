@@ -41,7 +41,7 @@ const AppointmentSchema = new Schema(
 
     source: {
       type: String,
-      default: "calendly",
+      default: "cal.com",
     },
   },
   { timestamps: true },

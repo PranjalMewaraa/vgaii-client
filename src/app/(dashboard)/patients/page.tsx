@@ -23,10 +23,12 @@ type PatientRow = {
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
+// New patients (no appointments yet) are active by default. Only when the
+// last appointment is older than a year do we mark them inactive.
 const isInactive = (lastDate?: string | null) => {
-  if (!lastDate) return true;
+  if (!lastDate) return false;
   const ts = new Date(lastDate).getTime();
-  if (Number.isNaN(ts)) return true;
+  if (Number.isNaN(ts)) return false;
   return Date.now() - ts > ONE_YEAR_MS;
 };
 

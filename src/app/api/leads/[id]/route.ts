@@ -37,7 +37,7 @@ export async function GET(req: Request, ctx: RouteContext) {
         .lean(),
       user.clientId
         ? Client.findById(user.clientId)
-            .select("calendlySchedulingUrl")
+            .select("bookingUrl")
             .lean()
         : null,
     ]);
@@ -46,9 +46,9 @@ export async function GET(req: Request, ctx: RouteContext) {
       lead,
       appointments,
       feedbacks,
-      calendlySchedulingUrl:
-        (client && "calendlySchedulingUrl" in client
-          ? client.calendlySchedulingUrl
+      bookingUrl:
+        (client && "bookingUrl" in client
+          ? client.bookingUrl
           : null) ?? null,
     });
 

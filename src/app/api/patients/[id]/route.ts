@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db";
 import Lead from "@/models/Lead";
 import Appointment from "@/models/Appointment";
 import Feedback from "@/models/Feedback";
+import Client from "@/models/Client";
 import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
 import { getErrorMessage } from "@/lib/errors";
@@ -19,13 +20,18 @@ export async function GET(req: Request, ctx: RouteContext) {
     const lead = await Lead.findOne({ ...filter, _id: id }).lean();
 
     if (lead) {
-      const [appointments, feedbacks] = await Promise.all([
+      const [appointments, feedbacks, client] = await Promise.all([
         Appointment.find({ ...filter, leadId: lead._id })
           .sort({ date: -1 })
           .lean(),
         Feedback.find({ ...filter, leadId: lead._id })
           .sort({ createdAt: -1 })
           .lean(),
+        user.clientId
+          ? Client.findById(user.clientId)
+              .select("bookingUrl")
+              .lean<{ bookingUrl?: string }>()
+          : null,
       ]);
 
       return NextResponse.json({
@@ -33,6 +39,7 @@ export async function GET(req: Request, ctx: RouteContext) {
         lead,
         appointments,
         feedbacks,
+        bookingUrl: client?.bookingUrl ?? null,
       });
     }
 

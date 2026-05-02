@@ -93,8 +93,9 @@ export async function GET(req: Request) {
     }
 
     const leadRows: PatientRow[] = leads.map(l => {
+      // appts is sorted desc by date, so [0] is the most recent regardless of
+      // status — that's what the inactive logic on the client checks.
       const appts = apptsByLead.get(l._id.toString()) ?? [];
-      const lastCompleted = appts.find(a => a.status === "completed");
       return {
         kind: "lead",
         id: l._id.toString(),
@@ -105,7 +106,7 @@ export async function GET(req: Request) {
         gender: l.gender,
         status: l.status,
         outcomeRating: l.outcomeRating,
-        lastAppointmentDate: lastCompleted?.date ?? appts[0]?.date ?? null,
+        lastAppointmentDate: appts[0]?.date ?? null,
         appointmentsCount: appts.length,
         hasFeedback: feedbackByLead.has(l._id.toString()),
         source: l.source,

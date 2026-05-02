@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
+import BookingEmbed from "@/components/BookingEmbed";
 import {
   LEAD_TRANSITIONS,
   type LeadStatus,
@@ -54,6 +55,7 @@ type DetailResponse =
       lead: Lead;
       appointments: Appointment[];
       feedbacks: Feedback[];
+      bookingUrl?: string | null;
     }
   | { kind: "direct"; appointment: Appointment }
   | { error: string };
@@ -67,10 +69,12 @@ const authHeaders = () => ({
   }`,
 });
 
+// New patients (no appointments yet) are active by default. Only when their
+// last appointment is older than a year do we mark them inactive.
 const isInactive = (lastDate?: string | null) => {
-  if (!lastDate) return true;
+  if (!lastDate) return false;
   const ts = new Date(lastDate).getTime();
-  if (Number.isNaN(ts)) return true;
+  if (Number.isNaN(ts)) return false;
   return Date.now() - ts > ONE_YEAR_MS;
 };
 
@@ -111,6 +115,10 @@ function PatientDetailPageInner({
   const [notesDraft, setNotesDraft] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
+  // Cal.com scheduling
+  const [bookingUrl, setBookingUrl] = useState<string | null>(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
+
   const load = () =>
     fetch(`/api/patients/${id}`, { headers: authHeaders() })
       .then(res => res.json())
@@ -118,6 +126,7 @@ function PatientDetailPageInner({
         setData(d);
         if ("kind" in d && d.kind === "lead") {
           setNotesDraft(d.lead.notes ?? "");
+          setBookingUrl(d.bookingUrl ?? null);
         }
       });
 
@@ -409,16 +418,23 @@ function PatientDetailPageInner({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-6 py-4">
           <div>
             <h2 className="text-base font-semibold text-slate-900">
               Medical history
             </h2>
             <p className="text-xs text-slate-500">
-              Appointments come in via Calendly. After each visit, mark it
-              visited and record diagnosis and medicines.
+              Appointments are booked through Cal.com. After each visit, mark
+              it visited and record diagnosis and medicines.
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setBookingOpen(true)}
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+          >
+            Schedule appointment
+          </button>
         </div>
 
         {appointments.length === 0 ? (
@@ -642,6 +658,67 @@ function PatientDetailPageInner({
           </ul>
         )}
       </div>
+
+      {bookingOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          onClick={() => setBookingOpen(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          >
+            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <p className="text-base font-semibold text-slate-900">
+                  Schedule appointment
+                </p>
+                <p className="text-xs text-slate-500">
+                  Pick a slot for{" "}
+                  <span className="font-medium text-slate-700">
+                    {lead.name}
+                  </span>
+                  . The new appointment will appear once Cal.com confirms.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBookingOpen(false)}
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-500 hover:bg-slate-50"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto px-6 py-5">
+              {!bookingUrl ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  No Cal.com booking URL is configured for this client.
+                  Ask your admin to set it on the{" "}
+                  <Link
+                    href="/settings"
+                    className="font-semibold underline"
+                  >
+                    Settings
+                  </Link>{" "}
+                  page.
+                </div>
+              ) : (
+                <BookingEmbed
+                  url={bookingUrl}
+                  name={lead.name}
+                  email={lead.email}
+                  phone={lead.phone}
+                  onScheduled={() => {
+                    load();
+                    setBookingOpen(false);
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -61,7 +61,7 @@ const clientSchema = new mongoose.Schema(
     },
     renewalDate: Date,
     googlePlaceId: String,
-    calendlySchedulingUrl: String,
+    bookingUrl: String,
     profileSlug: { type: String, unique: true, sparse: true, lowercase: true },
     customDomain: { type: String, unique: true, sparse: true, lowercase: true },
     reviewsTaskId: String,
@@ -199,7 +199,7 @@ const appointmentSchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      default: "calendly",
+      default: "cal.com",
     },
   },
   { timestamps: true },
@@ -307,7 +307,7 @@ async function main() {
       modules: user.assignedModules.join(", ") || "-",
     })),
   );
-  console.log("Webhook keys (used for Calendly + lead webhooks):");
+  console.log("Webhook keys (used for Cal.com booking + lead webhooks):");
   for (const client of seed.clients) {
     console.log(`${client.name}: ${client.webhookKey}`);
   }

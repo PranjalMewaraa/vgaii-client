@@ -34,7 +34,7 @@ export async function GET(req: Request) {
         subscriptionStatus: client.subscriptionStatus,
         renewalDate: client.renewalDate,
         googlePlaceId: client.googlePlaceId,
-        calendlySchedulingUrl: client.calendlySchedulingUrl,
+        bookingUrl: client.bookingUrl,
         profileSlug: client.profileSlug,
         customDomain: client.customDomain,
         webhookKey: client.webhookKey,
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
       integrations: {
         leadWebhookUrl: `${origin}/api/webhooks/leads`,
         leadStatusWebhookUrl: `${origin}/api/webhooks/leads/status`,
-        calendlyWebhookUrl: `${origin}/api/webhooks/calendly`,
+        bookingWebhookUrl: `${origin}/api/webhooks/booking`,
         feedbackUrlPattern: `${origin}/feedback/<token>`,
       },
     });

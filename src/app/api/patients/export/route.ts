@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
     const rows = leads.map(l => {
       const list = apptsByLead.get(l._id.toString()) ?? [];
-      const last = list.find(a => a.status === "completed") ?? list[0];
+      const last = list[0];
       return {
         name: l.name,
         phone: l.phone,

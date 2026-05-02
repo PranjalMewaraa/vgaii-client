@@ -11,7 +11,7 @@ export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
 // Allowed manual transitions in the panel UI and on PATCH /api/leads/[id].
 // `qualified → appointment_booked` is intentionally NOT here — that hop
-// happens automatically when Calendly fires its webhook. Webhooks and the
+// happens automatically when Cal.com fires its BOOKING_CREATED webhook. Webhooks and the
 // public feedback flow bypass this matrix for legitimate reasons.
 export const LEAD_TRANSITIONS: Record<LeadStatus, readonly LeadStatus[]> = {
   new: ["contacted", "lost"],

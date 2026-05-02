@@ -13,7 +13,7 @@ type PageProps = {
 type ResolvedClient = {
   _id: { toString: () => string };
   profile?: Partial<Profile> & { enabled?: boolean; faviconUrl?: string };
-  calendlySchedulingUrl?: string;
+  bookingUrl?: string;
 };
 
 const truncate = (s: string, max: number) =>
@@ -84,7 +84,7 @@ export default async function HostPage({ params, searchParams }: PageProps) {
   return (
     <ProfileRenderer
       profile={client.profile}
-      ctaUrl={client.calendlySchedulingUrl}
+      ctaUrl={client.bookingUrl}
       clientId={client._id.toString()}
       leadSource={source}
     />

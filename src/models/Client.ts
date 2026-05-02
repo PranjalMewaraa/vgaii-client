@@ -75,7 +75,7 @@ const ClientSchema = new Schema(
 
     renewalDate: Date,
     googlePlaceId: String,
-    calendlySchedulingUrl: String,
+    bookingUrl: String,
     profileSlug: { type: String, unique: true, sparse: true, lowercase: true },
     customDomain: { type: String, unique: true, sparse: true, lowercase: true },
     googleBusinessInfo: GoogleBusinessInfoSchema,

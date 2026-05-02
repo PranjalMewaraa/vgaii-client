@@ -34,7 +34,7 @@ Browse to <http://localhost:3000>.
 
 ### 0.4 External-service notes
 
-- **Calendly** — needed for the lead → appointment_booked auto-bump. Configure a real Calendly URL on the dental client (`/settings`), or skip the embed-rendering test and use the curl webhook instead.
+- **Cal.com** — needed for the lead → appointment_booked auto-bump. Configure a real Cal.com booking URL on the dental client (`/settings`), or skip the embed-rendering test and use the curl webhook instead.
 - **DataForSEO** — needed for the BusinessInfoCard auto-populate. Account verification must be complete (you'll see this in `[business-info] self-heal failed` server logs if not).
 
 ### 0.5 Use multiple browser sessions
@@ -71,7 +71,7 @@ Login as `superadmin@test.local`.
 - [ ] Click a row → expands to show the **Client Admin** card and **Staff (n)** sub-card with assigned-module pills.
 - [ ] Footer links: "View public profile →" appears only if `profileSlug` is set.
 
-### 2.3 Create a client (atomic Client + Admin)
+### 2.3 Create a client (atomic Client + Admin)eyJraWQiOiIxY2UxZTEzNjE3ZGNmNzY2YjNjZWJjY2Y4ZGM1YmFmYThhNjVlNjg0MDIzZjdjMzJiZTgzNDliMjM4MDEzNWI0IiwidHlwIjoiUEFUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2F1dGguY2FsZW5kbHkuY29tIiwiaWF0IjoxNzc3NjQ5NTQzLCJqdGkiOiI5YjNkZTVjZS1hYWUyLTQzMGYtYTBjZi05NTJkZDc3NzZjMTciLCJ1c2VyX3V1aWQiOiJkNDhkYjYyYS1kZTc4LTRhMTctODMwMS1hNGExYTZiNzk3MWIiLCJzY29wZSI6IndlYmhvb2tzOnJlYWQgd2ViaG9va3M6d3JpdGUgYXZhaWxhYmlsaXR5OnJlYWQgYXZhaWxhYmlsaXR5OndyaXRlIGV2ZW50X3R5cGVzOnJlYWQgZXZlbnRfdHlwZXM6d3JpdGUgbG9jYXRpb25zOnJlYWQgcm91dGluZ19mb3JtczpyZWFkIHNoYXJlczp3cml0ZSBzY2hlZHVsZWRfZXZlbnRzOnJlYWQgc2NoZWR1bGVkX2V2ZW50czp3cml0ZSBzY2hlZHVsaW5nX2xpbmtzOndyaXRlIn0.6rHKcdhsv-MFyw_hFOT8QWqfDYIAaZdFVzfAhaNnavY7Cf6klu4uGZsz6SQ5Dv9roXehuecpVDDW1QsxfwJsSg
 
 - [ ] Click **+ New client** → form expands.
 - [ ] Submit empty → browser/native validation prevents.
@@ -133,9 +133,9 @@ Login as `dental.admin@test.local`.
 ### 3.3 Settings
 
 - [ ] `/settings` opens. Webhook key shown in a copy-able code block.
-- [ ] **Header / Query toggle** on each webhook row works. Calendly card defaults to **Query** mode.
+- [ ] **Header / Query toggle** on each webhook row works. Cal.com card defaults to **Query** mode.
 - [ ] Click **Copy** on the webhook key → "Copied" appears for ~1.5s.
-- [ ] Set Calendly URL to a real event link → save → green "Saved" banner.
+- [ ] Set Cal.com booking URL to a real event link (e.g. `https://cal.com/your-account/30min`) → save → green "Saved" banner.
 - [ ] Set Profile slug to `aarogya-dental` → save. Try `Aarogya Dental` (uppercase + space) → red 400 *"Slug must be lowercase letters, digits, or hyphens"*.
 - [ ] Set Custom domain to `aarogyadental.com` → save (no DNS needed for the validation step). Try `not a domain` → 400.
 - [ ] Try setting profileSlug to one already used by another client → 409 *"That profileSlug is already in use"* (rollback works).
@@ -178,7 +178,7 @@ Login as `dental.admin@test.local`.
 
 ### 3.8 Patients view
 
-- [ ] `/patients` shows leads with `appointment_booked` or `visited` status, plus orphan Calendly appointments tagged "Direct appointment".
+- [ ] `/patients` shows leads with `appointment_booked` or `visited` status, plus orphan Cal.com appointments tagged "Direct appointment".
 - [ ] Click a lead-based patient → detail page with appointments + feedback.
 - [ ] Direct-appointment row is not clickable (no detail link).
 
@@ -220,8 +220,8 @@ Pick a lead with status `new` (e.g. `Rahul Mehta` if seed has it; otherwise crea
   }).then(r => r.json());
   ```
   Returns 400 *"Status cannot move from \"qualified\" to \"visited\""*.
-- [ ] Click **Book appointment** → Calendly embed loads inline below the Next-step card. (If Calendly URL not set in settings, an amber notice points to Settings.)
-- [ ] Pick a slot in the embed, fill phone matching the lead's phone, confirm → Calendly fires its webhook → server upserts an Appointment + auto-bumps Lead.status to `appointment_booked`. The `calendly.event_scheduled` postMessage triggers a refresh and the page re-renders with the new state.
+- [ ] Click **Book appointment** → Cal.com embed loads inline below the Next-step card. (If booking URL not set in settings, an amber notice points to Settings.)
+- [ ] Pick a slot in the embed, fill phone matching the lead's phone, confirm → Cal.com fires its `BOOKING_CREATED` webhook → server upserts an Appointment + auto-bumps Lead.status to `appointment_booked`. The `bookingSuccessfulV2` postMessage triggers a refresh and the page re-renders with the new state.
 - [ ] **`appointment_booked`** state: buttons `Mark visited` and `Mark lost`.
 - [ ] Click **Mark visited** → pill `VISITED`. Card collapses to *"This lead is visited — no further actions."*
 
@@ -370,19 +370,21 @@ curl -X PATCH http://localhost:3000/api/webhooks/leads/status \
 - [ ] Reload `/leads` → status pill updated.
 - [ ] Repeat with `status: "qualified"`. Then `status: "visited", outcomeRating: 5` → status moves, outcomeRating shows on lead detail.
 
-### 8.5 Calendly webhook (mock)
+### 8.5 Cal.com webhook (mock)
 
 ```bash
-curl -X POST http://localhost:3000/api/webhooks/calendly \
+curl -X POST http://localhost:3000/api/webhooks/booking \
   -H "Content-Type: application/json" \
   -H "x-webhook-key: <key>" \
   -d '{
-    "event": "invitee.created",
+    "triggerEvent": "BOOKING_CREATED",
     "payload": {
-      "name": "Test Lead",
-      "email": "test@example.com",
-      "phone": "9000099999",
-      "event_start_time": "2026-06-15T10:30:00.000Z"
+      "startTime": "2026-06-15T10:30:00.000Z",
+      "attendees": [{
+        "name": "Test Lead",
+        "email": "test@example.com",
+        "phoneNumber": "9000099999"
+      }]
     }
   }'
 ```
@@ -392,18 +394,20 @@ curl -X POST http://localhost:3000/api/webhooks/calendly \
 - [ ] In `/leads` → that lead's status is now `appointment_booked` (auto-bumped because phone matched).
 - [ ] In `/patients` → lead appears as a patient.
 
-### 8.6 Calendly webhook — phone doesn't match any lead
+### 8.6 Cal.com webhook — phone doesn't match any lead
 
 ```bash
-curl -X POST http://localhost:3000/api/webhooks/calendly \
+curl -X POST http://localhost:3000/api/webhooks/booking \
   -H "x-webhook-key: <key>" \
   -H "Content-Type: application/json" \
   -d '{
-    "event": "invitee.created",
+    "triggerEvent": "BOOKING_CREATED",
     "payload": {
-      "name": "Walk-in",
-      "phone": "9555599999",
-      "event_start_time": "2026-06-16T10:30:00.000Z"
+      "startTime": "2026-06-16T10:30:00.000Z",
+      "attendees": [{
+        "name": "Walk-in",
+        "phoneNumber": "9555599999"
+      }]
     }
   }'
 ```
@@ -411,9 +415,9 @@ curl -X POST http://localhost:3000/api/webhooks/calendly \
 - [ ] Appointment created with `leadId: null`.
 - [ ] Appears in `/patients` with **Direct appointment** badge (violet).
 
-### 8.7 Calendly — non-create events ignored
+### 8.7 Cal.com — non-create events ignored
 
-- [ ] Repeat with `"event": "invitee.canceled"` → response `{ message: "ignored" }`. Nothing created.
+- [ ] Repeat with `"triggerEvent": "BOOKING_CANCELLED"` → response `{ message: "ignored" }`. Nothing created.
 
 ---
 
@@ -480,7 +484,7 @@ As `fitness.staff` (only `feedback`):
 - [ ] **Custom domain collision** — same field, same behavior.
 - [ ] **Public profile when DataForSEO down** — render still succeeds; BusinessInfoCard shows the empty state in admin, but the public landing page never depends on DataForSEO.
 - [ ] **DataForSEO timeout** — `/api/dashboard` self-heal caps at 5s ([business-info.ts](src/lib/business-info.ts)). Disable network, hit dashboard → returns within 5s with cached or null businessInfo.
-- [ ] **Calendly account disconnected** — embed loads but Calendly's API returns `external_calendar_error`. Confirmed via `?` prompt in this codebase's history; no code-level fix possible.
+- [ ] **Cal.com calendar disconnected** — embed loads but the underlying calendar provider connection is broken. Reconnect from Cal.com → Apps → Calendar.
 - [ ] **Reseed mid-session** — run `npm run seed:reset` while logged in → next API call may 404 the user's record → AuthGuard handles gracefully.
 
 ---
@@ -502,4 +506,4 @@ If a step fails, capture:
 3. The actual response (status code + body) vs expected
 4. Browser console errors and the dev-server terminal output
 
-File issues with the section number from this document (e.g. "4.2 step 5 — Calendly webhook didn't auto-bump status").
+File issues with the section number from this document (e.g. "4.2 step 5 — Cal.com webhook didn't auto-bump status").

@@ -40,9 +40,8 @@ export async function PATCH(req: Request) {
     if (parsed.data.googlePlaceId !== undefined) {
       client.googlePlaceId = parsed.data.googlePlaceId ?? undefined;
     }
-    if (parsed.data.calendlySchedulingUrl !== undefined) {
-      client.calendlySchedulingUrl =
-        parsed.data.calendlySchedulingUrl ?? undefined;
+    if (parsed.data.bookingUrl !== undefined) {
+      client.bookingUrl = parsed.data.bookingUrl ?? undefined;
     }
     if (parsed.data.profileSlug !== undefined) {
       const slug = cleanString(parsed.data.profileSlug);
@@ -79,7 +78,7 @@ export async function PATCH(req: Request) {
         id: client._id,
         name: client.name,
         googlePlaceId: client.googlePlaceId,
-        calendlySchedulingUrl: client.calendlySchedulingUrl,
+        bookingUrl: client.bookingUrl,
         profileSlug: client.profileSlug,
         customDomain: client.customDomain,
       },

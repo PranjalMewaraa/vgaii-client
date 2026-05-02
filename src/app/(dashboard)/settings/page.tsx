@@ -9,7 +9,7 @@ type Settings = {
   plan?: string;
   subscriptionStatus?: string;
   googlePlaceId?: string;
-  calendlySchedulingUrl?: string;
+  bookingUrl?: string;
   profileSlug?: string;
   customDomain?: string;
   webhookKey?: string;
@@ -18,7 +18,7 @@ type Settings = {
 type Integrations = {
   leadWebhookUrl?: string;
   leadStatusWebhookUrl?: string;
-  calendlyWebhookUrl?: string;
+  bookingWebhookUrl?: string;
   feedbackUrlPattern?: string;
 };
 
@@ -43,7 +43,7 @@ function SettingsPageInner() {
   const [loading, setLoading] = useState(true);
 
   const [placeId, setPlaceId] = useState("");
-  const [calendlyUrl, setCalendlyUrl] = useState("");
+  const [bookingUrl, setBookingUrl] = useState("");
   const [profileSlug, setProfileSlug] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [saving, setSaving] = useState(false);
@@ -58,7 +58,7 @@ function SettingsPageInner() {
           setSettings(data.client);
           setIntegrations(data.integrations ?? null);
           setPlaceId(data.client.googlePlaceId ?? "");
-          setCalendlyUrl(data.client.calendlySchedulingUrl ?? "");
+          setBookingUrl(data.client.bookingUrl ?? "");
           setProfileSlug(data.client.profileSlug ?? "");
           setCustomDomain(data.client.customDomain ?? "");
         }
@@ -76,7 +76,7 @@ function SettingsPageInner() {
         headers: authHeaders(),
         body: JSON.stringify({
           googlePlaceId: placeId || null,
-          calendlySchedulingUrl: calendlyUrl || null,
+          bookingUrl: bookingUrl || null,
           profileSlug: profileSlug || null,
           customDomain: customDomain || null,
         }),
@@ -144,17 +144,17 @@ function SettingsPageInner() {
 
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Calendly scheduling URL
+              Cal.com booking URL
             </span>
             <input
               type="url"
-              value={calendlyUrl}
-              onChange={e => setCalendlyUrl(e.target.value)}
-              placeholder="https://calendly.com/your-account/your-event"
+              value={bookingUrl}
+              onChange={e => setBookingUrl(e.target.value)}
+              placeholder="https://cal.com/your-account/your-event"
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
             <p className="mt-1 text-xs text-slate-500">
-              Embedded on the lead detail page when you click <em>Book
+              Embedded on the patient detail page when you click <em>Schedule
               appointment</em>. Lead status auto-advances once the customer
               books.
             </p>
@@ -231,8 +231,8 @@ function SettingsPageInner() {
             <code className="rounded bg-slate-100 px-1">x-webhook-key</code>{" "}
             header (preferred) or as a{" "}
             <code className="rounded bg-slate-100 px-1">?key=…</code> query
-            parameter (for tools that don&apos;t allow custom headers, like
-            Calendly). Treat it like a password.
+            parameter (works with any tool, including Cal.com webhooks).
+            Treat it like a password.
           </p>
         </div>
 
@@ -261,14 +261,14 @@ function SettingsPageInner() {
               webhookKey={settings.webhookKey}
             />
           )}
-          {integrations?.calendlyWebhookUrl && settings.webhookKey && (
+          {integrations?.bookingWebhookUrl && settings.webhookKey && (
             <WebhookRow
               method="POST"
-              label="Calendly webhook"
+              label="Cal.com webhook"
               hint={
-                "In Calendly's webhook settings paste the URL with the ?key=… form — Calendly can't send custom headers."
+                "In Cal.com → Settings → Developer → Webhooks, add a webhook subscribed to BOOKING_CREATED with the URL below. Either header or query form works."
               }
-              url={integrations.calendlyWebhookUrl}
+              url={integrations.bookingWebhookUrl}
               webhookKey={settings.webhookKey}
               defaultMode="query"
             />

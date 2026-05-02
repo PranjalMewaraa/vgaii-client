@@ -171,7 +171,7 @@ const appointments = [
     date: new Date("2026-05-02T10:30:00.000Z"),
     clientId: ids.clients.dental,
     leadId: ids.leads.dentalTwo,
-    source: "calendly",
+    source: "cal.com",
   },
   {
     _id: ids.appointments.dentalTwo,
@@ -183,7 +183,7 @@ const appointments = [
     date: new Date("2026-05-04T15:00:00.000Z"),
     clientId: ids.clients.dental,
     leadId: ids.leads.dentalThree,
-    source: "calendly",
+    source: "cal.com",
   },
   {
     _id: ids.appointments.fitnessOne,
@@ -195,7 +195,7 @@ const appointments = [
     date: new Date("2026-05-03T07:00:00.000Z"),
     clientId: ids.clients.fitness,
     leadId: ids.leads.fitnessOne,
-    source: "calendly",
+    source: "cal.com",
   },
   {
     _id: ids.appointments.fitnessOrphan,
@@ -206,7 +206,7 @@ const appointments = [
     age: 35,
     date: new Date("2026-05-05T09:00:00.000Z"),
     clientId: ids.clients.fitness,
-    source: "calendly",
+    source: "cal.com",
   },
 ];
 

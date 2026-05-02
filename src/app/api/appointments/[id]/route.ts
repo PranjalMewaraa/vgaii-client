@@ -34,7 +34,7 @@ export async function PATCH(req: Request, ctx: RouteContext) {
       );
     }
 
-    const wasCompleted = appt.status === "completed";
+    const previousStatus = appt.status;
     if (parsed.data.status !== undefined) {
       appt.status = parsed.data.status;
       appt.completedAt =
@@ -56,15 +56,17 @@ export async function PATCH(req: Request, ctx: RouteContext) {
 
     await appt.save();
 
-    // First time this appointment is being marked completed — promote the
-    // linked lead from "appointment_booked" to "visited" if applicable.
-    // Subsequent completions on later appointments don't change the lead
-    // status (it's already terminal at "visited" or "lost").
-    if (
-      !wasCompleted &&
-      parsed.data.status === "completed" &&
-      appt.leadId
-    ) {
+    // Promote the linked lead to "visited" the first time this appointment
+    // resolves to either `completed` or `no_show`. We treat both the same
+    // for funnel purposes — a no-show still keeps the patient on our active
+    // roster (per product spec). The match is filtered to status =
+    // appointment_booked so we never demote leads that are already visited
+    // or lost.
+    const becameTerminal =
+      parsed.data.status === "completed" || parsed.data.status === "no_show";
+    const wasAlreadyTerminal =
+      previousStatus === "completed" || previousStatus === "no_show";
+    if (becameTerminal && !wasAlreadyTerminal && appt.leadId) {
       await Lead.updateOne(
         { _id: appt.leadId, status: "appointment_booked" },
         { status: "visited", statusUpdatedAt: new Date() },

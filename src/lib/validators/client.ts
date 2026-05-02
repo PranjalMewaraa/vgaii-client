@@ -25,14 +25,14 @@ const optionalHostname = z
 export const clientSettingsSchema = z
   .object({
     googlePlaceId: z.string().trim().max(500).nullable().optional(),
-    calendlySchedulingUrl: z.string().trim().max(500).nullable().optional(),
+    bookingUrl: z.string().trim().max(500).nullable().optional(),
     profileSlug: optionalSlug.nullable().optional(),
     customDomain: optionalHostname.nullable().optional(),
   })
   .refine(
     d =>
       d.googlePlaceId !== undefined ||
-      d.calendlySchedulingUrl !== undefined ||
+      d.bookingUrl !== undefined ||
       d.profileSlug !== undefined ||
       d.customDomain !== undefined,
     { message: "At least one field is required" },
