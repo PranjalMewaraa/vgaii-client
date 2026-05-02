@@ -2,10 +2,9 @@ import { connectDB } from "@/lib/db";
 import Lead from "@/models/Lead";
 import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { leadStatusSchema } from "@/lib/validators/lead";
+import { canonicalPhone } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
-
-const normalizePhone = (phone: string) => phone.replace(/[^\d]/g, "").slice(-10);
 
 export async function PATCH(req: Request) {
   try {
@@ -26,14 +25,14 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const norm = normalizePhone(parsed.data.phone);
-    if (!norm) {
+    const norm = canonicalPhone(parsed.data.phone);
+    if (norm.length < 10) {
       return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
     }
 
     const lead = await Lead.findOne({
       clientId: client._id,
-      phone: { $regex: `${norm}$` },
+      phoneNormalized: norm,
     });
 
     if (!lead) {

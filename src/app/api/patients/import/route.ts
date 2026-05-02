@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db";
 import Lead from "@/models/Lead";
 import { getUser } from "@/middleware/auth";
 import { parseCsv } from "@/lib/csv";
+import { canonicalPhone } from "@/lib/phone";
 import { generateFeedbackToken } from "@/lib/feedback-token";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
@@ -15,8 +16,6 @@ const cleanString = (v: string | undefined): string | undefined => {
   const s = v.trim();
   return s.length > 0 ? s : undefined;
 };
-
-const normalizePhone = (phone: string) => phone.replace(/[^\d]/g, "").slice(-10);
 
 export async function POST(req: Request) {
   try {
@@ -82,7 +81,7 @@ export async function POST(req: Request) {
         continue;
       }
 
-      const phone = normalizePhone(phoneRaw);
+      const phone = canonicalPhone(phoneRaw);
       if (phone.length < 10) {
         skipped++;
         results.push({ row: rowNum, status: "skipped", reason: "invalid phone" });
@@ -104,7 +103,7 @@ export async function POST(req: Request) {
       try {
         const existing = await Lead.findOne({
           clientId: user.clientId,
-          phone: { $regex: `${phone}$` },
+          phoneNormalized: phone,
         });
 
         if (existing) {

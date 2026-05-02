@@ -2,11 +2,9 @@ import { connectDB } from "@/lib/db";
 import Appointment from "@/models/Appointment";
 import Lead from "@/models/Lead";
 import { getClientByWebhookKey } from "@/lib/webhook-auth";
+import { canonicalPhone } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
-
-const normalizePhone = (phone?: string | null) =>
-  phone ? phone.replace(/[^\d]/g, "").slice(-10) : "";
 
 // Cal.com booking payloads carry attendees on `payload.attendees` and may
 // duplicate the same fields in `payload.responses` (the booker form). We try
@@ -83,11 +81,11 @@ export async function POST(req: Request) {
 
     let leadId: unknown = null;
     if (phone) {
-      const norm = normalizePhone(phone);
-      if (norm) {
+      const norm = canonicalPhone(phone);
+      if (norm.length >= 10) {
         const lead = await Lead.findOne({
           clientId: client._id,
-          phone: { $regex: `${norm}$` },
+          phoneNormalized: norm,
         });
         if (lead) {
           leadId = lead._id;

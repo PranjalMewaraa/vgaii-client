@@ -134,6 +134,7 @@ const leadSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     phone: { type: String, required: true, index: true },
+    phoneNormalized: { type: String, index: true },
     email: String,
     age: Number,
     gender: String,
@@ -288,9 +289,19 @@ async function main() {
     password: passwordHash,
   }));
 
+  // Auto-compute phoneNormalized for each seeded lead so the cross-source
+  // matching (Cal.com webhook, status webhook, CSV import) works without
+  // needing to set it by hand in seed-data.js.
+  const canonicalPhone = (input) =>
+    typeof input === "string" ? input.replace(/[^\d]/g, "").slice(-10) : "";
+  const leads = seed.leads.map((lead) => ({
+    ...lead,
+    phoneNormalized: canonicalPhone(lead.phone),
+  }));
+
   await upsertMany(models.Client, seed.clients);
   await upsertMany(models.User, users, ["clientId"]);
-  await upsertMany(models.Lead, seed.leads, ["clientId", "createdBy"]);
+  await upsertMany(models.Lead, leads, ["clientId", "createdBy"]);
   await upsertMany(models.Appointment, seed.appointments, [
     "clientId",
     "leadId",
