@@ -21,7 +21,7 @@ type SourceRow = {
 };
 
 type ReportData = {
-  range: { from: string; to: string };
+  range: { from: string | null; to: string | null };
   funnel: Funnel;
   lost: number;
   totalLeads: number;
@@ -46,9 +46,10 @@ type ReportData = {
   timeSeries: Array<{ date: string; leads: number; appointments: number }>;
 };
 
-type Preset = "7d" | "30d" | "90d" | "ytd" | "custom";
+type Preset = "all" | "7d" | "30d" | "90d" | "ytd" | "custom";
 
 const PRESET_LABELS: Record<Preset, string> = {
+  all: "All time",
   "7d": "Last 7 days",
   "30d": "Last 30 days",
   "90d": "Last 90 days",
@@ -64,8 +65,15 @@ const FUNNEL_STAGES: Array<{ key: keyof Funnel; label: string; color: string }> 
   { key: "visited", label: "Visited", color: "bg-emerald-500" },
 ];
 
-const computeRange = (preset: Preset, fromCustom: string, toCustom: string) => {
+const computeRange = (
+  preset: Preset,
+  fromCustom: string,
+  toCustom: string,
+): { from: string | null; to: string | null } => {
   const now = new Date();
+  if (preset === "all") {
+    return { from: null, to: null };
+  }
   if (preset === "custom") {
     return {
       from: fromCustom ? new Date(fromCustom).toISOString() : null,
@@ -105,7 +113,7 @@ function ReportsPageInner() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [preset, setPreset] = useState<Preset>("30d");
+  const [preset, setPreset] = useState<Preset>("all");
   const [fromCustom, setFromCustom] = useState("");
   const [toCustom, setToCustom] = useState("");
 

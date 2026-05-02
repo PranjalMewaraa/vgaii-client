@@ -46,19 +46,27 @@ export async function GET(req: Request) {
     const fromParam = url.searchParams.get("from");
     const toParam = url.searchParams.get("to");
 
-    // Default range: last 30 days.
+    // No defaults: when neither param is provided, the report covers all
+    // time. Empty-window-on-first-load was confusing for clinics with
+    // little data in the last 30 days.
     const now = new Date();
-    const defaultFrom = new Date(now);
-    defaultFrom.setDate(defaultFrom.getDate() - 30);
-
-    const from = fromParam ? new Date(fromParam) : startOfDay(defaultFrom);
-    const to = toParam ? new Date(toParam) : now;
-    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+    const from = fromParam ? new Date(fromParam) : null;
+    const to = toParam ? new Date(toParam) : null;
+    if (
+      (from && Number.isNaN(from.getTime())) ||
+      (to && Number.isNaN(to.getTime()))
+    ) {
       return NextResponse.json({ error: "Invalid date" }, { status: 400 });
     }
 
     const baseFilter = withClientFilter(user);
-    const dateRange = { $gte: from, $lte: to };
+    const dateRange: Record<string, Date> = {};
+    if (from) dateRange.$gte = from;
+    if (to) dateRange.$lte = to;
+    // When neither bound is set, omit the date filter entirely so the
+    // aggregation pipeline returns all rows for this client.
+    const leadDateMatch = from || to ? { createdAt: dateRange } : {};
+    const apptDateMatch = from || to ? { date: dateRange } : {};
 
     const [
       leadsByStatus,
@@ -69,11 +77,11 @@ export async function GET(req: Request) {
       apptTimeSeries,
     ] = await Promise.all([
       Lead.aggregate([
-        { $match: { ...baseFilter, createdAt: dateRange } },
+        { $match: { ...baseFilter, ...leadDateMatch } },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
       Lead.aggregate([
-        { $match: { ...baseFilter, createdAt: dateRange } },
+        { $match: { ...baseFilter, ...leadDateMatch } },
         {
           $group: {
             _id: "$source",
@@ -107,17 +115,17 @@ export async function GET(req: Request) {
           $match: {
             ...baseFilter,
             outcomeRating: { $gte: 1, $lte: 5 },
-            createdAt: dateRange,
+            ...leadDateMatch,
           },
         },
         { $group: { _id: "$outcomeRating", count: { $sum: 1 } } },
       ]),
       Appointment.aggregate([
-        { $match: { ...baseFilter, date: dateRange } },
+        { $match: { ...baseFilter, ...apptDateMatch } },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
       Lead.aggregate([
-        { $match: { ...baseFilter, createdAt: dateRange } },
+        { $match: { ...baseFilter, ...leadDateMatch } },
         {
           $group: {
             _id: {
@@ -129,7 +137,7 @@ export async function GET(req: Request) {
         { $sort: { _id: 1 } },
       ]),
       Appointment.aggregate([
-        { $match: { ...baseFilter, date: dateRange } },
+        { $match: { ...baseFilter, ...apptDateMatch } },
         {
           $group: {
             _id: {
@@ -223,10 +231,29 @@ export async function GET(req: Request) {
       seriesByDay.set(r._id, cur);
     }
 
+    // Time-series axis bounds: prefer the explicit picker range. When the
+    // range is unbounded (all-time), use the actual data span — but cap
+    // each side at 90 days from "now" so zero-fill doesn't render years
+    // of empty bars when the clinic has only recent activity.
+    const dataKeys = Array.from(seriesByDay.keys()).sort();
+    const dataMin = dataKeys[0] ? new Date(dataKeys[0]) : null;
+    const dataMax = dataKeys.length
+      ? new Date(dataKeys[dataKeys.length - 1])
+      : null;
+
+    const ninetyAgo = new Date(now);
+    ninetyAgo.setDate(ninetyAgo.getDate() - 90);
+
+    const seriesFrom =
+      from ?? (dataMin && dataMin > ninetyAgo ? dataMin : ninetyAgo);
+    const seriesTo = to ?? dataMax ?? now;
+
     const timeSeries: Array<{ date: string; leads: number; appointments: number }> = [];
-    const cursor = startOfDay(from);
-    const end = startOfDay(to);
-    while (cursor <= end) {
+    const cursor = startOfDay(seriesFrom);
+    const end = startOfDay(seriesTo);
+    // Hard safety cap: never produce more than 366 bars regardless.
+    let safety = 366;
+    while (cursor <= end && safety-- > 0) {
       const key = dayKey(cursor);
       const v = seriesByDay.get(key) ?? { leads: 0, appointments: 0 };
       timeSeries.push({ date: key, leads: v.leads, appointments: v.appointments });
@@ -234,7 +261,10 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({
-      range: { from: from.toISOString(), to: to.toISOString() },
+      range: {
+        from: from ? from.toISOString() : null,
+        to: to ? to.toISOString() : null,
+      },
       funnel,
       lost: lostCount,
       totalLeads,
