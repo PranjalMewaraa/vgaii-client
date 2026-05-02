@@ -51,11 +51,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <div className="flex">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <div className="flex min-h-screen flex-1 flex-col">
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <TopBar onMenuClick={() => setSidebarOpen(true)} />
           <ImpersonationBanner />
 
-          <main className="flex-1 px-6 py-8 md:px-8">{children}</main>
+          <main className="min-w-0 flex-1 px-6 py-8 md:px-8">{children}</main>
 
           <footer className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4 text-xs text-slate-500 md:px-8">
             <span>© {YEAR} VGAII. All rights reserved.</span>
