@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
+import AttachmentsSection from "@/components/AttachmentsSection";
 
 type Appointment = {
   _id: string;
@@ -592,6 +593,7 @@ function AppointmentsPageInner() {
                           className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                         />
                       </label>
+                      <AttachmentsSection appointmentId={a._id} canEdit />
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
@@ -611,40 +613,49 @@ function AppointmentsPageInner() {
                       </div>
                     </div>
                   ) : (
-                    isExpanded &&
-                    (hasDetails ? (
-                      <div className="mt-3 space-y-2 pl-6 text-sm">
-                        {a.diagnosis && (
-                          <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                              Diagnosis
-                            </p>
-                            <p className="text-slate-700 whitespace-pre-line">
-                              {a.diagnosis}
-                            </p>
+                    isExpanded && (
+                      <div className="mt-3 pl-6">
+                        {hasDetails ? (
+                          <div className="space-y-2 text-sm">
+                            {a.diagnosis && (
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                  Diagnosis
+                                </p>
+                                <p className="text-slate-700 whitespace-pre-line">
+                                  {a.diagnosis}
+                                </p>
+                              </div>
+                            )}
+                            {a.medicines && a.medicines.length > 0 && (
+                              <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                  Medicines
+                                </p>
+                                <ul className="mt-1 list-disc pl-5 text-slate-700">
+                                  {a.medicines.map((m, i) => (
+                                    <li key={i}>{m}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {a.notes && (
+                              <p className="text-sm text-slate-600">
+                                {a.notes}
+                              </p>
+                            )}
                           </div>
+                        ) : (
+                          <p className="text-xs italic text-slate-400">
+                            No diagnosis, medicines, or notes recorded yet.
+                          </p>
                         )}
-                        {a.medicines && a.medicines.length > 0 && (
-                          <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                              Medicines
-                            </p>
-                            <ul className="mt-1 list-disc pl-5 text-slate-700">
-                              {a.medicines.map((m, i) => (
-                                <li key={i}>{m}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {a.notes && (
-                          <p className="text-sm text-slate-600">{a.notes}</p>
-                        )}
+                        <AttachmentsSection
+                          appointmentId={a._id}
+                          canEdit={false}
+                        />
                       </div>
-                    ) : (
-                      <p className="mt-3 pl-6 text-xs italic text-slate-400">
-                        No diagnosis, medicines, or notes recorded yet.
-                      </p>
-                    ))
+                    )
                   )}
                 </li>
               );
