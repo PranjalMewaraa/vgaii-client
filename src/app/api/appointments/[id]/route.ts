@@ -54,6 +54,45 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (parsed.data.age !== undefined) appt.age = parsed.data.age;
     if (parsed.data.gender !== undefined) appt.gender = parsed.data.gender;
 
+    // Manual link to an existing lead (used to repair orphan appointments
+    // when the booking-source didn't carry a matchable phone). Verify the
+    // target lead lives in the same client.
+    if (parsed.data.leadId !== undefined) {
+      const previousLeadId = appt.leadId;
+      if (parsed.data.leadId === null) {
+        appt.leadId = undefined;
+      } else {
+        const target = await Lead.findOne({
+          _id: parsed.data.leadId,
+          clientId: user.clientId,
+        }).select("_id status");
+        if (!target) {
+          return NextResponse.json(
+            { error: "Patient not in this client" },
+            { status: 400 },
+          );
+        }
+        appt.leadId = target._id;
+        // If we're linking for the first time and the lead hasn't reached
+        // the appointment-booked stage, bump it. Don't demote leads that
+        // are already visited or lost.
+        if (
+          !previousLeadId &&
+          target.status !== "appointment_booked" &&
+          target.status !== "visited" &&
+          target.status !== "lost"
+        ) {
+          await Lead.updateOne(
+            { _id: target._id },
+            {
+              status: "appointment_booked",
+              statusUpdatedAt: new Date(),
+            },
+          );
+        }
+      }
+    }
+
     await appt.save();
 
     // Promote the linked lead to "visited" the first time this appointment

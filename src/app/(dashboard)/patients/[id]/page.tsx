@@ -145,34 +145,7 @@ function PatientDetailPageInner({
   }
 
   if (data.kind === "direct") {
-    const a = data.appointment;
-    return (
-      <div className="space-y-6">
-        <Link
-          href="/patients"
-          className="text-sm text-indigo-600 hover:underline"
-        >
-          ← Back to patients
-        </Link>
-        <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
-          <div className="mb-3 flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900">
-              {a.name || "Unnamed"}
-            </h1>
-            <StatusPill status="direct" />
-          </div>
-          <p className="text-sm text-slate-600">{a.phone}</p>
-          <p className="mt-4 text-sm text-slate-500">
-            Booked direct via {a.source || "external"} — no matching lead.
-          </p>
-          {a.date && (
-            <p className="mt-2 font-medium text-slate-800">
-              {new Date(a.date).toLocaleString()}
-            </p>
-          )}
-        </div>
-      </div>
-    );
+    return <DirectAppointmentView appointment={data.appointment} router={router} />;
   }
 
   const { lead, appointments, feedbacks } = data;
@@ -732,6 +705,165 @@ function PatientDetailPageInner({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+type LeadSearchHit = {
+  _id: string;
+  name?: string;
+  phone?: string;
+  status?: string;
+};
+
+function DirectAppointmentView({
+  appointment,
+  router,
+}: {
+  appointment: Appointment;
+  router: ReturnType<typeof useRouter>;
+}) {
+  const a = appointment;
+  const [search, setSearch] = useState(a.phone || a.name || "");
+  const [results, setResults] = useState<LeadSearchHit[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [linking, setLinking] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Debounced search across all leads (regardless of status). All setState
+  // happens inside the (async) setTimeout callback so the lint rule about
+  // synchronous setState in an effect stays happy.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const trimmed = search.trim();
+      if (!trimmed) {
+        setResults([]);
+        return;
+      }
+      setSearching(true);
+      const url = new URL("/api/leads", window.location.origin);
+      url.searchParams.set("search", trimmed);
+      url.searchParams.set("all", "1");
+      fetch(url.toString(), { headers: authHeaders() })
+        .then(res => res.json())
+        .then(d => setResults(d.leads ?? []))
+        .finally(() => setSearching(false));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const link = async (leadId: string) => {
+    setLinking(leadId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/appointments/${a._id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ leadId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Link failed");
+        return;
+      }
+      // Linked successfully — the lead is now this appointment's home.
+      // Send the user to that lead's detail page.
+      router.push(`/patients/${leadId}`);
+    } catch {
+      setError("Network error");
+    } finally {
+      setLinking(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Link href="/patients" className="text-sm text-indigo-600 hover:underline">
+        ← Back to patients
+      </Link>
+
+      <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
+        <div className="mb-3 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-slate-900">
+            {a.name || "Unnamed"}
+          </h1>
+          <StatusPill status="direct" />
+        </div>
+        <p className="text-sm text-slate-600">{a.phone || "No phone"}</p>
+        <p className="mt-4 text-sm text-slate-500">
+          Booked via {a.source || "external"} — no patient record matched the
+          contact info, so this appointment is currently orphan. Link it below
+          to add it to the right patient&apos;s medical history.
+        </p>
+        {a.date && (
+          <p className="mt-2 font-medium text-slate-800">
+            {new Date(a.date).toLocaleString()}
+          </p>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-6 py-4">
+          <h2 className="text-base font-semibold text-slate-900">
+            Link to existing patient
+          </h2>
+          <p className="text-xs text-slate-500">
+            Search by name or phone. The appointment moves into that
+            patient&apos;s medical history, and the lead is bumped to
+            <code className="mx-1 rounded bg-slate-100 px-1">
+              appointment_booked
+            </code>
+            if it isn&apos;t already.
+          </p>
+        </div>
+        <div className="px-6 py-5">
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Name or phone…"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+          {error && (
+            <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+          {searching && (
+            <p className="mt-3 text-xs text-slate-500">Searching…</p>
+          )}
+          {!searching && results.length === 0 && search.trim() && (
+            <p className="mt-3 text-xs text-slate-500">No matches.</p>
+          )}
+          {results.length > 0 && (
+            <ul className="mt-3 divide-y divide-slate-200 rounded-lg border border-slate-200">
+              {results.map(r => (
+                <li
+                  key={r._id}
+                  className="flex items-center justify-between gap-3 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-900">
+                      {r.name || "—"}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {r.phone}
+                      {r.status ? ` · ${r.status.replace(/_/g, " ")}` : ""}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => link(r._id)}
+                    disabled={linking === r._id}
+                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  >
+                    {linking === r._id ? "Linking…" : "Link"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

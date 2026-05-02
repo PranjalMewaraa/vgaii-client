@@ -18,6 +18,11 @@ export const appointmentUpdateSchema = z
     email: z.string().max(120).optional(),
     age: z.number().int().min(0).max(150).optional(),
     gender: z.string().max(40).optional(),
+    leadId: z
+      .string()
+      .regex(/^[a-fA-F0-9]{24}$/)
+      .nullable()
+      .optional(),
   })
   .refine(d => Object.values(d).some(v => v !== undefined), {
     message: "At least one field is required",
