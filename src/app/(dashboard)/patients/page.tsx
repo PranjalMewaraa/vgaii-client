@@ -392,20 +392,11 @@ function PatientsPageInner() {
               <tbody>
                 {visible.map(p => {
                   const inactive = isInactive(p.lastAppointmentDate);
-                  const clickable = p.kind === "lead";
                   return (
                     <tr
                       key={`${p.kind}-${p.id}`}
-                      onClick={
-                        clickable
-                          ? () => router.push(`/patients/${p.id}`)
-                          : undefined
-                      }
-                      className={`border-t border-slate-200 ${
-                        clickable
-                          ? "cursor-pointer hover:bg-slate-50"
-                          : ""
-                      }`}
+                      onClick={() => router.push(`/patients/${p.id}`)}
+                      className="cursor-pointer border-t border-slate-200 hover:bg-slate-50"
                     >
                       <td className="px-6 py-4 font-medium text-slate-900">
                         {p.name}

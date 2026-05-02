@@ -133,12 +133,17 @@ export default function BookingEmbed({
               "metadata[phone]": phone,
             },
           });
-          window.Cal("on", {
-            action: "bookingSuccessfulV2",
-            callback: () => {
-              if (!cancelled) onScheduled?.();
-            },
-          });
+
+          // Register listeners on the namespace-scoped instance so we don't
+          // miss events. Subscribe to both event names — Cal.com kept the
+          // legacy `bookingSuccessful` alongside the new `bookingSuccessfulV2`,
+          // and which one fires depends on the deployment / event-type
+          // configuration.
+          const handle = () => {
+            if (!cancelled) onScheduled?.();
+          };
+          ns("on", { action: "bookingSuccessfulV2", callback: handle });
+          ns("on", { action: "bookingSuccessful", callback: handle });
         } catch (err) {
           console.error("[BookingEmbed] init failed:", err);
           setRuntimeError(

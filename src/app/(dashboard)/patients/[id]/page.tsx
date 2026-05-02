@@ -662,7 +662,12 @@ function PatientDetailPageInner({
       {bookingOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-          onClick={() => setBookingOpen(false)}
+          onClick={() => {
+            setBookingOpen(false);
+            // Defensive refetch: if postMessage was missed, closing still
+            // gives us a chance to pick up the new appointment.
+            load();
+          }}
         >
           <div
             onClick={e => e.stopPropagation()}
@@ -683,7 +688,10 @@ function PatientDetailPageInner({
               </div>
               <button
                 type="button"
-                onClick={() => setBookingOpen(false)}
+                onClick={() => {
+                  setBookingOpen(false);
+                  load();
+                }}
                 className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-500 hover:bg-slate-50"
                 aria-label="Close"
               >
@@ -710,7 +718,12 @@ function PatientDetailPageInner({
                   email={lead.email}
                   phone={lead.phone}
                   onScheduled={() => {
+                    // Cal.com's webhook usually arrives within a second of
+                    // the bookingSuccessful event, but not always. Refetch
+                    // now AND once more after a short delay so we don't
+                    // miss the appointment write.
                     load();
+                    setTimeout(() => load(), 1500);
                     setBookingOpen(false);
                   }}
                 />
