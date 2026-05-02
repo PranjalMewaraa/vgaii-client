@@ -21,19 +21,35 @@ const optionalHostname = z
     message: "Enter a hostname like example.com (no http://, no path).",
   });
 
+// CLIENT_ADMIN-facing settings: branding only (slug + custom domain).
+// Integrations (googlePlaceId, bookingUrl) and security (webhookKey) are
+// platform-managed and live on the super-admin clients page.
 // `null` clears a field; omitting it leaves the existing value untouched.
 export const clientSettingsSchema = z
   .object({
+    profileSlug: optionalSlug.nullable().optional(),
+    customDomain: optionalHostname.nullable().optional(),
+  })
+  .refine(
+    d => d.profileSlug !== undefined || d.customDomain !== undefined,
+    { message: "At least one field is required" },
+  );
+
+export const adminClientUpdateSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120).optional(),
+    plan: z.enum(["basic", "pro"]).optional(),
+    subscriptionStatus: z.enum(["active", "trial", "expired"]).optional(),
+    renewalDate: z
+      .string()
+      .nullable()
+      .refine(s => s === null || !Number.isNaN(Date.parse(s)), "Invalid date")
+      .optional(),
     googlePlaceId: z.string().trim().max(500).nullable().optional(),
     bookingUrl: z.string().trim().max(500).nullable().optional(),
     profileSlug: optionalSlug.nullable().optional(),
     customDomain: optionalHostname.nullable().optional(),
   })
-  .refine(
-    d =>
-      d.googlePlaceId !== undefined ||
-      d.bookingUrl !== undefined ||
-      d.profileSlug !== undefined ||
-      d.customDomain !== undefined,
-    { message: "At least one field is required" },
-  );
+  .refine(d => Object.keys(d).length > 0, {
+    message: "At least one field is required",
+  });

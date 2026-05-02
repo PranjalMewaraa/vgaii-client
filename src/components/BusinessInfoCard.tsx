@@ -81,9 +81,9 @@ export default function BusinessInfoCard({
           Connect your Google Business profile
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Add your <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">googlePlaceId</code>{" "}
-          to your client record, then refresh to pull your business listing into
-          the dashboard.
+          Your platform admin needs to set your Google Place ID first.
+          Once that&apos;s in place, click refresh to pull your business
+          listing into the dashboard.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button

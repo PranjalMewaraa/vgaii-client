@@ -42,14 +42,21 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
 };
 
 const TRANSITION_LABELS: Record<LeadStatus, string> = {
-  new: "Mark new",
+  // The button label is keyed by the *target* status. "new" is special:
+  // when shown as a transition option (only reachable from "contacted"),
+  // it represents a retry, so the label is more user-friendly than
+  // "Mark new".
+  new: "Retry contact",
   contacted: "Mark contacted",
   qualified: "Mark qualified",
   appointment_booked: "Mark appointment booked",
   visited: "Mark visited",
-  lost: "Mark lost",
+  lost: "—",
 };
 
+// Terminal = no further actions available to the user. "lost" remains in
+// this list so historical lost leads (pre-policy-change) still render the
+// terminal-state message instead of an empty action row.
 const isTerminal = (s: LeadStatus | undefined) =>
   s === "visited" || s === "lost";
 
@@ -243,7 +250,10 @@ function LeadDetailPageInner({
               )}
 
               {allowed.map(next => {
-                const danger = next === "lost";
+                // "Retry contact" (contacted → new) is a soft, secondary
+                // action — render with a quieter style than the primary
+                // forward-progression button.
+                const isRetry = status === "contacted" && next === "new";
                 return (
                   <button
                     key={next}
@@ -251,8 +261,8 @@ function LeadDetailPageInner({
                     onClick={() => setStatus(next)}
                     disabled={busy}
                     className={
-                      danger
-                        ? "rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                      isRetry
+                        ? "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                         : "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
                     }
                   >

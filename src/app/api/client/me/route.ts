@@ -4,6 +4,12 @@ import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
+// Returns only the fields a CLIENT_ADMIN should see about their own tenant.
+// Platform-managed values (googlePlaceId, bookingUrl, webhookKey) and the
+// webhook integration URLs are intentionally excluded — they live on the
+// super-admin clients page only. The dashboard, public profile, and
+// patient/lead detail pages still read googlePlaceId / bookingUrl through
+// dedicated endpoints that don't expose them in plaintext to the user.
 export async function GET(req: Request) {
   try {
     await connectDB();
@@ -24,8 +30,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    const origin = req.headers.get("origin") ?? new URL(req.url).origin;
-
     return NextResponse.json({
       client: {
         id: client._id,
@@ -33,20 +37,10 @@ export async function GET(req: Request) {
         plan: client.plan,
         subscriptionStatus: client.subscriptionStatus,
         renewalDate: client.renewalDate,
-        googlePlaceId: client.googlePlaceId,
-        bookingUrl: client.bookingUrl,
         profileSlug: client.profileSlug,
         customDomain: client.customDomain,
-        webhookKey: client.webhookKey,
-      },
-      integrations: {
-        leadWebhookUrl: `${origin}/api/webhooks/leads`,
-        leadStatusWebhookUrl: `${origin}/api/webhooks/leads/status`,
-        bookingWebhookUrl: `${origin}/api/webhooks/booking`,
-        feedbackUrlPattern: `${origin}/feedback/<token>`,
       },
     });
-
   } catch (err: unknown) {
     return NextResponse.json(
       { error: getErrorMessage(err) },

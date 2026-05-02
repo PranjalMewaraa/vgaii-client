@@ -459,24 +459,17 @@ function PatientDetailPageInner({
               </p>
             ) : (
               <div className="mt-3 flex flex-wrap gap-2">
-                {allowed.map(next => {
-                  const danger = next === "lost";
-                  return (
-                    <button
-                      key={next}
-                      type="button"
-                      onClick={() => setStatus(next)}
-                      disabled={busy}
-                      className={
-                        danger
-                          ? "rounded-md border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
-                          : "rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-white disabled:opacity-60"
-                      }
-                    >
-                      {next.replace(/_/g, " ")}
-                    </button>
-                  );
-                })}
+                {allowed.map(next => (
+                  <button
+                    key={next}
+                    type="button"
+                    onClick={() => setStatus(next)}
+                    disabled={busy}
+                    className="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-white disabled:opacity-60"
+                  >
+                    {next.replace(/_/g, " ")}
+                  </button>
+                ))}
               </div>
             )}
             {transitionError && (

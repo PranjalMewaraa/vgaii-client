@@ -150,20 +150,9 @@ function PatientsPageInner() {
     });
   };
 
-  const runBulk = async (
-    action: "mark_lost" | "set_source",
-    value?: string,
-  ) => {
+  const runBulk = async (action: "set_source", value?: string) => {
     const ids = Array.from(effectiveSelected);
     if (ids.length === 0) return;
-    if (
-      action === "mark_lost" &&
-      !confirm(
-        `Mark ${ids.length} patient(s) as lost? Already-visited records won't change.`,
-      )
-    ) {
-      return;
-    }
     setBulkBusy(true);
     setBulkMsg(null);
     try {
@@ -178,9 +167,7 @@ function PatientsPageInner() {
           typeof data.error === "string" ? data.error : "Bulk action failed",
         );
       } else {
-        setBulkMsg(
-          `${action === "mark_lost" ? "Marked lost" : "Re-tagged"}: ${data.modified} of ${data.requested}`,
-        );
+        setBulkMsg(`Re-tagged: ${data.modified} of ${data.requested}`);
         setSelectedIds(new Set());
         setShowSetSource(false);
         setNewSourceValue("");
@@ -497,14 +484,6 @@ function PatientsPageInner() {
               className="rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
             >
               Set source
-            </button>
-            <button
-              type="button"
-              onClick={() => runBulk("mark_lost")}
-              disabled={bulkBusy}
-              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
-            >
-              Mark lost
             </button>
           </div>
         </div>

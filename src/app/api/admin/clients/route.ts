@@ -47,6 +47,8 @@ export async function POST(req: Request) {
         ? new Date(parsed.data.renewalDate)
         : undefined,
       plan: parsed.data.plan ?? "basic",
+      googlePlaceId: parsed.data.googlePlaceId?.trim() || undefined,
+      bookingUrl: parsed.data.bookingUrl?.trim() || undefined,
       webhookKey: randomBytes(16).toString("hex"),
     });
 
@@ -106,7 +108,7 @@ export async function GET(req: Request) {
 
     const clients = await Client.find()
       .select(
-        "_id name subscriptionStatus plan renewalDate profileSlug customDomain createdAt",
+        "_id name subscriptionStatus plan renewalDate profileSlug customDomain googlePlaceId bookingUrl webhookKey createdAt",
       )
       .sort({ createdAt: -1 })
       .lean();

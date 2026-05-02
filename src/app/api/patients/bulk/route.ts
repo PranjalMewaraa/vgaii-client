@@ -9,7 +9,7 @@ import { z } from "zod";
 
 const bulkSchema = z.object({
   ids: z.array(z.string().min(1)).min(1).max(500),
-  action: z.enum(["mark_lost", "set_source"]),
+  action: z.enum(["set_source"]),
   value: z.string().trim().max(120).optional(),
 });
 
@@ -33,32 +33,6 @@ export async function POST(req: Request) {
 
     const filter = withClientFilter(user);
     const baseQuery = { ...filter, _id: { $in: parsed.data.ids } };
-
-    if (parsed.data.action === "mark_lost") {
-      // Only move leads that aren't already terminal — visited/lost stay
-      // where they are. The state-machine doesn't allow visited → lost.
-      const result = await Lead.updateMany(
-        { ...baseQuery, status: { $nin: ["visited", "lost"] } },
-        { status: "lost", statusUpdatedAt: new Date() },
-      );
-
-      await logAudit(req, { actorType: "user", user }, {
-        action: "patients.bulk.mark_lost",
-        entityType: "Lead",
-        summary: `Bulk marked ${result.modifiedCount} of ${parsed.data.ids.length} as lost`,
-        metadata: {
-          requested: parsed.data.ids.length,
-          modified: result.modifiedCount,
-          ids: parsed.data.ids,
-        },
-      });
-
-      return NextResponse.json({
-        action: "mark_lost",
-        requested: parsed.data.ids.length,
-        modified: result.modifiedCount,
-      });
-    }
 
     if (parsed.data.action === "set_source") {
       const value = parsed.data.value?.trim();

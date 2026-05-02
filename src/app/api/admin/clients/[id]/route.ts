@@ -1,10 +1,12 @@
 import { connectDB } from "@/lib/db";
 import Client from "@/models/Client";
 import { getUser } from "@/middleware/auth";
-import { clientSettingsSchema } from "@/lib/validators/client";
+import { adminClientUpdateSchema } from "@/lib/validators/client";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
+
+type RouteContext = { params: Promise<{ id: string }> };
 
 const cleanString = (v: string | null | undefined): string | undefined => {
   if (v === null || v === undefined) return undefined;
@@ -12,49 +14,59 @@ const cleanString = (v: string | null | undefined): string | undefined => {
   return trimmed === "" ? "" : trimmed;
 };
 
-// CLIENT_ADMIN can self-serve only branding-related settings (their public
-// slug + custom domain). Integrations like googlePlaceId and bookingUrl,
-// plus webhook secrets, are platform-managed via the super-admin clients
-// page.
-export async function PATCH(req: Request) {
+// Super-admin-only client patch. Used to set integration details
+// (googlePlaceId, bookingUrl) at any time after creation, plus rename,
+// plan, subscription, and the existing branding fields. CLIENT_ADMIN can
+// only modify branding via /api/client/settings.
+export async function PATCH(req: Request, ctx: RouteContext) {
   try {
     await connectDB();
     const user = getUser(req);
 
-    if (user.role !== "CLIENT_ADMIN") {
+    if (user.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    if (!user.clientId) {
-      return NextResponse.json(
-        { error: "No client context" },
-        { status: 400 },
-      );
-    }
+
+    const { id } = await ctx.params;
 
     const body = await req.json();
-    const parsed = clientSettingsSchema.safeParse(body);
+    const parsed = adminClientUpdateSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const client = await Client.findById(user.clientId);
+    const client = await Client.findById(id);
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    if (parsed.data.profileSlug !== undefined) {
-      const slug = cleanString(parsed.data.profileSlug);
+    const data = parsed.data;
+    if (data.name !== undefined) client.name = data.name;
+    if (data.plan !== undefined) client.plan = data.plan;
+    if (data.subscriptionStatus !== undefined) {
+      client.subscriptionStatus = data.subscriptionStatus;
+    }
+    if (data.renewalDate !== undefined) {
+      client.renewalDate = data.renewalDate ? new Date(data.renewalDate) : undefined;
+    }
+    if (data.googlePlaceId !== undefined) {
+      client.googlePlaceId = data.googlePlaceId ?? undefined;
+    }
+    if (data.bookingUrl !== undefined) {
+      client.bookingUrl = data.bookingUrl ?? undefined;
+    }
+    if (data.profileSlug !== undefined) {
+      const slug = cleanString(data.profileSlug);
       client.profileSlug = slug ? slug : undefined;
     }
-    if (parsed.data.customDomain !== undefined) {
-      const host = cleanString(parsed.data.customDomain);
+    if (data.customDomain !== undefined) {
+      const host = cleanString(data.customDomain);
       client.customDomain = host ? host : undefined;
     }
 
     try {
       await client.save();
     } catch (err: unknown) {
-      // Mongo duplicate-key error code 11000.
       if (
         typeof err === "object" &&
         err !== null &&
@@ -72,24 +84,28 @@ export async function PATCH(req: Request) {
       throw err;
     }
 
-    const changed = Object.keys(parsed.data).filter(
-      k => parsed.data[k as keyof typeof parsed.data] !== undefined,
-    );
+    const changed = Object.keys(data);
     await logAudit(req, { actorType: "user", user }, {
-      action: "client.settings.updated",
+      action: "admin.client.updated",
       entityType: "Client",
       entityId: client._id.toString(),
       entityLabel: client.name,
-      summary: `Settings updated: ${changed.join(", ") || "no fields"}`,
+      summary: `Super-admin updated: ${changed.join(", ") || "no fields"}`,
       metadata: { fields: changed },
     });
 
     return NextResponse.json({
       client: {
-        id: client._id,
+        _id: client._id,
         name: client.name,
+        plan: client.plan,
+        subscriptionStatus: client.subscriptionStatus,
+        renewalDate: client.renewalDate,
+        googlePlaceId: client.googlePlaceId,
+        bookingUrl: client.bookingUrl,
         profileSlug: client.profileSlug,
         customDomain: client.customDomain,
+        webhookKey: client.webhookKey,
       },
     });
   } catch (err: unknown) {

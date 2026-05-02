@@ -8,18 +8,8 @@ type Settings = {
   name?: string;
   plan?: string;
   subscriptionStatus?: string;
-  googlePlaceId?: string;
-  bookingUrl?: string;
   profileSlug?: string;
   customDomain?: string;
-  webhookKey?: string;
-};
-
-type Integrations = {
-  leadWebhookUrl?: string;
-  leadStatusWebhookUrl?: string;
-  bookingWebhookUrl?: string;
-  feedbackUrlPattern?: string;
 };
 
 const authHeaders = () => ({
@@ -39,11 +29,8 @@ export default function SettingsPage() {
 
 function SettingsPageInner() {
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [integrations, setIntegrations] = useState<Integrations | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [placeId, setPlaceId] = useState("");
-  const [bookingUrl, setBookingUrl] = useState("");
   const [profileSlug, setProfileSlug] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [saving, setSaving] = useState(false);
@@ -56,9 +43,6 @@ function SettingsPageInner() {
       .then(data => {
         if (data.client) {
           setSettings(data.client);
-          setIntegrations(data.integrations ?? null);
-          setPlaceId(data.client.googlePlaceId ?? "");
-          setBookingUrl(data.client.bookingUrl ?? "");
           setProfileSlug(data.client.profileSlug ?? "");
           setCustomDomain(data.client.customDomain ?? "");
         }
@@ -75,8 +59,6 @@ function SettingsPageInner() {
         method: "PATCH",
         headers: authHeaders(),
         body: JSON.stringify({
-          googlePlaceId: placeId || null,
-          bookingUrl: bookingUrl || null,
           profileSlug: profileSlug || null,
           customDomain: customDomain || null,
         }),
@@ -109,7 +91,9 @@ function SettingsPageInner() {
       <header>
         <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
         <p className="text-sm text-slate-500">
-          Configure integrations for {settings.name}.
+          Branding for {settings.name}. Integrations and webhooks are
+          managed by the platform team — contact them if you need changes
+          to your Google listing or Cal.com link.
         </p>
       </header>
 
@@ -118,48 +102,13 @@ function SettingsPageInner() {
         className="rounded-xl border border-slate-200 bg-white"
       >
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
-            Integrations
-          </h2>
+          <h2 className="text-base font-semibold text-slate-900">Branding</h2>
           <p className="text-xs text-slate-500">
-            These power the lead funnel and reputation card.
+            Where patients land when they search for you online.
           </p>
         </div>
 
         <div className="space-y-5 px-6 py-5">
-          <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Google Place ID
-            </span>
-            <input
-              value={placeId}
-              onChange={e => setPlaceId(e.target.value)}
-              placeholder="ChIJ…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              Used to pull your Google Business listing (rating + review count).
-            </p>
-          </label>
-
-          <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Cal.com booking URL
-            </span>
-            <input
-              type="url"
-              value={bookingUrl}
-              onChange={e => setBookingUrl(e.target.value)}
-              placeholder="https://cal.com/your-account/your-event"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              Embedded on the patient detail page when you click <em>Schedule
-              appointment</em>. Lead status auto-advances once the customer
-              books.
-            </p>
-          </label>
-
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Profile slug
@@ -220,197 +169,14 @@ function SettingsPageInner() {
         )}
       </form>
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
-            Webhook key &amp; URLs
-          </h2>
-          <p className="text-xs text-slate-500">
-            One secret per client. Every webhook below identifies your client
-            by this key — sent either as the{" "}
-            <code className="rounded bg-slate-100 px-1">x-webhook-key</code>{" "}
-            header (preferred) or as a{" "}
-            <code className="rounded bg-slate-100 px-1">?key=…</code> query
-            parameter (works with any tool, including Cal.com webhooks).
-            Treat it like a password.
-          </p>
-        </div>
-
-        <div className="space-y-5 px-6 py-5">
-          <CopyRow
-            label="Webhook key"
-            value={settings.webhookKey || "(not set)"}
-            copyable={!!settings.webhookKey}
-          />
-
-          {integrations?.leadWebhookUrl && settings.webhookKey && (
-            <WebhookRow
-              method="POST"
-              label="Lead capture"
-              hint="Used by your landing-page backend to create new leads."
-              url={integrations.leadWebhookUrl}
-              webhookKey={settings.webhookKey}
-            />
-          )}
-          {integrations?.leadStatusWebhookUrl && settings.webhookKey && (
-            <WebhookRow
-              method="PATCH"
-              label="Lead status update"
-              hint="Used by external automations to advance a lead through the funnel."
-              url={integrations.leadStatusWebhookUrl}
-              webhookKey={settings.webhookKey}
-            />
-          )}
-          {integrations?.bookingWebhookUrl && settings.webhookKey && (
-            <WebhookRow
-              method="POST"
-              label="Cal.com webhook"
-              hint={
-                "In Cal.com → Settings → Developer → Webhooks, add a webhook subscribed to BOOKING_CREATED with the URL below. Either header or query form works."
-              }
-              url={integrations.bookingWebhookUrl}
-              webhookKey={settings.webhookKey}
-              defaultMode="query"
-            />
-          )}
-          {integrations?.feedbackUrlPattern && (
-            <CopyRow
-              label="Customer feedback URL pattern"
-              value={integrations.feedbackUrlPattern}
-              copyable={false}
-              hint="The token portion is generated per-lead and returned by the lead-capture webhook response."
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CopyRow({
-  label,
-  value,
-  copyable = true,
-  hint,
-}: {
-  label: string;
-  value: string;
-  copyable?: boolean;
-  hint?: string;
-}) {
-  return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-        {label}
-      </p>
-      <div className="mt-1 flex items-stretch gap-2">
-        <code className="flex-1 truncate rounded-lg bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
-          {value}
-        </code>
-        {copyable && <CopyButton value={value} />}
-      </div>
-      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
-    </div>
-  );
-}
-
-function WebhookRow({
-  method,
-  label,
-  hint,
-  url,
-  webhookKey,
-  defaultMode = "header",
-}: {
-  method: "POST" | "PATCH";
-  label: string;
-  hint?: string;
-  url: string;
-  webhookKey: string;
-  defaultMode?: "header" | "query";
-}) {
-  const [mode, setMode] = useState<"header" | "query">(defaultMode);
-  const queryUrl = `${url}?key=${webhookKey}`;
-  const display = mode === "query" ? queryUrl : url;
-
-  return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            {label}
-          </p>
-          {hint && <p className="text-xs text-slate-500">{hint}</p>}
-        </div>
-        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-[11px]">
-          <button
-            type="button"
-            onClick={() => setMode("header")}
-            className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
-              mode === "header"
-                ? "bg-indigo-600 text-white"
-                : "text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            Header
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("query")}
-            className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
-              mode === "query"
-                ? "bg-indigo-600 text-white"
-                : "text-slate-600 hover:bg-slate-50"
-            }`}
-          >
-            Query
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-3 flex items-stretch gap-2">
-        <code className="flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs text-slate-700">
-          <span className="text-indigo-600">{method}</span> {display}
-        </code>
-        <CopyButton value={display} />
-      </div>
-
-      {mode === "header" && (
-        <p className="mt-2 text-xs text-slate-500">
-          Send header{" "}
-          <code className="rounded bg-slate-100 px-1">
-            x-webhook-key: {webhookKey}
-          </code>
+      <div className="rounded-xl border border-slate-200 bg-slate-50 px-6 py-4 text-sm text-slate-600">
+        <p className="font-semibold text-slate-900">Managed by the platform</p>
+        <p className="mt-1">
+          Google Place ID, Cal.com booking link, and webhook credentials are
+          configured by your platform admin. If you need to update your
+          Google listing or change your booking link, reach out to support.
         </p>
-      )}
-      {mode === "query" && (
-        <p className="mt-2 text-xs text-slate-500">
-          The key is in the URL — anyone with this URL can post leads, so
-          don&apos;t share it publicly.
-        </p>
-      )}
+      </div>
     </div>
-  );
-}
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // ignore
-    }
-  };
-  return (
-    <button
-      type="button"
-      onClick={copy}
-      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
-    >
-      {copied ? "Copied" : "Copy"}
-    </button>
   );
 }
