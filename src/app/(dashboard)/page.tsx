@@ -4,6 +4,7 @@ import StatCard from "@/components/StatCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import BusinessInfoCard, { BusinessInfo } from "@/components/BusinessInfoCard";
 import AdminDashboard from "@/components/AdminDashboard";
+import ReportsPanel from "@/components/ReportsPanel";
 import { useStoredUser } from "@/lib/client-auth";
 import { useEffect, useState } from "react";
 
@@ -69,6 +70,8 @@ export default function Dashboard() {
         status={data.subscription}
         renewalDate={data.renewalDate}
       />
+
+      {user?.role === "CLIENT_ADMIN" && <ReportsPanel />}
     </div>
   );
 }

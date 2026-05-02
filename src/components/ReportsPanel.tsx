@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import RoleGuard from "@/components/RoleGuard";
 
 type Funnel = {
   new: number;
@@ -101,15 +100,7 @@ const authHeaders = () => ({
 const pct = (n: number, d: number) =>
   d === 0 ? "—" : `${Math.round((n / d) * 100)}%`;
 
-export default function ReportsPage() {
-  return (
-    <RoleGuard allow={["CLIENT_ADMIN"]}>
-      <ReportsPageInner />
-    </RoleGuard>
-  );
-}
-
-function ReportsPageInner() {
+export default function ReportsPanel() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -133,7 +124,7 @@ function ReportsPageInner() {
   }, [range.from, range.to]);
 
   if (loading && !data) {
-    return <p className="text-sm text-slate-500">Loading…</p>;
+    return <p className="text-sm text-slate-500">Loading reports…</p>;
   }
   if (!data) {
     return (
@@ -146,11 +137,7 @@ function ReportsPageInner() {
   const { funnel, lost, totalLeads, sources, appointments, ratings, timeSeries } =
     data;
 
-  // Funnel max is leads that entered the top of the funnel. Bars are scaled
-  // against `funnel.new` so each step visually shows drop-off.
   const funnelMax = Math.max(funnel.new, 1);
-
-  // For the time series chart, scale by max combined value across days.
   const seriesMax = Math.max(
     1,
     ...timeSeries.map(d => Math.max(d.leads, d.appointments)),
@@ -158,12 +145,12 @@ function ReportsPageInner() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Reports</h1>
-          <p className="text-sm text-slate-500">
-            Funnel performance, source attribution, and clinical outcomes for
-            the selected period.
+          <h2 className="text-lg font-bold text-slate-900">Reports</h2>
+          <p className="text-xs text-slate-500">
+            Funnel, source attribution, and clinical outcomes for the
+            selected period.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -195,7 +182,7 @@ function ReportsPageInner() {
             Custom
           </button>
         </div>
-      </header>
+      </div>
 
       {preset === "custom" && (
         <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
@@ -224,7 +211,6 @@ function ReportsPageInner() {
         </div>
       )}
 
-      {/* Top-line stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat
           label="Leads in period"
@@ -246,13 +232,7 @@ function ReportsPageInner() {
           sublabel={`${appointments.no_show} of ${
             appointments.completed + appointments.no_show
           } resolved`}
-          tone={
-            appointments.noShowRate > 0.2
-              ? "warn"
-              : appointments.noShowRate > 0
-                ? undefined
-                : undefined
-          }
+          tone={appointments.noShowRate > 0.2 ? "warn" : undefined}
         />
         <Stat
           label="Avg patient rating"
@@ -263,9 +243,8 @@ function ReportsPageInner() {
         />
       </div>
 
-      {/* Funnel */}
       <section className="rounded-xl border border-slate-200 bg-white px-6 py-5">
-        <h2 className="text-base font-semibold text-slate-900">Funnel</h2>
+        <h3 className="text-base font-semibold text-slate-900">Funnel</h3>
         <p className="text-xs text-slate-500">
           Each stage shows leads that reached it or moved past. {lost} also
           flagged as lost (excluded from drop-off).
@@ -304,14 +283,13 @@ function ReportsPageInner() {
         </div>
       </section>
 
-      {/* Sources */}
       <section className="rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h3 className="text-base font-semibold text-slate-900">
             Source attribution
-          </h2>
+          </h3>
           <p className="text-xs text-slate-500">
-            Where leads came from in this period and how each source converts.
+            Where leads came from and how each source converts.
           </p>
         </div>
         {sources.length === 0 ? (
@@ -360,12 +338,11 @@ function ReportsPageInner() {
         )}
       </section>
 
-      {/* Appointments + Ratings */}
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-slate-200 bg-white px-6 py-5">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h3 className="text-base font-semibold text-slate-900">
             Appointment outcomes
-          </h2>
+          </h3>
           <p className="text-xs text-slate-500">
             All appointments dated in this period, by current status.
           </p>
@@ -388,9 +365,9 @@ function ReportsPageInner() {
         </section>
 
         <section className="rounded-xl border border-slate-200 bg-white px-6 py-5">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h3 className="text-base font-semibold text-slate-900">
             Patient ratings
-          </h2>
+          </h3>
           <p className="text-xs text-slate-500">
             Outcome ratings collected from leads in this period (5 = best).
           </p>
@@ -427,17 +404,14 @@ function ReportsPageInner() {
         </section>
       </div>
 
-      {/* Time series */}
       <section className="rounded-xl border border-slate-200 bg-white px-6 py-5">
-        <h2 className="text-base font-semibold text-slate-900">Daily volume</h2>
+        <h3 className="text-base font-semibold text-slate-900">Daily volume</h3>
         <p className="text-xs text-slate-500">
           Leads captured and appointments dated for each day in the range.
         </p>
-        <div className="mt-4 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
           <Legend swatch="bg-indigo-500" label="Leads" />
-          <span />
           <Legend swatch="bg-emerald-500" label="Appointments" />
-          <span />
         </div>
         <div className="mt-4 flex items-end gap-1 overflow-x-auto pb-2">
           {timeSeries.map(d => {
@@ -496,9 +470,7 @@ function Stat({
       >
         {value}
       </p>
-      {sublabel && (
-        <p className="text-xs text-slate-500">{sublabel}</p>
-      )}
+      {sublabel && <p className="text-xs text-slate-500">{sublabel}</p>}
     </div>
   );
 }
