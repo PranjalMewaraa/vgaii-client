@@ -25,22 +25,6 @@ type Lead = {
   statusUpdatedAt?: string;
 };
 
-type Appointment = {
-  _id: string;
-  date?: string;
-  status?: string;
-  source?: string;
-  notes?: string;
-};
-
-type Feedback = {
-  _id: string;
-  rating?: number;
-  reviewText?: string;
-  status?: string;
-  submittedAt?: string;
-};
-
 const authHeaders = () => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${
@@ -89,8 +73,6 @@ function LeadDetailPageInner({
   const router = useRouter();
   const { id } = use(params);
   const [lead, setLead] = useState<Lead | null>(null);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [bookingUrl, setBookingUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -107,15 +89,11 @@ function LeadDetailPageInner({
 
   const applyLead = (data: {
     lead?: Lead;
-    appointments?: Appointment[];
-    feedbacks?: Feedback[];
     bookingUrl?: string | null;
   }) => {
     if (!data.lead) return;
     setLead(data.lead);
     setNotesDraft(data.lead.notes ?? "");
-    setAppointments(data.appointments ?? []);
-    setFeedbacks(data.feedbacks ?? []);
     setBookingUrl(data.bookingUrl ?? null);
   };
 
@@ -359,78 +337,6 @@ function LeadDetailPageInner({
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
-            Appointments
-          </h2>
-        </div>
-
-        {appointments.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-slate-500">
-            No appointments linked yet.
-          </p>
-        ) : (
-          <ul className="divide-y divide-slate-200">
-            {appointments.map(a => (
-              <li
-                key={a._id}
-                className="flex flex-wrap items-center justify-between gap-2 px-6 py-4"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-slate-800">
-                      {a.date ? new Date(a.date).toLocaleString() : "No date"}
-                    </p>
-                    <StatusPill status={a.status} />
-                  </div>
-                  {a.notes && (
-                    <p className="mt-1 text-xs text-slate-500">{a.notes}</p>
-                  )}
-                </div>
-                <Link
-                  href="/appointments"
-                  className="text-xs text-indigo-600 hover:underline"
-                >
-                  Manage in Appointments →
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">Feedback</h2>
-        </div>
-        {feedbacks.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-slate-500">No feedback yet.</p>
-        ) : (
-          <ul className="divide-y divide-slate-200">
-            {feedbacks.map(f => (
-              <li key={f._id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-slate-800">
-                      {typeof f.rating === "number" ? `⭐ ${f.rating}/5` : "—"}
-                    </p>
-                    <StatusPill status={f.status} />
-                  </div>
-                  <span className="text-xs text-slate-500">
-                    {f.submittedAt
-                      ? new Date(f.submittedAt).toLocaleString()
-                      : ""}
-                  </span>
-                </div>
-                {f.reviewText && (
-                  <p className="mt-1 text-sm text-slate-700">{f.reviewText}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </div>
   );
 }

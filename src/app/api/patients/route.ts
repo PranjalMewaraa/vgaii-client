@@ -130,12 +130,8 @@ export async function GET(req: Request) {
     }));
 
     const all = [...leadRows, ...orphanRows].sort((a, b) => {
-      const ad = a.lastAppointmentDate
-        ? new Date(a.lastAppointmentDate).getTime()
-        : 0;
-      const bd = b.lastAppointmentDate
-        ? new Date(b.lastAppointmentDate).getTime()
-        : 0;
+      const ad = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bd = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return bd - ad;
     });
 

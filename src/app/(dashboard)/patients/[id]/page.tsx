@@ -109,6 +109,14 @@ function PatientDetailPageInner({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [busyApptId, setBusyApptId] = useState<string | null>(null);
 
+  // Per-row collapse for medical-history / upcoming cards. Only one expanded
+  // at a time keeps the list scannable.
+  const [expandedApptId, setExpandedApptId] = useState<string | null>(null);
+  const toggleExpanded = (apptId: string) => {
+    if (editingId === apptId) return; // never collapse while editing
+    setExpandedApptId(prev => (prev === apptId ? null : apptId));
+  };
+
   // status transition + notes
   const [busy, setBusy] = useState(false);
   const [transitionError, setTransitionError] = useState<string | null>(null);
@@ -198,6 +206,7 @@ function PatientDetailPageInner({
 
   const startEdit = (a: Appointment) => {
     setEditingId(a._id);
+    setExpandedApptId(a._id);
     setEditDate(
       a.date ? new Date(a.date).toISOString().slice(0, 16) : "",
     );
@@ -211,6 +220,7 @@ function PatientDetailPageInner({
   // status to completed and skip the status dropdown.
   const startMarkVisited = (a: Appointment) => {
     setEditingId(a._id);
+    setExpandedApptId(a._id);
     setEditDate(a.date ? new Date(a.date).toISOString().slice(0, 16) : "");
     setEditStatus("completed");
     setEditDiagnosis(a.diagnosis ?? "");
@@ -278,8 +288,6 @@ function PatientDetailPageInner({
     }
   };
 
-  // Group appointments for the right column. `appointments` is sorted desc
-  // by date already, so reversing the upcoming list gives soonest-first.
   const upcoming = [...appointments]
     .filter(a => a.status === "scheduled")
     .reverse();
@@ -492,6 +500,8 @@ function PatientDetailPageInner({
                     key={a._id}
                     appointment={a}
                     isEditing={editingId === a._id}
+                    isExpanded={expandedApptId === a._id || editingId === a._id}
+                    onToggleExpanded={() => toggleExpanded(a._id)}
                     saving={savingId === a._id}
                     busy={busyApptId === a._id}
                     editState={{
@@ -536,6 +546,8 @@ function PatientDetailPageInner({
                     key={a._id}
                     appointment={a}
                     isEditing={editingId === a._id}
+                    isExpanded={expandedApptId === a._id || editingId === a._id}
+                    onToggleExpanded={() => toggleExpanded(a._id)}
                     saving={savingId === a._id}
                     busy={busyApptId === a._id}
                     editState={{
@@ -756,6 +768,8 @@ type AppointmentCardEditState = {
 function AppointmentCard({
   appointment,
   isEditing,
+  isExpanded,
+  onToggleExpanded,
   saving,
   busy,
   editState,
@@ -768,6 +782,8 @@ function AppointmentCard({
 }: {
   appointment: Appointment;
   isEditing: boolean;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
   saving: boolean;
   busy: boolean;
   editState: AppointmentCardEditState;
@@ -781,6 +797,8 @@ function AppointmentCard({
   const a = appointment;
   const stripe = APPT_STRIPE[a.status ?? "scheduled"] ?? "border-l-slate-300";
   const isScheduled = a.status === "scheduled" || !a.status;
+  const hasDetails =
+    !!a.diagnosis || (!!a.medicines && a.medicines.length > 0) || !!a.notes;
   const dateStr = a.date
     ? new Date(a.date).toLocaleString(undefined, {
         weekday: "short",
@@ -796,17 +814,34 @@ function AppointmentCard({
       className={`rounded-xl border border-slate-200 border-l-4 bg-white px-5 py-4 ${stripe}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900">{dateStr}</p>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <StatusPill status={a.status ?? "scheduled"} />
-            {a.source && (
-              <span className="text-[10px] uppercase tracking-wider text-slate-400">
-                via {a.source}
-              </span>
-            )}
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={onToggleExpanded}
+          className="flex min-w-0 flex-1 items-start gap-3 text-left"
+          aria-expanded={isExpanded}
+        >
+          <span
+            className={`mt-1 inline-block text-slate-400 transition-transform ${
+              isExpanded ? "rotate-90" : ""
+            }`}
+            aria-hidden
+          >
+            ▶
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-slate-900">
+              {dateStr}
+            </span>
+            <span className="mt-1 flex flex-wrap items-center gap-2">
+              <StatusPill status={a.status ?? "scheduled"} />
+              {a.source && (
+                <span className="text-[10px] uppercase tracking-wider text-slate-400">
+                  via {a.source}
+                </span>
+              )}
+            </span>
+          </span>
+        </button>
         {!isEditing && (
           <div className="flex flex-wrap gap-2">
             {isScheduled && (
@@ -929,8 +964,9 @@ function AppointmentCard({
           </div>
         </div>
       ) : (
-        (a.diagnosis || (a.medicines && a.medicines.length > 0) || a.notes) && (
-          <div className="mt-3 space-y-2 text-sm">
+        isExpanded &&
+        (hasDetails ? (
+          <div className="mt-3 space-y-2 pl-7 text-sm">
             {a.diagnosis && (
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -962,7 +998,11 @@ function AppointmentCard({
               </div>
             )}
           </div>
-        )
+        ) : (
+          <p className="mt-3 pl-7 text-xs italic text-slate-400">
+            No diagnosis, medicines, or notes recorded yet.
+          </p>
+        ))
       )}
     </article>
   );

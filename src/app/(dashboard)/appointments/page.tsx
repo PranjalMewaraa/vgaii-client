@@ -17,15 +17,25 @@ type Appointment = {
   medicines?: string[];
 };
 
-type DatePreset = "today" | "yesterday" | "week" | "month" | "custom" | "all";
+type Tab = "upcoming" | "history";
 
-const PRESET_LABELS: Record<DatePreset, string> = {
+type UpcomingPreset = "today" | "tomorrow" | "next_week" | "next_month" | "all";
+type HistoryPreset = "today" | "yesterday" | "last_week" | "last_month" | "all";
+
+const UPCOMING_LABELS: Record<UpcomingPreset, string> = {
+  today: "Today",
+  tomorrow: "Tomorrow",
+  next_week: "Next week",
+  next_month: "Next month",
+  all: "All upcoming",
+};
+
+const HISTORY_LABELS: Record<HistoryPreset, string> = {
   today: "Today",
   yesterday: "Yesterday",
-  week: "Last week",
-  month: "Last month",
-  custom: "Specific date",
-  all: "All time",
+  last_week: "Last week",
+  last_month: "Last month",
+  all: "All history",
 };
 
 const startOfDay = (d: Date) => {
@@ -40,38 +50,59 @@ const endOfDay = (d: Date) => {
   return x;
 };
 
-const computeRange = (
-  preset: DatePreset,
-  specific: string,
+const rangeForUpcoming = (
+  preset: UpcomingPreset,
 ): { from: Date | null; to: Date | null } => {
   const now = new Date();
   switch (preset) {
     case "today":
-      return { from: startOfDay(now), to: endOfDay(now) };
+      return { from: now, to: endOfDay(now) };
+    case "tomorrow": {
+      const t = new Date(now);
+      t.setDate(t.getDate() + 1);
+      return { from: startOfDay(t), to: endOfDay(t) };
+    }
+    case "next_week": {
+      const end = new Date(now);
+      end.setDate(end.getDate() + 7);
+      return { from: now, to: endOfDay(end) };
+    }
+    case "next_month": {
+      const end = new Date(now);
+      end.setDate(end.getDate() + 30);
+      return { from: now, to: endOfDay(end) };
+    }
+    case "all":
+    default:
+      return { from: now, to: null };
+  }
+};
+
+const rangeForHistory = (
+  preset: HistoryPreset,
+): { from: Date | null; to: Date | null } => {
+  const now = new Date();
+  switch (preset) {
+    case "today":
+      return { from: startOfDay(now), to: now };
     case "yesterday": {
       const y = new Date(now);
       y.setDate(y.getDate() - 1);
       return { from: startOfDay(y), to: endOfDay(y) };
     }
-    case "week": {
+    case "last_week": {
       const start = new Date(now);
       start.setDate(start.getDate() - 7);
-      return { from: startOfDay(start), to: endOfDay(now) };
+      return { from: startOfDay(start), to: now };
     }
-    case "month": {
+    case "last_month": {
       const start = new Date(now);
       start.setDate(start.getDate() - 30);
-      return { from: startOfDay(start), to: endOfDay(now) };
+      return { from: startOfDay(start), to: now };
     }
-    case "custom":
-      if (!specific) return { from: null, to: null };
-      return {
-        from: startOfDay(new Date(specific)),
-        to: endOfDay(new Date(specific)),
-      };
     case "all":
     default:
-      return { from: null, to: null };
+      return { from: null, to: now };
   }
 };
 
@@ -107,16 +138,26 @@ function AppointmentsPageInner() {
   const [editMedicines, setEditMedicines] = useState("");
   const [editNotes, setEditNotes] = useState("");
 
-  // filters
+  // Per-row expand/collapse (only one open at a time keeps the page scannable)
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // tabs + filters
+  const [tab, setTab] = useState<Tab>("upcoming");
+  const [upcomingPreset, setUpcomingPreset] = useState<UpcomingPreset>("all");
+  const [historyPreset, setHistoryPreset] = useState<HistoryPreset>("all");
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [datePreset, setDatePreset] = useState<DatePreset>("all");
   const [specificDate, setSpecificDate] = useState("");
 
-  const range = useMemo(
-    () => computeRange(datePreset, specificDate),
-    [datePreset, specificDate],
-  );
+  const range = useMemo(() => {
+    if (specificDate) {
+      const d = new Date(specificDate);
+      return { from: startOfDay(d), to: endOfDay(d) };
+    }
+    return tab === "upcoming"
+      ? rangeForUpcoming(upcomingPreset)
+      : rangeForHistory(historyPreset);
+  }, [tab, upcomingPreset, historyPreset, specificDate]);
+
   const fromMs = range.from?.getTime();
   const toMs = range.to?.getTime();
 
@@ -146,7 +187,6 @@ function AppointmentsPageInner() {
     const t = setTimeout(() => {
       const url = new URL("/api/appointments", window.location.origin);
       if (search) url.searchParams.set("search", search);
-      if (statusFilter) url.searchParams.set("status", statusFilter);
       if (range.from) url.searchParams.set("from", range.from.toISOString());
       if (range.to) url.searchParams.set("to", range.to.toISOString());
       fetch(url.toString(), { headers: authHeaders() })
@@ -156,7 +196,7 @@ function AppointmentsPageInner() {
     }, 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, statusFilter, fromMs, toMs]);
+  }, [search, fromMs, toMs]);
 
   const refreshNow = () => {
     fetch("/api/appointments/now", { headers: authHeaders() })
@@ -171,7 +211,6 @@ function AppointmentsPageInner() {
   const refreshTable = () => {
     const url = new URL("/api/appointments", window.location.origin);
     if (search) url.searchParams.set("search", search);
-    if (statusFilter) url.searchParams.set("status", statusFilter);
     if (range.from) url.searchParams.set("from", range.from.toISOString());
     if (range.to) url.searchParams.set("to", range.to.toISOString());
     fetch(url.toString(), { headers: authHeaders() })
@@ -198,6 +237,7 @@ function AppointmentsPageInner() {
 
   const startEdit = (a: Appointment, presetCompleted = false) => {
     setEditingId(a._id);
+    setExpandedId(a._id);
     setEditDate(a.date ? new Date(a.date).toISOString().slice(0, 16) : "");
     setEditStatus(presetCompleted ? "completed" : a.status ?? "scheduled");
     setEditDiagnosis(a.diagnosis ?? "");
@@ -222,15 +262,49 @@ function AppointmentsPageInner() {
   const markNoShow = (id: string) => patch(id, { status: "no_show" });
   const reopen = (id: string) => patch(id, { status: "scheduled" });
 
-  const clearFilters = () => {
-    setSearch("");
-    setStatusFilter("");
-    setDatePreset("all");
+  const toggleExpand = (id: string) => {
+    if (editingId === id) return; // don't collapse while editing
+    setExpandedId(prev => (prev === id ? null : id));
+  };
+
+  // Group rows by tab. The API returns appointments inside the date range
+  // regardless of status, so we partition here. Upcoming = scheduled only
+  // (since "Mark visited" / "No show" both flip the status away). History =
+  // anything that's no longer scheduled (completed, no_show, cancelled).
+  const visible = useMemo(() => {
+    if (tab === "upcoming") {
+      return data.filter(a => !a.status || a.status === "scheduled");
+    }
+    return data.filter(a => a.status && a.status !== "scheduled");
+  }, [data, tab]);
+
+  const presets =
+    tab === "upcoming"
+      ? (Object.keys(UPCOMING_LABELS) as UpcomingPreset[])
+      : (Object.keys(HISTORY_LABELS) as HistoryPreset[]);
+  const activePreset = tab === "upcoming" ? upcomingPreset : historyPreset;
+  const presetLabels =
+    tab === "upcoming"
+      ? (UPCOMING_LABELS as Record<string, string>)
+      : (HISTORY_LABELS as Record<string, string>);
+
+  const setPreset = (p: string) => {
     setSpecificDate("");
+    if (tab === "upcoming") setUpcomingPreset(p as UpcomingPreset);
+    else setHistoryPreset(p as HistoryPreset);
   };
 
   const filtersActive =
-    !!search || !!statusFilter || datePreset !== "all";
+    !!search ||
+    !!specificDate ||
+    (tab === "upcoming" ? upcomingPreset !== "all" : historyPreset !== "all");
+
+  const clearFilters = () => {
+    setSearch("");
+    setSpecificDate("");
+    setUpcomingPreset("all");
+    setHistoryPreset("all");
+  };
 
   return (
     <div className="space-y-6">
@@ -268,120 +342,145 @@ function AppointmentsPageInner() {
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {(["today", "yesterday", "week", "month", "all"] as DatePreset[]).map(
-            p => (
+      <div className="rounded-xl border border-slate-200 bg-white">
+        <div className="flex border-b border-slate-200">
+          {(["upcoming", "history"] as Tab[]).map(t => {
+            const isActive = tab === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => {
+                  setTab(t);
+                  setExpandedId(null);
+                  setEditingId(null);
+                }}
+                className={`flex-1 px-6 py-3 text-sm font-semibold capitalize transition ${
+                  isActive
+                    ? "border-b-2 border-indigo-600 text-indigo-700"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {t}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="px-6 py-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {presets.map(p => (
               <button
                 key={p}
                 type="button"
-                onClick={() => {
-                  setDatePreset(p);
-                  setSpecificDate("");
-                }}
+                onClick={() => setPreset(p)}
                 className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
-                  datePreset === p
+                  !specificDate && activePreset === p
                     ? "bg-indigo-600 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                {PRESET_LABELS[p]}
+                {presetLabels[p]}
               </button>
-            ),
-          )}
-          <label className="ml-auto inline-flex items-center gap-2 text-xs text-slate-500">
-            <span>Specific date</span>
-            <input
-              type="date"
-              value={specificDate}
-              onChange={e => {
-                setSpecificDate(e.target.value);
-                setDatePreset(e.target.value ? "custom" : "all");
-              }}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
-        </div>
+            ))}
+            <label className="ml-auto inline-flex items-center gap-2 text-xs text-slate-500">
+              <span>Specific date</span>
+              <input
+                type="date"
+                value={specificDate}
+                onChange={e => setSpecificDate(e.target.value)}
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </label>
+          </div>
 
-        <div className="mt-4 flex flex-wrap items-end gap-4">
-          <label className="block flex-1 min-w-[220px]">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              Search
-            </span>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Name, phone, or email…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
-          <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              Status
-            </span>
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            >
-              <option value="">All statuses</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="completed">Visited</option>
-              <option value="no_show">No show</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </label>
-          {filtersActive && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="text-xs text-indigo-600 hover:underline"
-            >
-              Clear filters
-            </button>
-          )}
+          <div className="mt-4 flex flex-wrap items-end gap-4">
+            <label className="block flex-1 min-w-[220px]">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Search
+              </span>
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Name, phone, or email…"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </label>
+            {filtersActive && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-xs text-indigo-600 hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
-            All Appointments
+          <h2 className="text-base font-semibold text-slate-900 capitalize">
+            {tab === "upcoming" ? "Upcoming appointments" : "Appointment history"}
           </h2>
           <span className="text-xs text-slate-500">
-            {data.length} {data.length === 1 ? "appointment" : "appointments"}
+            {visible.length}{" "}
+            {visible.length === 1 ? "appointment" : "appointments"}
           </span>
         </div>
 
         {loading ? (
           <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
-        ) : data.length === 0 ? (
+        ) : visible.length === 0 ? (
           <p className="px-6 py-6 text-sm text-slate-500">
-            No appointments match these filters.
+            {tab === "upcoming"
+              ? "No upcoming appointments in this range."
+              : "No past appointments in this range."}
           </p>
         ) : (
           <ul className="divide-y divide-slate-200">
-            {data.map(a => {
+            {visible.map(a => {
               const isEditing = editingId === a._id;
+              const isExpanded = expandedId === a._id || isEditing;
               const isScheduled = !a.status || a.status === "scheduled";
+              const hasDetails =
+                !!a.diagnosis ||
+                (!!a.medicines && a.medicines.length > 0) ||
+                !!a.notes;
               return (
                 <li key={a._id} className="px-6 py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium text-slate-900">
-                          {a.name || "Unnamed"}
-                        </p>
-                        <StatusPill status={a.status ?? "scheduled"} />
-                      </div>
-                      <p className="text-sm text-slate-600">
-                        {[a.phone, a.email].filter(Boolean).join(" · ") || "—"}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {new Date(a.date).toLocaleString()}
-                        {a.source ? ` · ${a.source}` : ""}
-                      </p>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(a._id)}
+                      className="flex min-w-0 flex-1 items-start gap-3 text-left"
+                      aria-expanded={isExpanded}
+                    >
+                      <span
+                        className={`mt-1 inline-block text-slate-400 transition-transform ${
+                          isExpanded ? "rotate-90" : ""
+                        }`}
+                        aria-hidden
+                      >
+                        ▶
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium text-slate-900">
+                            {a.name || "Unnamed"}
+                          </span>
+                          <StatusPill status={a.status ?? "scheduled"} />
+                        </span>
+                        <span className="block text-sm text-slate-600">
+                          {[a.phone, a.email].filter(Boolean).join(" · ") || "—"}
+                        </span>
+                        <span className="block text-xs text-slate-500">
+                          {new Date(a.date).toLocaleString()}
+                          {a.source ? ` · ${a.source}` : ""}
+                        </span>
+                      </span>
+                    </button>
 
                     {!isEditing && (
                       <div className="flex flex-wrap gap-2">
@@ -512,33 +611,40 @@ function AppointmentsPageInner() {
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-2 space-y-2 text-sm">
-                      {a.diagnosis && (
-                        <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                            Diagnosis
-                          </p>
-                          <p className="text-slate-700 whitespace-pre-line">
-                            {a.diagnosis}
-                          </p>
-                        </div>
-                      )}
-                      {a.medicines && a.medicines.length > 0 && (
-                        <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                            Medicines
-                          </p>
-                          <ul className="mt-1 list-disc pl-5 text-slate-700">
-                            {a.medicines.map((m, i) => (
-                              <li key={i}>{m}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {a.notes && (
-                        <p className="text-sm text-slate-600">{a.notes}</p>
-                      )}
-                    </div>
+                    isExpanded &&
+                    (hasDetails ? (
+                      <div className="mt-3 space-y-2 pl-6 text-sm">
+                        {a.diagnosis && (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                              Diagnosis
+                            </p>
+                            <p className="text-slate-700 whitespace-pre-line">
+                              {a.diagnosis}
+                            </p>
+                          </div>
+                        )}
+                        {a.medicines && a.medicines.length > 0 && (
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                              Medicines
+                            </p>
+                            <ul className="mt-1 list-disc pl-5 text-slate-700">
+                              {a.medicines.map((m, i) => (
+                                <li key={i}>{m}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {a.notes && (
+                          <p className="text-sm text-slate-600">{a.notes}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-3 pl-6 text-xs italic text-slate-400">
+                        No diagnosis, medicines, or notes recorded yet.
+                      </p>
+                    ))
                   )}
                 </li>
               );
