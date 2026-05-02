@@ -1,8 +1,8 @@
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import Lead from "@/models/Lead";
 import Appointment from "@/models/Appointment";
 import { getUser } from "@/middleware/auth";
-import { withClientFilter } from "@/lib/query";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
@@ -59,7 +59,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Invalid date" }, { status: 400 });
     }
 
-    const baseFilter = withClientFilter(user);
+    // `aggregate()` does NOT auto-convert string IDs to ObjectId in $match,
+    // unlike `find()`. So we cast the user's clientId here. SUPER_ADMIN
+    // sees all clients (no filter).
+    const baseFilter: Record<string, unknown> =
+      user.role === "SUPER_ADMIN"
+        ? {}
+        : { clientId: new mongoose.Types.ObjectId(user.clientId ?? "") };
+
     const dateRange: Record<string, Date> = {};
     if (from) dateRange.$gte = from;
     if (to) dateRange.$lte = to;
