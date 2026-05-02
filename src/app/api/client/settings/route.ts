@@ -3,6 +3,7 @@ import Client from "@/models/Client";
 import { getUser } from "@/middleware/auth";
 import { clientSettingsSchema } from "@/lib/validators/client";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 const cleanString = (v: string | null | undefined): string | undefined => {
@@ -72,6 +73,18 @@ export async function PATCH(req: Request) {
       }
       throw err;
     }
+
+    const changed = Object.keys(parsed.data).filter(k =>
+      parsed.data[k as keyof typeof parsed.data] !== undefined,
+    );
+    await logAudit(req, { actorType: "user", user }, {
+      action: "client.settings.updated",
+      entityType: "Client",
+      entityId: client._id.toString(),
+      entityLabel: client.name,
+      summary: `Settings updated: ${changed.join(", ") || "no fields"}`,
+      metadata: { fields: changed },
+    });
 
     return NextResponse.json({
       client: {

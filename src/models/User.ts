@@ -35,6 +35,7 @@ const UserSchema = new Schema(
     },
 
     lastLoginIP: String,
+    lastLoginAt: Date,
   },
   { timestamps: true },
 );

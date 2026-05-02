@@ -34,10 +34,20 @@ export async function GET(req: Request) {
     const user = getUser(req);
     const filter = withClientFilter(user);
 
-    const leads = await Lead.find({
+    const idsParam = new URL(req.url).searchParams.get("ids");
+    const ids = idsParam
+      ? idsParam.split(",").map(s => s.trim()).filter(Boolean)
+      : null;
+
+    const leadFilter: Record<string, unknown> = {
       ...filter,
       status: { $in: PATIENT_LEAD_STATUSES },
-    }).lean();
+    };
+    if (ids && ids.length > 0) {
+      leadFilter._id = { $in: ids };
+    }
+
+    const leads = await Lead.find(leadFilter).lean();
 
     const leadIds = leads.map(l => l._id);
     const appts = leadIds.length

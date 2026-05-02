@@ -4,6 +4,7 @@ import Lead from "@/models/Lead";
 import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { canonicalPhone } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 // Cal.com booking payloads carry attendees on `payload.attendees` and may
@@ -107,6 +108,24 @@ export async function POST(req: Request) {
       leadId,
       source: "cal.com",
     });
+
+    const apptLabel = appointment.date
+      ? `${name ?? "Unnamed"} · ${new Date(appointment.date).toLocaleString()}`
+      : name ?? "Unnamed";
+    await logAudit(
+      req,
+      { actorType: "webhook", source: "cal.com", clientId: client._id.toString() },
+      {
+        action: "appointment.created",
+        entityType: "Appointment",
+        entityId: appointment._id.toString(),
+        entityLabel: apptLabel,
+        summary: leadId
+          ? "Cal.com booking created (matched to patient)"
+          : "Cal.com booking created (orphan — no phone match)",
+        metadata: { phone, leadMatched: !!leadId },
+      },
+    );
 
     return NextResponse.json({ appointment });
   } catch (err: unknown) {

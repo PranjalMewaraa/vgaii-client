@@ -4,6 +4,7 @@ import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { leadStatusSchema } from "@/lib/validators/lead";
 import { canonicalPhone } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request) {
@@ -39,6 +40,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     }
 
+    const prevStatus = lead.status;
     lead.status = parsed.data.status;
     lead.statusUpdatedAt = new Date();
     if (parsed.data.outcomeRating !== undefined) {
@@ -46,6 +48,19 @@ export async function PATCH(req: Request) {
     }
 
     await lead.save();
+
+    await logAudit(
+      req,
+      { actorType: "webhook", source: "status-webhook", clientId: client._id.toString() },
+      {
+        action: "lead.status.changed",
+        entityType: "Lead",
+        entityId: lead._id.toString(),
+        entityLabel: lead.name,
+        summary: `Status: ${prevStatus} → ${parsed.data.status} (via webhook)`,
+        metadata: { from: prevStatus, to: parsed.data.status, outcomeRating: parsed.data.outcomeRating },
+      },
+    );
 
     return NextResponse.json({
       leadId: lead._id,

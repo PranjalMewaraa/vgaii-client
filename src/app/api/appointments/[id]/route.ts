@@ -6,6 +6,7 @@ import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
 import { appointmentUpdateSchema } from "@/lib/validators/appointment";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -112,6 +113,45 @@ export async function PATCH(req: Request, ctx: RouteContext) {
       );
     }
 
+    const apptLabel = appt.date
+      ? `${appt.name ?? "Unnamed"} · ${new Date(appt.date).toLocaleString()}`
+      : appt.name ?? "Unnamed";
+
+    if (
+      parsed.data.status !== undefined &&
+      parsed.data.status !== previousStatus
+    ) {
+      await logAudit(req, { actorType: "user", user }, {
+        action: "appointment.status.changed",
+        entityType: "Appointment",
+        entityId: appt._id.toString(),
+        entityLabel: apptLabel,
+        summary: `Status: ${previousStatus ?? "—"} → ${parsed.data.status}`,
+        metadata: { from: previousStatus, to: parsed.data.status },
+      });
+    }
+    if (parsed.data.diagnosis !== undefined || parsed.data.medicines !== undefined) {
+      await logAudit(req, { actorType: "user", user }, {
+        action: "appointment.clinical.updated",
+        entityType: "Appointment",
+        entityId: appt._id.toString(),
+        entityLabel: apptLabel,
+        summary: "Diagnosis/medicines updated",
+      });
+    }
+    if (parsed.data.leadId !== undefined) {
+      await logAudit(req, { actorType: "user", user }, {
+        action: parsed.data.leadId === null ? "appointment.unlinked" : "appointment.linked",
+        entityType: "Appointment",
+        entityId: appt._id.toString(),
+        entityLabel: apptLabel,
+        summary: parsed.data.leadId === null
+          ? "Unlinked from patient"
+          : "Linked to patient",
+        metadata: { leadId: parsed.data.leadId },
+      });
+    }
+
     return NextResponse.json({ appointment: appt });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
@@ -128,12 +168,31 @@ export async function DELETE(req: Request, ctx: RouteContext) {
     const { id } = await ctx.params;
     const filter = withClientFilter(user);
 
+    const existing = await Appointment.findOne({ ...filter, _id: id }).lean<{
+      _id: unknown;
+      name?: string;
+      date?: Date;
+    } | null>();
+
     const result = await Appointment.deleteOne({ ...filter, _id: id });
     if (result.deletedCount === 0) {
       return NextResponse.json(
         { error: "Appointment not found" },
         { status: 404 },
       );
+    }
+
+    if (existing) {
+      const label = existing.date
+        ? `${existing.name ?? "Unnamed"} · ${new Date(existing.date).toLocaleString()}`
+        : existing.name ?? "Unnamed";
+      await logAudit(req, { actorType: "user", user }, {
+        action: "appointment.deleted",
+        entityType: "Appointment",
+        entityId: String(existing._id),
+        entityLabel: label,
+        summary: "Appointment deleted",
+      });
     }
 
     return NextResponse.json({ ok: true });

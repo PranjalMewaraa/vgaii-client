@@ -84,8 +84,8 @@ function LeadsPageInner() {
       </header>
 
       <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
-        <div className="flex flex-wrap items-end gap-4">
-          <label className="block flex-1 min-w-[220px]">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="block flex-1 min-w-[180px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Search
             </span>

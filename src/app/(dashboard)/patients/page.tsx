@@ -57,6 +57,15 @@ function PatientsPageInner() {
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [sourceFilter, setSourceFilter] = useState("");
 
+  // bulk selection (only "lead" rows are selectable — orphan direct
+  // appointments don't have a Lead record so they can't be re-tagged or
+  // marked lost via the bulk endpoint).
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkMsg, setBulkMsg] = useState<string | null>(null);
+  const [showSetSource, setShowSetSource] = useState(false);
+  const [newSourceValue, setNewSourceValue] = useState("");
+
   // create form
   const [showCreate, setShowCreate] = useState(false);
   const [cName, setCName] = useState("");
@@ -103,6 +112,104 @@ function PatientsPageInner() {
       return true;
     });
   }, [rows, sourceFilter, activeFilter]);
+
+  // Only `lead`-kind rows are selectable for bulk operations. Orphan direct
+  // appointments aren't Leads — they need to be linked to a patient first.
+  const selectableVisibleIds = useMemo(
+    () => visible.filter(r => r.kind === "lead").map(r => r.id),
+    [visible],
+  );
+
+  // Effective selection = stored IDs intersected with currently-visible
+  // selectable rows. We don't prune `selectedIds` itself in an effect —
+  // computing the intersection on read avoids synchronous setState inside
+  // effects (a React 19 anti-pattern).
+  const effectiveSelected = useMemo(() => {
+    const visibleSet = new Set(selectableVisibleIds);
+    const next = new Set<string>();
+    for (const id of selectedIds) if (visibleSet.has(id)) next.add(id);
+    return next;
+  }, [selectedIds, selectableVisibleIds]);
+
+  const allSelected =
+    selectableVisibleIds.length > 0 &&
+    selectableVisibleIds.every(id => effectiveSelected.has(id));
+  const someSelected = effectiveSelected.size > 0;
+
+  const toggleAll = () => {
+    if (allSelected) setSelectedIds(new Set());
+    else setSelectedIds(new Set(selectableVisibleIds));
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const runBulk = async (
+    action: "mark_lost" | "set_source",
+    value?: string,
+  ) => {
+    const ids = Array.from(effectiveSelected);
+    if (ids.length === 0) return;
+    if (
+      action === "mark_lost" &&
+      !confirm(
+        `Mark ${ids.length} patient(s) as lost? Already-visited records won't change.`,
+      )
+    ) {
+      return;
+    }
+    setBulkBusy(true);
+    setBulkMsg(null);
+    try {
+      const res = await fetch("/api/patients/bulk", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ ids, action, value }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBulkMsg(
+          typeof data.error === "string" ? data.error : "Bulk action failed",
+        );
+      } else {
+        setBulkMsg(
+          `${action === "mark_lost" ? "Marked lost" : "Re-tagged"}: ${data.modified} of ${data.requested}`,
+        );
+        setSelectedIds(new Set());
+        setShowSetSource(false);
+        setNewSourceValue("");
+        load();
+      }
+    } catch {
+      setBulkMsg("Network error");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const exportSelected = async () => {
+    const ids = Array.from(effectiveSelected);
+    if (ids.length === 0) return;
+    const url = new URL("/api/patients/export", window.location.origin);
+    url.searchParams.set("ids", ids.join(","));
+    const res = await fetch(url.toString(), { headers: authHeaders() });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const dl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = dl;
+    a.download = `patients-selected-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(dl);
+  };
 
   const submitCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -295,7 +402,7 @@ function PatientsPageInner() {
 
       <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
         <div className="flex flex-wrap items-end gap-4">
-          <label className="block flex-1 min-w-[220px]">
+          <label className="block flex-1 min-w-[180px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Search
             </span>
@@ -360,6 +467,89 @@ function PatientsPageInner() {
         </div>
       </div>
 
+      {someSelected && (
+        <div className="sticky top-2 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-indigo-900">
+              {effectiveSelected.size} selected
+            </p>
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs text-indigo-700 hover:underline"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={exportSelected}
+              disabled={bulkBusy}
+              className="rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSetSource(o => !o)}
+              disabled={bulkBusy}
+              className="rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
+            >
+              Set source
+            </button>
+            <button
+              type="button"
+              onClick={() => runBulk("mark_lost")}
+              disabled={bulkBusy}
+              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+            >
+              Mark lost
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showSetSource && someSelected && (
+        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
+          <label className="block flex-1 min-w-[200px]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              New source value
+            </span>
+            <input
+              value={newSourceValue}
+              onChange={e => setNewSourceValue(e.target.value)}
+              placeholder="e.g. instagram-ad"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() => runBulk("set_source", newSourceValue.trim())}
+            disabled={bulkBusy || !newSourceValue.trim()}
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          >
+            Apply to {effectiveSelected.size}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setShowSetSource(false);
+              setNewSourceValue("");
+            }}
+            className="text-xs text-slate-500 hover:underline"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {bulkMsg && (
+        <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+          {bulkMsg}
+        </p>
+      )}
+
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <h2 className="text-base font-semibold text-slate-900">
@@ -381,6 +571,15 @@ function PatientsPageInner() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleAll}
+                      aria-label="Select all visible"
+                      className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left">Name</th>
                   <th className="px-6 py-3 text-left">Phone</th>
                   <th className="px-6 py-3 text-left">Age / Gender</th>
@@ -392,12 +591,37 @@ function PatientsPageInner() {
               <tbody>
                 {visible.map(p => {
                   const inactive = isInactive(p.lastAppointmentDate);
+                  const selectable = p.kind === "lead";
+                  const checked = selectable && selectedIds.has(p.id);
                   return (
                     <tr
                       key={`${p.kind}-${p.id}`}
                       onClick={() => router.push(`/patients/${p.id}`)}
-                      className="cursor-pointer border-t border-slate-200 hover:bg-slate-50"
+                      className={`cursor-pointer border-t border-slate-200 hover:bg-slate-50 ${
+                        checked ? "bg-indigo-50/40" : ""
+                      }`}
                     >
+                      <td
+                        className="px-4 py-4"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {selectable ? (
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleOne(p.id)}
+                            aria-label={`Select ${p.name}`}
+                            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                        ) : (
+                          <span
+                            className="text-[10px] uppercase tracking-wider text-slate-400"
+                            title="Direct appointments aren't bulk-editable until linked"
+                          >
+                            —
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 font-medium text-slate-900">
                         {p.name}
                       </td>

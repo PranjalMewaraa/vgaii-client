@@ -7,6 +7,7 @@ import Feedback from "@/models/Feedback";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { createClientSchema } from "@/lib/validators/admin-client";
+import { logAudit } from "@/lib/audit";
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
@@ -64,6 +65,15 @@ export async function POST(req: Request) {
       await Client.deleteOne({ _id: client._id });
       throw err;
     }
+
+    await logAudit(req, { actorType: "user", user, clientId: client._id.toString() }, {
+      action: "client.created",
+      entityType: "Client",
+      entityId: client._id.toString(),
+      entityLabel: client.name,
+      summary: `Client created with admin ${admin.email}`,
+      metadata: { plan: client.plan, subscriptionStatus: client.subscriptionStatus },
+    });
 
     return NextResponse.json(
       {

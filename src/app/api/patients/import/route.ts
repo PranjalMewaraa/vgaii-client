@@ -5,6 +5,7 @@ import { parseCsv } from "@/lib/csv";
 import { canonicalPhone } from "@/lib/phone";
 import { generateFeedbackToken } from "@/lib/feedback-token";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 const REQUIRED = ["name", "phone", "age", "gender"] as const;
@@ -152,6 +153,13 @@ export async function POST(req: Request) {
         });
       }
     }
+
+    await logAudit(req, { actorType: "user", user }, {
+      action: "patients.imported",
+      entityType: "Lead",
+      summary: `CSV import: ${created} created, ${updated} updated, ${skipped} skipped of ${rows.length}`,
+      metadata: { total: rows.length, created, updated, skipped },
+    });
 
     return NextResponse.json({
       total: rows.length,

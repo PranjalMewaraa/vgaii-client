@@ -57,7 +57,7 @@ export default function Dashboard() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         <StatCard title="Total Leads" value={data.leadsCount} />
         <StatCard title="Today Leads" value={data.todayLeads} />
         <StatCard title="Patients" value={data.patientsCount} />

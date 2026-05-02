@@ -3,6 +3,7 @@ import Client from "@/models/Client";
 import { getUser } from "@/middleware/auth";
 import { profileSchema } from "@/lib/validators/profile";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 const requireAdmin = (user: ReturnType<typeof getUser>) => {
@@ -58,6 +59,13 @@ export async function PATCH(req: Request) {
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
+
+    await logAudit(req, { actorType: "user", user }, {
+      action: "client.profile.updated",
+      entityType: "Client",
+      entityId: client._id.toString(),
+      summary: "Public profile updated",
+    });
 
     return NextResponse.json({ profile: client.profile });
   } catch (err: unknown) {

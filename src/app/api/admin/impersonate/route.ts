@@ -4,6 +4,7 @@ import Client from "@/models/Client";
 import { generateToken } from "@/lib/auth";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -57,6 +58,15 @@ export async function POST(req: Request) {
       clientId: target.clientId?.toString() ?? null,
       assignedModules: target.assignedModules ?? [],
       impersonatedBy: user.id ?? "SUPER_ADMIN",
+    });
+
+    await logAudit(req, { actorType: "user", user, clientId: target.clientId?.toString() ?? null }, {
+      action: "user.impersonated",
+      entityType: "User",
+      entityId: target._id.toString(),
+      entityLabel: target.name ?? target.email ?? "User",
+      summary: `Super admin impersonated ${target.email ?? target._id}`,
+      metadata: { targetRole: target.role, clientName: client?.name ?? null },
     });
 
     return NextResponse.json({

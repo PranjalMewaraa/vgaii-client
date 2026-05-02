@@ -3,6 +3,7 @@ import Lead from "@/models/Lead";
 import { resolveClientByPublicIdentifier } from "@/lib/public-client";
 import { generateFeedbackToken, buildFeedbackUrl } from "@/lib/feedback-token";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -41,6 +42,19 @@ export async function POST(req: Request, ctx: RouteContext) {
       feedbackToken: generateFeedbackToken(),
       clientId: client._id,
     });
+
+    await logAudit(
+      req,
+      { actorType: "public", source: "profile-form", clientId: client._id.toString() },
+      {
+        action: "lead.created",
+        entityType: "Lead",
+        entityId: lead._id.toString(),
+        entityLabel: lead.name,
+        summary: "Lead submitted from public profile",
+        metadata: { phone: lead.phone, source: lead.source },
+      },
+    );
 
     const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 

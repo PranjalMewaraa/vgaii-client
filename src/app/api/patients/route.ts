@@ -7,6 +7,7 @@ import { withClientFilter } from "@/lib/query";
 import { patientCreateSchema } from "@/lib/validators/patient";
 import { generateFeedbackToken } from "@/lib/feedback-token";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 const PATIENT_LEAD_STATUSES = [
@@ -173,6 +174,15 @@ export async function POST(req: Request) {
       feedbackToken: generateFeedbackToken(),
       clientId: user.clientId,
       createdBy: user.id,
+    });
+
+    await logAudit(req, { actorType: "user", user }, {
+      action: "patient.created",
+      entityType: "Lead",
+      entityId: lead._id.toString(),
+      entityLabel: lead.name,
+      summary: "Patient added directly (qualified)",
+      metadata: { source: lead.source },
     });
 
     return NextResponse.json({ patient: lead }, { status: 201 });

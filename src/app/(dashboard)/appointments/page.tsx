@@ -394,8 +394,8 @@ function AppointmentsPageInner() {
             </label>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-end gap-4">
-            <label className="block flex-1 min-w-[220px]">
+          <div className="mt-4 flex flex-wrap items-end gap-3">
+            <label className="block flex-1 min-w-[180px]">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Search
               </span>

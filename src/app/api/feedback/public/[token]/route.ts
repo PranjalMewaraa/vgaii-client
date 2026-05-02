@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db";
 import Lead from "@/models/Lead";
 import Feedback from "@/models/Feedback";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -60,7 +61,7 @@ export async function POST(req: Request, ctx: RouteContext) {
 
     const submittedAt = new Date();
 
-    await Feedback.create({
+    const fb = await Feedback.create({
       clientId: lead.clientId,
       leadId: lead._id,
       clientName: lead.name,
@@ -78,6 +79,19 @@ export async function POST(req: Request, ctx: RouteContext) {
       lead.statusUpdatedAt = submittedAt;
     }
     await lead.save();
+
+    await logAudit(
+      req,
+      { actorType: "public", source: "feedback-link", clientId: lead.clientId.toString() },
+      {
+        action: "feedback.submitted",
+        entityType: "Feedback",
+        entityId: fb._id.toString(),
+        entityLabel: lead.name,
+        summary: `Feedback submitted (${parsed.data.rating}/5)`,
+        metadata: { rating: parsed.data.rating, leadId: lead._id.toString() },
+      },
+    );
 
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {

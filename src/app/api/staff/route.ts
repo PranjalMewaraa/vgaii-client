@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { getUser } from "@/middleware/auth";
 import { staffCreateSchema } from "@/lib/validators/staff";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 const requireAdmin = (user: ReturnType<typeof getUser>) => {
@@ -69,6 +70,15 @@ export async function POST(req: Request) {
       clientId: user.clientId,
       assignedModules: parsed.data.assignedModules,
       createdBy: user.id,
+    });
+
+    await logAudit(req, { actorType: "user", user }, {
+      action: "staff.created",
+      entityType: "User",
+      entityId: staff._id.toString(),
+      entityLabel: staff.name ?? staff.email ?? "Staff",
+      summary: `Staff added (${(parsed.data.assignedModules ?? []).join(", ") || "no modules"})`,
+      metadata: { email: staff.email, assignedModules: parsed.data.assignedModules },
     });
 
     return NextResponse.json(

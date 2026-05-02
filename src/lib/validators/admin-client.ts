@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { passwordPolicy } from "@/lib/password-policy";
 
 export const createClientSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -11,7 +12,7 @@ export const createClientSchema = z.object({
   admin: z.object({
     name: z.string().trim().min(2).max(80),
     email: z.string().trim().email().toLowerCase(),
-    password: z.string().min(8).max(120),
+    password: passwordPolicy,
   }),
 });
 

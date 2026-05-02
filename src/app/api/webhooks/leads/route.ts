@@ -4,6 +4,7 @@ import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { publicLeadSchema } from "@/lib/validators/lead";
 import { generateFeedbackToken, buildFeedbackUrl } from "@/lib/feedback-token";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -32,6 +33,19 @@ export async function POST(req: Request) {
       status: "new",
       statusUpdatedAt: new Date(),
     });
+
+    await logAudit(
+      req,
+      { actorType: "webhook", source: "lead-webhook", clientId: client._id.toString() },
+      {
+        action: "lead.created",
+        entityType: "Lead",
+        entityId: lead._id.toString(),
+        entityLabel: lead.name,
+        summary: "Lead created via webhook",
+        metadata: { phone: lead.phone, source: lead.source },
+      },
+    );
 
     const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 

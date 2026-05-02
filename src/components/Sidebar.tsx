@@ -18,7 +18,9 @@ const CLIENT_NAV: NavItem[] = [
   { href: "/patients", label: "Patients", icon: "◉", module: "patients" },
   { href: "/appointments", label: "Appointments", icon: "▦", module: "appointments" },
   { href: "/feedbacks", label: "Feedbacks", icon: "✎", module: "feedback" },
+  { href: "/reports", label: "Reports", icon: "△", adminOnly: true },
   { href: "/staff", label: "Team", icon: "♦", adminOnly: true },
+  { href: "/activity", label: "Activity", icon: "⏱", adminOnly: true },
   { href: "/profile", label: "Profile", icon: "❖", adminOnly: true },
   { href: "/settings", label: "Settings", icon: "⚙", adminOnly: true },
 ];

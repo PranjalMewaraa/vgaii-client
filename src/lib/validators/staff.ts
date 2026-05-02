@@ -1,19 +1,20 @@
 import { z } from "zod";
 import { ASSIGNABLE_MODULES } from "@/lib/rbac";
+import { passwordPolicy } from "@/lib/password-policy";
 
 const moduleEnum = z.enum(ASSIGNABLE_MODULES);
 
 export const staffCreateSchema = z.object({
   name: z.string().min(2).max(80),
   email: z.string().email(),
-  password: z.string().min(8).max(120),
+  password: passwordPolicy,
   assignedModules: z.array(moduleEnum).default([]),
 });
 
 export const staffUpdateSchema = z
   .object({
     name: z.string().min(2).max(80).optional(),
-    password: z.string().min(8).max(120).optional(),
+    password: passwordPolicy.optional(),
     assignedModules: z.array(moduleEnum).optional(),
   })
   .refine(

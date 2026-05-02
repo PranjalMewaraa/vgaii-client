@@ -6,6 +6,7 @@ import { withClientFilter } from "@/lib/query";
 import { leadSchema } from "@/lib/validators/lead";
 import { generateFeedbackToken, buildFeedbackUrl } from "@/lib/feedback-token";
 import { getErrorMessage } from "@/lib/errors";
+import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -27,6 +28,15 @@ export async function POST(req: Request) {
       clientId: user.clientId,
       createdBy: user.id,
       feedbackToken: generateFeedbackToken(),
+    });
+
+    await logAudit(req, { actorType: "user", user }, {
+      action: "lead.created",
+      entityType: "Lead",
+      entityId: lead._id.toString(),
+      entityLabel: lead.name,
+      summary: `Lead created${lead.source ? ` from ${lead.source}` : ""}`,
+      metadata: { phone: lead.phone, source: lead.source },
     });
 
     const origin = req.headers.get("origin") ?? new URL(req.url).origin;
