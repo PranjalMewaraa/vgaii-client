@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import useSWR from "swr";
 import {
+  Braces,
   Building2,
   Calendar,
   CalendarDays,
@@ -28,6 +29,7 @@ import {
 } from "lucide-react";
 import RoleGuard from "@/components/RoleGuard";
 import { startImpersonation } from "@/lib/impersonation";
+import { LEAD_STATUSES } from "@/lib/constants";
 
 type StaffRow = {
   id: string;
@@ -829,6 +831,7 @@ function ClientWebhooksBlock({
               hint="External landing pages POST new leads here."
               url={leadUrl}
               webhookKey={client.webhookKey}
+              schema={LEAD_CAPTURE_SCHEMA}
             />
             <WebhookRow
               method="PATCH"
@@ -836,6 +839,7 @@ function ClientWebhooksBlock({
               hint="External automations advance leads through the funnel."
               url={leadStatusUrl}
               webhookKey={client.webhookKey}
+              schema={LEAD_STATUS_SCHEMA}
             />
             <WebhookRow
               method="POST"
@@ -844,6 +848,7 @@ function ClientWebhooksBlock({
               url={bookingUrl}
               webhookKey={client.webhookKey}
               defaultMode="query"
+              schema={CAL_BOOKING_SCHEMA}
             />
           </>
         ) : (
@@ -889,6 +894,102 @@ function ReadRow({
   );
 }
 
+type WebhookField = {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+};
+
+type WebhookSchema = {
+  fields: WebhookField[];
+  // Pretty-printed JSON shown verbatim. Hand-authored so comments stay
+  // intact (JSON.stringify would strip them) and field order matches the
+  // narrative we want.
+  exampleRequest: string;
+  exampleResponse: string;
+  responseStatus: string;
+  notes?: string;
+};
+
+const LEAD_CAPTURE_SCHEMA: WebhookSchema = {
+  fields: [
+    { name: "name", type: "string", required: true, description: "Lead's full name (≥2 chars)." },
+    { name: "phone", type: "string", required: true, description: "Phone number (≥10 chars). Stored both as-entered and in a normalized form for de-dup." },
+    { name: "source", type: "string", required: false, description: "Acquisition channel — e.g. \"google-ads\", \"instagram\", \"website\"." },
+  ],
+  exampleRequest: `{
+  "name": "Riya Sharma",
+  "phone": "+91 98765 43210",
+  "source": "google-ads"
+}`,
+  exampleResponse: `{
+  "leadId": "cmox4abc1234567890",
+  "status": "new",
+  "feedbackUrl": "https://app.example.com/f/<token>"
+}`,
+  responseStatus: "201 Created",
+};
+
+const LEAD_STATUS_SCHEMA: WebhookSchema = {
+  fields: [
+    { name: "phone", type: "string", required: true, description: "Phone number used to look up the existing lead within this client." },
+    { name: "status", type: "enum", required: true, description: `One of: ${LEAD_STATUSES.join(", ")}.` },
+    { name: "note", type: "string", required: false, description: "Free-text note. Not yet persisted on the Lead — accepted for forward compatibility." },
+    { name: "outcomeRating", type: "number (1–5)", required: false, description: "Rating captured by an external follow-up flow. Stored on the lead." },
+  ],
+  exampleRequest: `{
+  "phone": "+91 98765 43210",
+  "status": "qualified",
+  "outcomeRating": 5
+}`,
+  exampleResponse: `{
+  "leadId": "cmox4abc1234567890",
+  "status": "qualified",
+  "outcomeRating": 5
+}`,
+  responseStatus: "200 OK",
+  notes: "404 if no lead matches this phone for the client. The webhook key scopes the lookup, so phones don't need to be globally unique.",
+};
+
+const CAL_BOOKING_SCHEMA: WebhookSchema = {
+  fields: [
+    { name: "triggerEvent", type: "string", required: true, description: "Cal.com event type. Only BOOKING_CREATED is acted on; others are accepted and ignored." },
+    { name: "payload.startTime", type: "ISO date", required: true, description: "Appointment date/time. Stored on the new Appointment row." },
+    { name: "payload.attendees[0]", type: "object", required: true, description: "First attendee — uses .name, .email, .phoneNumber to build the patient record." },
+    { name: "payload.responses", type: "object", required: false, description: "Cal.com booking-form answers. Used as a fallback for phone if attendees[0].phoneNumber is empty." },
+  ],
+  exampleRequest: `{
+  "triggerEvent": "BOOKING_CREATED",
+  "payload": {
+    "startTime": "2026-04-20T10:00:00Z",
+    "attendees": [
+      {
+        "name": "Riya Sharma",
+        "email": "riya@example.com",
+        "phoneNumber": "+91 98765 43210"
+      }
+    ],
+    "responses": {
+      "phone": { "label": "Phone", "value": "+91 98765 43210" }
+    }
+  }
+}`,
+  exampleResponse: `{
+  "appointment": {
+    "id": "cmox4def1234567890",
+    "name": "Riya Sharma",
+    "phone": "+91 98765 43210",
+    "date": "2026-04-20T10:00:00.000Z",
+    "status": "scheduled",
+    "leadId": "cmox4abc1234567890",
+    "source": "cal.com"
+  }
+}`,
+  responseStatus: "200 OK",
+  notes: "Cal.com sends this payload automatically — you don't construct it. If a Lead with the same phone exists in this client, the appointment links to it and the lead status flips to appointment_booked.",
+};
+
 function WebhookRow({
   method,
   label,
@@ -896,6 +997,7 @@ function WebhookRow({
   url,
   webhookKey,
   defaultMode = "header",
+  schema,
 }: {
   method: "POST" | "PATCH";
   label: string;
@@ -903,8 +1005,10 @@ function WebhookRow({
   url: string;
   webhookKey: string;
   defaultMode?: "header" | "query";
+  schema?: WebhookSchema;
 }) {
   const [mode, setMode] = useState<"header" | "query">(defaultMode);
+  const [showSchema, setShowSchema] = useState(false);
   const queryUrl = `${url}?key=${webhookKey}`;
   const display = mode === "query" ? queryUrl : url;
 
@@ -962,6 +1066,106 @@ function WebhookRow({
         <p className="mt-2 text-xs text-slate-500">
           The key is in the URL — anyone with this URL can call the
           endpoint. Don&apos;t share it publicly.
+        </p>
+      )}
+
+      {schema && (
+        <div className="mt-3 border-t border-slate-200 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowSchema(s => !s)}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-indigo-600 hover:underline"
+            aria-expanded={showSchema}
+          >
+            {showSchema ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+            <Braces size={12} />
+            {showSchema ? "Hide payload" : "Show payload"}
+          </button>
+          {showSchema && <SchemaPanel schema={schema} />}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SchemaPanel({ schema }: { schema: WebhookSchema }) {
+  return (
+    <div className="mt-3 space-y-3">
+      <div>
+        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          Fields
+        </p>
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
+              <tr>
+                <th className="px-3 py-1.5 font-semibold">Field</th>
+                <th className="px-3 py-1.5 font-semibold">Type</th>
+                <th className="px-3 py-1.5 font-semibold">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schema.fields.map(f => (
+                <tr key={f.name} className="border-t border-slate-100">
+                  <td className="px-3 py-1.5 font-mono text-slate-800">
+                    {f.name}
+                    {f.required ? (
+                      <span className="ml-1 text-red-500" title="Required">
+                        *
+                      </span>
+                    ) : (
+                      <span
+                        className="ml-1 text-[10px] uppercase tracking-wider text-slate-400"
+                        title="Optional"
+                      >
+                        opt
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-1.5 font-mono text-slate-600">
+                    {f.type}
+                  </td>
+                  <td className="px-3 py-1.5 text-slate-600">
+                    {f.description}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-1 text-[10px] text-slate-400">
+          <span className="text-red-500">*</span> required ·{" "}
+          <span className="uppercase tracking-wider">opt</span> optional
+        </p>
+      </div>
+
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            Example request body
+          </p>
+          <CopyButton value={schema.exampleRequest} />
+        </div>
+        <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-900 p-3 text-[11px] leading-relaxed text-slate-100">
+          {schema.exampleRequest}
+        </pre>
+      </div>
+
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            Response · {schema.responseStatus}
+          </p>
+          <CopyButton value={schema.exampleResponse} />
+        </div>
+        <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-700">
+          {schema.exampleResponse}
+        </pre>
+      </div>
+
+      {schema.notes && (
+        <p className="rounded-lg border border-slate-200 bg-amber-50/60 px-3 py-2 text-[11px] text-slate-700">
+          {schema.notes}
         </p>
       )}
     </div>
