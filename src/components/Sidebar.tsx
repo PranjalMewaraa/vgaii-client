@@ -2,31 +2,44 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Activity,
+  Building2,
+  Calendar,
+  ClipboardList,
+  LayoutDashboard,
+  MessageSquare,
+  Settings,
+  Stethoscope,
+  UserRound,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { useStoredUser, type StoredUser } from "@/lib/client-auth";
 
 type NavItem = {
   href: string;
   label: string;
-  icon: string;
+  icon: LucideIcon;
   module?: string;
   adminOnly?: boolean;
 };
 
 const CLIENT_NAV: NavItem[] = [
-  { href: "/", label: "Dashboard", icon: "■" },
-  { href: "/leads", label: "Leads", icon: "▤", module: "leads" },
-  { href: "/patients", label: "Patients", icon: "◉", module: "patients" },
-  { href: "/appointments", label: "Appointments", icon: "▦", module: "appointments" },
-  { href: "/feedbacks", label: "Feedbacks", icon: "✎", module: "feedback" },
-  { href: "/staff", label: "Team", icon: "♦", adminOnly: true },
-  { href: "/activity", label: "Activity", icon: "⏱", adminOnly: true },
-  { href: "/profile", label: "Profile", icon: "❖", adminOnly: true },
-  { href: "/settings", label: "Settings", icon: "⚙", adminOnly: true },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/leads", label: "Leads", icon: ClipboardList, module: "leads" },
+  { href: "/patients", label: "Patients", icon: Stethoscope, module: "patients" },
+  { href: "/appointments", label: "Appointments", icon: Calendar, module: "appointments" },
+  { href: "/feedbacks", label: "Feedbacks", icon: MessageSquare, module: "feedback" },
+  { href: "/staff", label: "Team", icon: Users, adminOnly: true },
+  { href: "/activity", label: "Activity", icon: Activity, adminOnly: true },
+  { href: "/profile", label: "Profile", icon: UserRound, adminOnly: true },
+  { href: "/settings", label: "Settings", icon: Settings, adminOnly: true },
 ];
 
 const SUPER_ADMIN_NAV: NavItem[] = [
-  { href: "/", label: "Overview", icon: "■" },
-  { href: "/admin/clients", label: "Clients", icon: "◇" },
+  { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin/clients", label: "Clients", icon: Building2 },
 ];
 
 const isVisible = (item: NavItem, user: StoredUser | null) => {
@@ -86,7 +99,7 @@ export default function Sidebar({
                   item.href === "/"
                     ? pathname === "/"
                     : pathname?.startsWith(item.href);
-
+                const Icon = item.icon;
                 return (
                   <Link
                     key={item.href}
@@ -98,13 +111,11 @@ export default function Sidebar({
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     }`}
                   >
-                    <span
-                      className={`text-base ${
-                        active ? "text-indigo-600" : "text-slate-400"
-                      }`}
-                    >
-                      {item.icon}
-                    </span>
+                    <Icon
+                      size={18}
+                      strokeWidth={active ? 2.25 : 2}
+                      className={active ? "text-indigo-600" : "text-slate-400"}
+                    />
                     <span>{item.label}</span>
                   </Link>
                 );

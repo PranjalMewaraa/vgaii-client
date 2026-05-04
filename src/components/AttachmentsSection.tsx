@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { FileText, ImageIcon, Trash2, Upload, X } from "lucide-react";
 
 type AttachmentKind = "prescription" | "lab_report" | "scan" | "xray" | "other";
 
@@ -69,12 +70,12 @@ const isImage = (mime: string) => mime.startsWith("image/");
 
 const FileGlyph = ({ mime }: { mime: string }) => (
   <span
-    className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
+    className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
       isImage(mime) ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"
     }`}
     aria-hidden
   >
-    {isImage(mime) ? "IMG" : "PDF"}
+    {isImage(mime) ? <ImageIcon size={18} /> : <FileText size={18} />}
   </span>
 );
 
@@ -358,9 +359,10 @@ export default function AttachmentsSection({
                 <button
                   type="button"
                   onClick={() => deleteAttachment(a.id, a.filename)}
-                  className="rounded-lg border border-red-200 bg-white px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
                   aria-label={`Delete ${a.filename}`}
                 >
+                  <Trash2 size={12} />
                   Delete
                 </button>
               )}
@@ -385,6 +387,11 @@ export default function AttachmentsSection({
                 : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100"
             }`}
           >
+            <Upload
+              size={20}
+              className="mx-auto mb-1 text-slate-400"
+              aria-hidden
+            />
             <p className="font-medium text-slate-700">
               Drop files here or click to choose
             </p>
@@ -435,7 +442,7 @@ export default function AttachmentsSection({
                       className="text-slate-400 hover:text-slate-600"
                       aria-label="Dismiss"
                     >
-                      ✕
+                      <X size={12} />
                     </button>
                   )}
                 </li>

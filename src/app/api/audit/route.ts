@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
+import { maybeLazyPrune } from "@/lib/audit-prune";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
@@ -15,6 +16,11 @@ export async function GET(req: Request) {
     if (user.role !== "CLIENT_ADMIN" && user.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    // Opportunistically drop entries older than the retention window. Runs
+    // at most once per hour per server process — the helper rate-limits
+    // itself. Fire-and-forget so the activity feed never waits on it.
+    void maybeLazyPrune();
 
     const url = new URL(req.url);
     const entityType = url.searchParams.get("entityType");

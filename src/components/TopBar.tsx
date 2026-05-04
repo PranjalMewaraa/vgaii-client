@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { LogOut, Menu } from "lucide-react";
 import { clearStoredAuth, useStoredUser } from "@/lib/client-auth";
 import GlobalSearch from "@/components/GlobalSearch";
 
@@ -59,7 +60,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
         className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 md:hidden"
         aria-label="Open menu"
       >
-        ☰
+        <Menu size={18} />
       </button>
 
       <div className="hidden min-w-0 lg:block">
@@ -88,9 +89,10 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
           <button
             type="button"
             onClick={logout}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
           >
-            Logout
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       )}

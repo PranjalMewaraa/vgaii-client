@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 
 type LeadHit = {
   id: string;
@@ -208,7 +209,7 @@ export default function GlobalSearch() {
           className="w-full rounded-lg border border-slate-200 bg-slate-50 px-9 py-2 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100"
         />
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-          ⌕
+          <Search size={14} />
         </span>
         <span className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">
           ⌘K
