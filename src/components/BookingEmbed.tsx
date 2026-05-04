@@ -123,15 +123,42 @@ export default function BookingEmbed({
             setRuntimeError("Cal.com embed failed to initialize.");
             return;
           }
+          // Phone prefill: the booker's phone field is a custom question
+          // whose identifier defaults to `attendeePhoneNumber` (visible in
+          // Cal.com → event type → "Add a question"). Cal.com prefills
+          // custom questions two ways:
+          //   1. URL query param matching the identifier:
+          //        ?attendeePhoneNumber=<value>
+          //   2. Embed config: `responses[<identifier>]`.
+          // We send both for resilience. `phone=` is also appended as a
+          // fallback in case the user renames the identifier to "phone".
+          let calLinkWithPrefill = calLink;
+          if (phone) {
+            const params = new URLSearchParams({
+              attendeePhoneNumber: phone,
+              phone,
+            });
+            calLinkWithPrefill = `${calLink}?${params.toString()}`;
+          }
+
+          const config: Record<string, unknown> = {
+            layout: "month_view",
+            name,
+            email,
+          };
+          if (phone) {
+            config["responses[attendeePhoneNumber]"] = phone;
+            // Cover the common alternative identifier the user might pick.
+            config["responses[phone]"] = phone;
+            // Keep this for downstream webhook compatibility — populates
+            // the booking's `metadata.phone` even if no booker field
+            // matches the value.
+            config["metadata[phone]"] = phone;
+          }
           ns("inline", {
             elementOrSelector: target,
-            calLink,
-            config: {
-              layout: "month_view",
-              name,
-              email,
-              "metadata[phone]": phone,
-            },
+            calLink: calLinkWithPrefill,
+            config,
           });
 
           // Register listeners on the namespace-scoped instance so we don't

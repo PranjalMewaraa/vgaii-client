@@ -41,6 +41,8 @@ export async function GET(req: Request) {
       patientsCount,
       appointments,
       openFeedback,
+      resolvedFeedback,
+      ratedFeedbackAgg,
     ] = await Promise.all([
       prisma.lead.count({ where: scope }),
       prisma.lead.count({
@@ -56,7 +58,24 @@ export async function GET(req: Request) {
         where: { ...scope, date: { gte: new Date() } },
       }),
       prisma.feedback.count({ where: { ...scope, status: "open" } }),
+      prisma.feedback.count({ where: { ...scope, status: "resolved" } }),
+      // Average rating + count are computed only over feedbacks that have a
+      // numeric rating. Open issues without a rating skew the average if
+      // included as zeros.
+      prisma.feedback.aggregate({
+        where: { ...scope, rating: { not: null } },
+        _avg: { rating: true },
+        _count: { rating: true },
+      }),
     ]);
+
+    const internalFeedback = {
+      total: openFeedback + resolvedFeedback,
+      open: openFeedback,
+      resolved: resolvedFeedback,
+      ratedCount: ratedFeedbackAgg._count.rating ?? 0,
+      avgRating: ratedFeedbackAgg._avg.rating ?? null,
+    };
 
     return NextResponse.json({
       leadsCount,
@@ -64,6 +83,7 @@ export async function GET(req: Request) {
       patientsCount,
       appointments,
       openFeedback,
+      internalFeedback,
       subscription: client?.subscriptionStatus,
       renewalDate: client?.renewalDate,
       businessInfo,

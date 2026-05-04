@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
+import { Filter, X } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 
@@ -56,6 +57,11 @@ function PatientsPageInner() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [sourceFilter, setSourceFilter] = useState("");
+  const [genderFilter, setGenderFilter] =
+    useState<"" | "female" | "male" | "other">("");
+  const [feedbackFilter, setFeedbackFilter] =
+    useState<"any" | "yes" | "no">("any");
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 250);
@@ -108,9 +114,27 @@ function PatientsPageInner() {
       if (activeFilter === "active" && isInactive(r.lastAppointmentDate)) return false;
       if (activeFilter === "inactive" && !isInactive(r.lastAppointmentDate))
         return false;
+      if (genderFilter && (r.gender ?? "").toLowerCase() !== genderFilter)
+        return false;
+      if (feedbackFilter === "yes" && !r.hasFeedback) return false;
+      if (feedbackFilter === "no" && r.hasFeedback) return false;
       return true;
     });
-  }, [rows, sourceFilter, activeFilter]);
+  }, [rows, sourceFilter, activeFilter, genderFilter, feedbackFilter]);
+
+  const activeFilterCount =
+    (activeFilter !== "all" ? 1 : 0) +
+    (sourceFilter ? 1 : 0) +
+    (genderFilter ? 1 : 0) +
+    (feedbackFilter !== "any" ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setSearch("");
+    setSourceFilter("");
+    setActiveFilter("all");
+    setGenderFilter("");
+    setFeedbackFilter("any");
+  };
 
   // Only `lead`-kind rows are selectable for bulk operations. Orphan direct
   // appointments aren't Leads — they need to be linked to a patient first.
@@ -387,8 +411,8 @@ function PatientsPageInner() {
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
-        <div className="flex flex-wrap items-end gap-4">
-          <label className="block flex-1 min-w-[180px]">
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="block flex-1 min-w-[220px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Search
             </span>
@@ -399,59 +423,84 @@ function PatientsPageInner() {
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              Status
-            </p>
-            <div className="mt-1 inline-flex rounded-lg border border-slate-200 p-0.5 text-xs">
-              {(["all", "active", "inactive"] as const).map(f => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setActiveFilter(f)}
-                  className={`rounded-md px-3 py-1 font-medium uppercase tracking-wider transition ${
-                    activeFilter === f
-                      ? "bg-indigo-600 text-white"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-          <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-              Source
-            </span>
-            <select
-              value={sourceFilter}
-              onChange={e => setSourceFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            >
-              <option value="">All sources</option>
-              {sources.map(s => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </label>
-          {(search || sourceFilter || activeFilter !== "all") && (
+          <button
+            type="button"
+            onClick={() => setShowFilters(true)}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+              activeFilterCount > 0
+                ? "border-indigo-300 bg-indigo-50 text-indigo-700"
+                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Filter size={12} />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-semibold text-white">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          {(search || activeFilterCount > 0) && (
             <button
               type="button"
-              onClick={() => {
-                setSearch("");
-                setSourceFilter("");
-                setActiveFilter("all");
-              }}
+              onClick={clearAllFilters}
               className="text-xs text-indigo-600 hover:underline"
             >
-              Clear filters
+              Clear all
             </button>
           )}
         </div>
+
+        {activeFilterCount > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            {activeFilter !== "all" && (
+              <FilterChip
+                label={`Status: ${activeFilter}`}
+                onClear={() => setActiveFilter("all")}
+              />
+            )}
+            {sourceFilter && (
+              <FilterChip
+                label={`Source: ${sourceFilter}`}
+                onClear={() => setSourceFilter("")}
+              />
+            )}
+            {genderFilter && (
+              <FilterChip
+                label={`Gender: ${genderFilter}`}
+                onClear={() => setGenderFilter("")}
+              />
+            )}
+            {feedbackFilter !== "any" && (
+              <FilterChip
+                label={`Feedback: ${feedbackFilter === "yes" ? "submitted" : "not submitted"}`}
+                onClear={() => setFeedbackFilter("any")}
+              />
+            )}
+          </div>
+        )}
       </div>
+
+      {showFilters && (
+        <PatientsFilterModal
+          onClose={() => setShowFilters(false)}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
+          sourceFilter={sourceFilter}
+          setSourceFilter={setSourceFilter}
+          sources={sources}
+          genderFilter={genderFilter}
+          setGenderFilter={setGenderFilter}
+          feedbackFilter={feedbackFilter}
+          setFeedbackFilter={setFeedbackFilter}
+          onClearAll={() => {
+            setSourceFilter("");
+            setActiveFilter("all");
+            setGenderFilter("");
+            setFeedbackFilter("any");
+          }}
+        />
+      )}
 
       {someSelected && (
         <div className="sticky top-2 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3">
@@ -561,6 +610,7 @@ function PatientsPageInner() {
                   <th className="px-6 py-3 text-left">Name</th>
                   <th className="px-6 py-3 text-left">Phone</th>
                   <th className="px-6 py-3 text-left">Age / Gender</th>
+                  <th className="px-6 py-3 text-left">Source</th>
                   <th className="px-6 py-3 text-left">Status</th>
                   <th className="px-6 py-3 text-left">Activity</th>
                   <th className="px-6 py-3 text-right">Last appt</th>
@@ -612,6 +662,15 @@ function PatientsPageInner() {
                           .filter(Boolean)
                           .join(" · ") || "—"}
                       </td>
+                      <td className="px-6 py-4 text-slate-600">
+                        {p.source ? (
+                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600">
+                            {p.source}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">—</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <StatusPill
                           status={p.kind === "direct" ? "direct" : p.status}
@@ -646,6 +705,225 @@ function PatientsPageInner() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function FilterChip({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-medium text-indigo-700">
+      {label}
+      <button
+        type="button"
+        onClick={onClear}
+        className="text-indigo-500 hover:text-indigo-700"
+        aria-label={`Remove ${label}`}
+      >
+        <X size={10} />
+      </button>
+    </span>
+  );
+}
+
+function PatientsFilterModal({
+  onClose,
+  activeFilter,
+  setActiveFilter,
+  sourceFilter,
+  setSourceFilter,
+  sources,
+  genderFilter,
+  setGenderFilter,
+  feedbackFilter,
+  setFeedbackFilter,
+  onClearAll,
+}: {
+  onClose: () => void;
+  activeFilter: "all" | "active" | "inactive";
+  setActiveFilter: (v: "all" | "active" | "inactive") => void;
+  sourceFilter: string;
+  setSourceFilter: (v: string) => void;
+  sources: string[];
+  genderFilter: "" | "female" | "male" | "other";
+  setGenderFilter: (v: "" | "female" | "male" | "other") => void;
+  feedbackFilter: "any" | "yes" | "no";
+  setFeedbackFilter: (v: "any" | "yes" | "no") => void;
+  onClearAll: () => void;
+}) {
+  // Esc to close.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="w-full max-w-md overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+          <div>
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+              <Filter size={14} className="text-indigo-600" />
+              Filter patients
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Combine any number of filters. Search runs separately above.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50"
+            aria-label="Close"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-5 py-4">
+          <FilterGroup
+            title="Status"
+            description="Active = had a completed visit in the last 12 months."
+          >
+            <Pills
+              options={[
+                { value: "all", label: "All" },
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ]}
+              value={activeFilter}
+              onChange={setActiveFilter}
+            />
+          </FilterGroup>
+
+          <FilterGroup title="Source">
+            <select
+              value={sourceFilter}
+              onChange={e => setSourceFilter(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            >
+              <option value="">All sources</option>
+              {sources.map(s => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </FilterGroup>
+
+          <FilterGroup title="Gender">
+            <Pills
+              options={[
+                { value: "", label: "Any" },
+                { value: "female", label: "Female" },
+                { value: "male", label: "Male" },
+                { value: "other", label: "Other" },
+              ]}
+              value={genderFilter}
+              onChange={setGenderFilter}
+            />
+          </FilterGroup>
+
+          <FilterGroup
+            title="Post-visit feedback"
+            description="Feedback submitted after a visit (rating + review)."
+          >
+            <Pills
+              options={[
+                { value: "any", label: "Any" },
+                { value: "yes", label: "Submitted" },
+                { value: "no", label: "Not submitted" },
+              ]}
+              value={feedbackFilter}
+              onChange={setFeedbackFilter}
+            />
+          </FilterGroup>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
+          <button
+            type="button"
+            onClick={onClearAll}
+            className="text-xs text-slate-500 hover:underline"
+          >
+            Reset filters
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FilterGroup({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        {title}
+      </p>
+      {description && (
+        <p className="text-[11px] text-slate-400">{description}</p>
+      )}
+      <div className="mt-1.5">{children}</div>
+    </div>
+  );
+}
+
+function Pills<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: ReadonlyArray<{ value: T; label: string }>;
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="inline-flex flex-wrap gap-1.5">
+      {options.map(o => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+            value === o.value
+              ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+              : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }

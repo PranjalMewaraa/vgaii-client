@@ -48,7 +48,7 @@ const TRANSITION_LABELS: Record<LeadStatus, string> = {
   // "Mark new".
   new: "Retry contact",
   contacted: "Mark contacted",
-  qualified: "Mark qualified",
+  qualified: "Convert to Patient",
   appointment_booked: "Mark appointment booked",
   visited: "Mark visited",
   lost: "—",
