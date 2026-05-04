@@ -10,6 +10,22 @@ const PER_GROUP = 5;
 
 const PATIENT_STATUSES = ["qualified", "appointment_booked", "visited"];
 
+// MySQL InnoDB's default `innodb_ft_min_token_size` is 3, so FULLTEXT
+// returns nothing for 2-char queries. Below this we bail to LIKE.
+const FULLTEXT_MIN = 3;
+
+// Strip BOOLEAN-MODE operators that the user almost certainly didn't mean
+// as operators (`amit+sneha` should match either, not "must include
+// sneha"). Then append `*` to the last token to enable prefix match —
+// "ami" → matches "Amit".
+const buildSearchTerm = (q: string): string => {
+  const cleaned = q.replace(/[+\-><()~*"@]/g, " ").trim();
+  if (!cleaned) return "";
+  const tokens = cleaned.split(/\s+/);
+  const last = tokens.pop()!;
+  return [...tokens, `${last}*`].join(" ");
+};
+
 const hasModule = (
   user: ReturnType<typeof getUser>,
   module: string,
@@ -34,31 +50,54 @@ export async function GET(req: Request) {
 
     const scope = withClientFilter(user) as { clientId?: string };
     const phoneNorm = canonicalPhone(q);
+    const useFulltext = q.length >= FULLTEXT_MIN;
+    const term = useFulltext ? buildSearchTerm(q) : null;
 
-    // Prisma `contains` performs LIKE %q%. MySQL's default
-    // utf8mb4_unicode_ci collation is case-insensitive, so we don't need
-    // the `mode: "insensitive"` flag (Postgres-only).
-    const leadOR: Prisma.LeadWhereInput[] = [
-      { name: { contains: q } },
-      { phone: { contains: q } },
-      { email: { contains: q } },
-    ];
+    // Branch construction: when the query is long enough for FULLTEXT, we
+    // use Prisma's `search` filter (MySQL `MATCH() AGAINST() IN BOOLEAN
+    // MODE` under the hood, hitting the @@fulltext indexes). Phone
+    // searches always go through `contains` since phone numbers don't
+    // tokenise well for full-text.
+    const leadOR: Prisma.LeadWhereInput[] = useFulltext
+      ? [
+          { name: { search: term! } },
+          { email: { search: term! } },
+          { phone: { contains: q } },
+        ]
+      : [
+          { name: { contains: q } },
+          { email: { contains: q } },
+          { phone: { contains: q } },
+        ];
     if (phoneNorm.length >= 4) {
       leadOR.push({ phoneNormalized: { contains: phoneNorm } });
     }
 
-    const apptOR: Prisma.AppointmentWhereInput[] = [
-      { name: { contains: q } },
-      { phone: { contains: q } },
-      { email: { contains: q } },
-      { diagnosis: { contains: q } },
-    ];
+    const apptOR: Prisma.AppointmentWhereInput[] = useFulltext
+      ? [
+          { name: { search: term! } },
+          { email: { search: term! } },
+          { diagnosis: { search: term! } },
+          { phone: { contains: q } },
+        ]
+      : [
+          { name: { contains: q } },
+          { email: { contains: q } },
+          { diagnosis: { contains: q } },
+          { phone: { contains: q } },
+        ];
 
-    const fbOR: Prisma.FeedbackWhereInput[] = [
-      { clientName: { contains: q } },
-      { clientPhone: { contains: q } },
-      { reviewText: { contains: q } },
-    ];
+    const fbOR: Prisma.FeedbackWhereInput[] = useFulltext
+      ? [
+          { clientName: { search: term! } },
+          { reviewText: { search: term! } },
+          { clientPhone: { contains: q } },
+        ]
+      : [
+          { clientName: { contains: q } },
+          { reviewText: { contains: q } },
+          { clientPhone: { contains: q } },
+        ];
 
     const [leadsRaw, apptsRaw, feedbacksRaw] = await Promise.all([
       hasModule(user, "leads") || hasModule(user, "patients")

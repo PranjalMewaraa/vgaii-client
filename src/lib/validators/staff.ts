@@ -6,7 +6,9 @@ const moduleEnum = z.enum(ASSIGNABLE_MODULES);
 
 export const staffCreateSchema = z.object({
   name: z.string().min(2).max(80),
-  email: z.string().email(),
+  // `.toLowerCase()` + `.trim()` so `Foo@bar.com` and ` foo@bar.com `
+  // can't accidentally create separate users from the same address.
+  email: z.string().trim().email().toLowerCase(),
   password: passwordPolicy,
   assignedModules: z.array(moduleEnum).default([]),
 });

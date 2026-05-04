@@ -18,7 +18,49 @@ type Appointment = {
   medicines?: string[];
 };
 
-type Tab = "upcoming" | "history";
+type Tab = "upcoming" | "history" | "calendar";
+
+// Calendar week grid spans 7 days × 16 hours. The hour range covers a
+// typical clinic day (7am–10pm); appointments outside this range still
+// load but are visually clamped to the edges of the grid.
+const WEEK_GRID_FIRST_HOUR = 7;
+const WEEK_GRID_LAST_HOUR = 22;
+const WEEK_GRID_HOURS = WEEK_GRID_LAST_HOUR - WEEK_GRID_FIRST_HOUR + 1;
+const HOUR_PX = 56;
+
+const startOfWeek = (d: Date): Date => {
+  // Monday-first week (most of the world outside the US).
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  const day = x.getDay(); // 0=Sun..6=Sat
+  const offset = day === 0 ? -6 : 1 - day;
+  x.setDate(x.getDate() + offset);
+  return x;
+};
+
+const addDays = (d: Date, n: number): Date => {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+};
+
+const sameDay = (a: Date, b: Date): boolean =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+const formatHour = (h: number): string => {
+  const ampm = h >= 12 ? "pm" : "am";
+  const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${displayH} ${ampm}`;
+};
+
+const APPT_TONE: Record<string, string> = {
+  scheduled: "bg-sky-100 text-sky-800 border-sky-300",
+  completed: "bg-emerald-100 text-emerald-800 border-emerald-300",
+  no_show: "bg-red-100 text-red-800 border-red-300",
+  cancelled: "bg-slate-100 text-slate-600 border-slate-300",
+};
 
 type UpcomingPreset = "today" | "tomorrow" | "next_week" | "next_month" | "all";
 type HistoryPreset = "today" | "yesterday" | "last_week" | "last_month" | "all";
@@ -155,7 +197,15 @@ function AppointmentsPageInner() {
   const [search, setSearch] = useState("");
   const [specificDate, setSpecificDate] = useState("");
 
+  // Calendar mode: which week is being viewed.
+  const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
+
   const range = useMemo(() => {
+    if (tab === "calendar") {
+      // Fetch the entire visible week regardless of status — calendar is a
+      // visual layout, not a status-based filter.
+      return { from: weekStart, to: addDays(weekStart, 7) };
+    }
     if (specificDate) {
       const d = new Date(specificDate);
       return { from: startOfDay(d), to: endOfDay(d) };
@@ -163,7 +213,7 @@ function AppointmentsPageInner() {
     return tab === "upcoming"
       ? rangeForUpcoming(upcomingPreset)
       : rangeForHistory(historyPreset);
-  }, [tab, upcomingPreset, historyPreset, specificDate]);
+  }, [tab, upcomingPreset, historyPreset, specificDate, weekStart]);
 
   const fromMs = range.from?.getTime();
   const toMs = range.to?.getTime();
@@ -351,7 +401,7 @@ function AppointmentsPageInner() {
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="flex border-b border-slate-200">
-          {(["upcoming", "history"] as Tab[]).map(t => {
+          {(["upcoming", "history", "calendar"] as Tab[]).map(t => {
             const isActive = tab === t;
             return (
               <button
@@ -374,6 +424,7 @@ function AppointmentsPageInner() {
           })}
         </div>
 
+        {tab !== "calendar" && (
         <div className="px-6 py-4">
           <div className="flex flex-wrap items-center gap-2">
             {presets.map(p => (
@@ -424,8 +475,20 @@ function AppointmentsPageInner() {
             )}
           </div>
         </div>
+        )}
       </div>
 
+      {tab === "calendar" && (
+        <CalendarWeekGrid
+          appointments={data}
+          weekStart={weekStart}
+          onPrevWeek={() => setWeekStart(addDays(weekStart, -7))}
+          onNextWeek={() => setWeekStart(addDays(weekStart, 7))}
+          onToday={() => setWeekStart(startOfWeek(new Date()))}
+        />
+      )}
+
+      {tab !== "calendar" && (
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <h2 className="text-base font-semibold text-slate-900 capitalize">
@@ -669,6 +732,7 @@ function AppointmentsPageInner() {
           </ul>
         )}
       </div>
+      )}
     </div>
   );
 }
@@ -738,5 +802,230 @@ function SpotlightCard({
         )}
       </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Calendar week grid
+// ─────────────────────────────────────────────────────────────────────
+
+function CalendarWeekGrid({
+  appointments,
+  weekStart,
+  onPrevWeek,
+  onNextWeek,
+  onToday,
+}: {
+  appointments: Appointment[];
+  weekStart: Date;
+  onPrevWeek: () => void;
+  onNextWeek: () => void;
+  onToday: () => void;
+}) {
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const hours = Array.from(
+    { length: WEEK_GRID_HOURS },
+    (_, i) => WEEK_GRID_FIRST_HOUR + i,
+  );
+  const today = new Date();
+
+  // Format the week range for the header — short and unambiguous, e.g.
+  // "5 — 11 May 2026" (or "29 Apr — 5 May 2026" when crossing months).
+  const lastDay = days[days.length - 1];
+  const sameMonth =
+    weekStart.getMonth() === lastDay.getMonth() &&
+    weekStart.getFullYear() === lastDay.getFullYear();
+  const weekLabel = sameMonth
+    ? `${weekStart.getDate()} — ${lastDay.getDate()} ${lastDay.toLocaleString(
+        undefined,
+        { month: "short", year: "numeric" },
+      )}`
+    : `${weekStart.toLocaleString(undefined, { day: "numeric", month: "short" })} — ${lastDay.toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
+
+  // Bucket appointments per day index (0=Mon..6=Sun).
+  const apptsByDay = new Map<number, Appointment[]>();
+  for (const a of appointments) {
+    if (!a.date) continue;
+    const d = new Date(a.date);
+    for (let i = 0; i < 7; i++) {
+      if (sameDay(d, days[i])) {
+        const list = apptsByDay.get(i) ?? [];
+        list.push(a);
+        apptsByDay.set(i, list);
+        break;
+      }
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-6 py-4">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onPrevWeek}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          >
+            ← Prev
+          </button>
+          <button
+            type="button"
+            onClick={onToday}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            onClick={onNextWeek}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          >
+            Next →
+          </button>
+        </div>
+        <p className="text-sm font-semibold text-slate-900">{weekLabel}</p>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="min-w-[760px]">
+          {/* Header row: hour-label gutter + 7 day headers */}
+          <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-slate-200">
+            <div className="border-r border-slate-200" />
+            {days.map((d, i) => {
+              const isToday = sameDay(d, today);
+              return (
+                <div
+                  key={i}
+                  className={`border-r border-slate-200 px-2 py-2 text-center text-xs ${
+                    isToday ? "bg-indigo-50" : ""
+                  }`}
+                >
+                  <div className="font-semibold text-slate-700">
+                    {d.toLocaleString(undefined, { weekday: "short" })}
+                  </div>
+                  <div
+                    className={`mt-0.5 ${
+                      isToday ? "font-bold text-indigo-700" : "text-slate-500"
+                    }`}
+                  >
+                    {d.getDate()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Body: hour gutter + day columns. Day columns are
+              position:relative so absolute-positioned appointments can
+              stack inside them. */}
+          <div className="grid grid-cols-[60px_repeat(7,1fr)]">
+            {/* Hour-label column */}
+            <div className="border-r border-slate-200">
+              {hours.map(h => (
+                <div
+                  key={h}
+                  className="border-b border-slate-100 px-2 text-[10px] uppercase tracking-wider text-slate-400"
+                  style={{ height: HOUR_PX, paddingTop: 2 }}
+                >
+                  {formatHour(h)}
+                </div>
+              ))}
+            </div>
+
+            {days.map((d, dayIdx) => {
+              const isToday = sameDay(d, today);
+              const dayAppts = apptsByDay.get(dayIdx) ?? [];
+              return (
+                <div
+                  key={dayIdx}
+                  className={`relative border-r border-slate-200 ${
+                    isToday ? "bg-indigo-50/30" : ""
+                  }`}
+                  style={{ height: WEEK_GRID_HOURS * HOUR_PX }}
+                >
+                  {/* Background hour grid lines */}
+                  {hours.map(h => (
+                    <div
+                      key={h}
+                      className="border-b border-slate-100"
+                      style={{ height: HOUR_PX }}
+                    />
+                  ))}
+
+                  {/* Appointment blocks */}
+                  {dayAppts.map(a => {
+                    const dt = new Date(a.date);
+                    const minutesFromGridStart =
+                      (dt.getHours() - WEEK_GRID_FIRST_HOUR) * 60 +
+                      dt.getMinutes();
+                    const top = Math.max(
+                      0,
+                      Math.min(
+                        WEEK_GRID_HOURS * HOUR_PX - 24,
+                        (minutesFromGridStart * HOUR_PX) / 60,
+                      ),
+                    );
+                    const tone =
+                      APPT_TONE[a.status ?? "scheduled"] ??
+                      APPT_TONE.scheduled;
+                    const timeLabel = dt.toLocaleString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        title={`${timeLabel} · ${a.name ?? "Unnamed"}${
+                          a.status ? ` · ${a.status}` : ""
+                        }`}
+                        className={`absolute left-1 right-1 overflow-hidden rounded border px-1.5 py-1 text-left text-[11px] leading-tight transition hover:shadow ${tone}`}
+                        style={{ top, minHeight: 28 }}
+                      >
+                        <span className="block truncate font-medium">
+                          {a.name ?? "Unnamed"}
+                        </span>
+                        <span className="block truncate text-[10px] opacity-80">
+                          {timeLabel}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 px-6 py-3 text-[11px] text-slate-500">
+        <LegendChip className="bg-sky-100 border-sky-300" label="Scheduled" />
+        <LegendChip
+          className="bg-emerald-100 border-emerald-300"
+          label="Visited"
+        />
+        <LegendChip className="bg-red-100 border-red-300" label="No-show" />
+        <LegendChip
+          className="bg-slate-100 border-slate-300"
+          label="Cancelled"
+        />
+      </div>
+    </div>
+  );
+}
+
+function LegendChip({
+  className,
+  label,
+}: {
+  className: string;
+  label: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`inline-block h-3 w-3 rounded border ${className}`} />
+      <span>{label}</span>
+    </span>
   );
 }

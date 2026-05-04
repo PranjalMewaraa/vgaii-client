@@ -187,6 +187,10 @@ model Lead {
   @@index([clientId, phoneNormalized])
   @@index([clientId, phone])
   @@index([status])
+  // FULLTEXT index used by the global search box. MySQL ignores stop
+  // words and tokens shorter than `innodb_ft_min_token_size` (default 3),
+  // so two-letter searches still fall back to the LIKE path.
+  @@fulltext([name, email])
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -222,6 +226,7 @@ model Appointment {
   @@index([clientId, date])
   @@index([leadId])
   @@index([status])
+  @@fulltext([name, email, diagnosis])
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -246,6 +251,7 @@ model Feedback {
 
   @@index([clientId, status])
   @@index([leadId])
+  @@fulltext([clientName, reviewText])
 }
 
 // ─────────────────────────────────────────────────────────────────────

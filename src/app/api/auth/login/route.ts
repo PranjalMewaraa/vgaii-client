@@ -23,7 +23,11 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { email, password } = body;
+    const { password } = body;
+    // Normalize the input email so a user who signed up as `foo@bar.com`
+    // can also log in as `Foo@Bar.com`. All write paths lowercase too.
+    const email =
+      typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
     if (!email || !password) {
       return NextResponse.json({ error: "Invalid creds" }, { status: 400 });
