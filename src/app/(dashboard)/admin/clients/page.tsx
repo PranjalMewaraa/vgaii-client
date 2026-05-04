@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
+import useSWR from "swr";
 import {
   Building2,
   Calendar,
@@ -88,8 +89,11 @@ export default function AdminClientsPage() {
 }
 
 function AdminClientsPageInner() {
-  const [clients, setClients] = useState<ClientRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, mutate } = useSWR<{ clients: ClientRow[] }>(
+    "/api/admin/clients",
+  );
+  const clients = data?.clients ?? [];
+
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -106,17 +110,7 @@ function AdminClientsPageInner() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
-  const refresh = () =>
-    fetch("/api/admin/clients", { headers: authHeaders() })
-      .then(res => res.json())
-      .then(d => setClients(d.clients ?? []));
-
-  useEffect(() => {
-    fetch("/api/admin/clients", { headers: authHeaders() })
-      .then(res => res.json())
-      .then(d => setClients(d.clients ?? []))
-      .finally(() => setLoading(false));
-  }, []);
+  const refresh = () => mutate();
 
   const submitCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -363,7 +357,7 @@ function AdminClientsPageInner() {
           </span>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
         ) : clients.length === 0 ? (
           <p className="px-6 py-6 text-sm text-slate-500">No clients yet.</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AttachmentsSection from "@/components/AttachmentsSection";
@@ -171,13 +172,7 @@ export default function AppointmentsPage() {
 }
 
 function AppointmentsPageInner() {
-  const [data, setData] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
-
-  // Active + Next cards
-  const [active, setActive] = useState<Appointment | null>(null);
-  const [next, setNext] = useState<Appointment | null>(null);
 
   // Mark visited / Edit form (shared)
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -215,65 +210,47 @@ function AppointmentsPageInner() {
       : rangeForHistory(historyPreset);
   }, [tab, upcomingPreset, historyPreset, specificDate, weekStart]);
 
-  const fromMs = range.from?.getTime();
-  const toMs = range.to?.getTime();
-
-  // Active + Next polling (refresh every 60s)
+  // 250ms debounce on search so each keystroke doesn't spawn an SWR key.
+  // Date-range presets and tabs change the key immediately — those are
+  // discrete user actions where instant feedback is fine.
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   useEffect(() => {
-    let cancelled = false;
-    const tick = () => {
-      fetch("/api/appointments/now", { headers: authHeaders() })
-        .then(res => res.json())
-        .then(d => {
-          if (cancelled) return;
-          setActive(d.active ?? null);
-          setNext(d.next ?? null);
-        })
-        .catch(() => {});
-    };
-    tick();
-    const id = setInterval(tick, 60_000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, []);
-
-  // Table data — re-fetches when any filter changes
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const url = new URL("/api/appointments", window.location.origin);
-      if (search) url.searchParams.set("search", search);
-      if (range.from) url.searchParams.set("from", range.from.toISOString());
-      if (range.to) url.searchParams.set("to", range.to.toISOString());
-      fetch(url.toString(), { headers: authHeaders() })
-        .then(res => res.json())
-        .then(d => setData(d.appointments ?? []))
-        .finally(() => setLoading(false));
-    }, 250);
+    const t = setTimeout(() => setDebouncedSearch(search), 250);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, fromMs, toMs]);
+  }, [search]);
 
-  const refreshNow = () => {
-    fetch("/api/appointments/now", { headers: authHeaders() })
-      .then(r => r.json())
-      .then(d => {
-        setActive(d.active ?? null);
-        setNext(d.next ?? null);
-      })
-      .catch(() => {});
-  };
+  // Active + Next polling — SWR refreshes every 60s and on tab focus.
+  const { data: nowData, mutate: mutateNow } = useSWR<{
+    active: Appointment | null;
+    next: Appointment | null;
+  }>("/api/appointments/now", { refreshInterval: 60_000 });
+  const active = nowData?.active ?? null;
+  const next = nowData?.next ?? null;
 
-  const refreshTable = () => {
-    const url = new URL("/api/appointments", window.location.origin);
-    if (search) url.searchParams.set("search", search);
+  // Table data. URL is the SWR cache key — going back to a previous
+  // filter combination re-uses the cached page instantly.
+  const tableKey = useMemo(() => {
+    const url = new URL("/api/appointments", "http://x"); // base ignored
+    if (debouncedSearch) url.searchParams.set("search", debouncedSearch);
     if (range.from) url.searchParams.set("from", range.from.toISOString());
     if (range.to) url.searchParams.set("to", range.to.toISOString());
-    fetch(url.toString(), { headers: authHeaders() })
-      .then(res => res.json())
-      .then(d => setData(d.appointments ?? []));
-  };
+    return `/api/appointments${url.search}`;
+  }, [debouncedSearch, range.from, range.to]);
+
+  const {
+    data: tableData,
+    isLoading: loading,
+    mutate: mutateTable,
+  } = useSWR<{ appointments: Appointment[] }>(tableKey, {
+    keepPreviousData: true,
+  });
+  const data = useMemo(
+    () => tableData?.appointments ?? [],
+    [tableData],
+  );
+
+  const refreshNow = () => mutateNow();
+  const refreshTable = () => mutateTable();
 
   const patch = async (id: string, body: Record<string, unknown>) => {
     setBusyId(id);

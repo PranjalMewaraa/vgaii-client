@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import { LEAD_STATUSES } from "@/lib/constants";
@@ -17,12 +18,6 @@ type Lead = {
   createdAt?: string;
 };
 
-const authHeaders = () => ({
-  Authorization: `Bearer ${
-    typeof window !== "undefined" ? localStorage.getItem("token") : ""
-  }`,
-});
-
 export default function LeadsPage() {
   return (
     <RoleGuard module="leads">
@@ -33,24 +28,26 @@ export default function LeadsPage() {
 
 function LeadsPageInner() {
   const router = useRouter();
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [sourceFilter, setSourceFilter] = useState<string>("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // 250ms debounce on the SWR key. SWR caches each search term separately,
+  // so going back to a previous query is instant.
   useEffect(() => {
-    const t = setTimeout(() => {
-      const url = new URL("/api/leads", window.location.origin);
-      if (search) url.searchParams.set("search", search);
-      fetch(url.toString(), { headers: authHeaders() })
-        .then(res => res.json())
-        .then(data => setLeads(data.leads ?? []))
-        .finally(() => setLoading(false));
-    }, 250);
+    const t = setTimeout(() => setDebouncedSearch(search), 250);
     return () => clearTimeout(t);
   }, [search]);
+
+  const swrKey = debouncedSearch
+    ? `/api/leads?search=${encodeURIComponent(debouncedSearch)}`
+    : "/api/leads";
+  const { data, isLoading } = useSWR<{ leads: Lead[] }>(swrKey, {
+    keepPreviousData: true,
+  });
+  const leads = useMemo(() => data?.leads ?? [], [data]);
 
   const sources = useMemo(() => {
     const seen = new Set<string>();
@@ -157,7 +154,7 @@ function LeadsPageInner() {
           </span>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
           <p className="px-6 py-6 text-sm text-slate-500">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import {
   Activity,
   AlertCircle,
@@ -108,30 +108,16 @@ const formatTime = (iso: string): string => {
 };
 
 export default function AdminDashboard() {
-  const [data, setData] = useState<Analytics | null>(null);
-  const [activity, setActivity] = useState<ActivityEntry[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const headers = {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    };
-    Promise.all([
-      fetch("/api/admin/analytics", { headers }).then(r => r.json()),
-      fetch("/api/audit?limit=8", { headers }).then(r => r.json()),
-    ])
-      .then(([analytics, audit]) => {
-        if (analytics.error) setError(analytics.error);
-        else setData(analytics);
-        if (Array.isArray(audit?.entries)) setActivity(audit.entries);
-      })
-      .catch(() => setError("Could not load analytics"));
-  }, []);
+  const { data, error } = useSWR<Analytics>("/api/admin/analytics");
+  const { data: auditData } = useSWR<{ entries: ActivityEntry[] }>(
+    "/api/audit?limit=8",
+  );
+  const activity = auditData?.entries ?? null;
 
   if (error) {
     return (
       <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-        {error}
+        {error.message || "Could not load analytics"}
       </p>
     );
   }

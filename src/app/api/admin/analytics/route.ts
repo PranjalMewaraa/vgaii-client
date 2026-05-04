@@ -2,8 +2,32 @@ import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+// One round-trip instead of 18. MySQL parses every COUNT subquery as its
+// own statement but reuses connection/parse overhead; remote-DB latency
+// dominated the old fan-out.
+type CountsRow = {
+  totalClients: bigint;
+  activeClients: bigint;
+  trialClients: bigint;
+  expiredClients: bigint;
+  totalUsers: bigint;
+  adminUsers: bigint;
+  staffUsers: bigint;
+  profilesEnabled: bigint;
+  totalLeads: bigint;
+  todayLeads: bigint;
+  weekLeads: bigint;
+  visitedLeads: bigint;
+  lostLeads: bigint;
+  upcomingAppointments: bigint;
+  completedAppointments: bigint;
+  openFeedback: bigint;
+  resolvedFeedback: bigint;
+};
 
 export async function GET(req: Request) {
   try {
@@ -16,54 +40,29 @@ export async function GET(req: Request) {
     const now = new Date();
     const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
     const startOfWeek = new Date(now.getTime() - 7 * DAY_MS);
-    const in7Days = new Date(now.getTime() + 7 * DAY_MS);
     const in30Days = new Date(now.getTime() + 30 * DAY_MS);
 
-    const [
-      totalClients,
-      activeClients,
-      trialClients,
-      expiredClients,
-      totalUsers,
-      adminUsers,
-      staffUsers,
-      profilesEnabled,
-      totalLeads,
-      todayLeads,
-      weekLeads,
-      visitedLeads,
-      lostLeads,
-      upcomingAppointments,
-      completedAppointments,
-      openFeedback,
-      resolvedFeedback,
-      // Subscription attention queue. Sort: expired first, then expiring
-      // soonest. Limited to 10 since we only render a callout, not a
-      // paginated list.
-      attentionClients,
-      // Top clients this week by lead volume — single query, then we
-      // hydrate names below.
-      topByLeadsRaw,
-    ] = await Promise.all([
-      prisma.client.count(),
-      prisma.client.count({ where: { subscriptionStatus: "active" } }),
-      prisma.client.count({ where: { subscriptionStatus: "trial" } }),
-      prisma.client.count({ where: { subscriptionStatus: "expired" } }),
-      prisma.user.count({ where: { role: { in: ["CLIENT_ADMIN", "STAFF"] } } }),
-      prisma.user.count({ where: { role: "CLIENT_ADMIN" } }),
-      prisma.user.count({ where: { role: "STAFF" } }),
-      prisma.client.count({
-        where: { profile: { path: "$.enabled", equals: true } },
-      }),
-      prisma.lead.count(),
-      prisma.lead.count({ where: { createdAt: { gte: startOfDay } } }),
-      prisma.lead.count({ where: { createdAt: { gte: startOfWeek } } }),
-      prisma.lead.count({ where: { status: "visited" } }),
-      prisma.lead.count({ where: { status: "lost" } }),
-      prisma.appointment.count({ where: { date: { gte: now } } }),
-      prisma.appointment.count({ where: { status: "completed" } }),
-      prisma.feedback.count({ where: { status: "open" } }),
-      prisma.feedback.count({ where: { status: "resolved" } }),
+    const [countsRows, attentionClients, topByLeadsRaw] = await Promise.all([
+      prisma.$queryRaw<CountsRow[]>(Prisma.sql`
+        SELECT
+          (SELECT COUNT(*) FROM \`Client\`) AS totalClients,
+          (SELECT COUNT(*) FROM \`Client\` WHERE \`subscriptionStatus\` = 'active') AS activeClients,
+          (SELECT COUNT(*) FROM \`Client\` WHERE \`subscriptionStatus\` = 'trial') AS trialClients,
+          (SELECT COUNT(*) FROM \`Client\` WHERE \`subscriptionStatus\` = 'expired') AS expiredClients,
+          (SELECT COUNT(*) FROM \`User\` WHERE \`role\` IN ('CLIENT_ADMIN','STAFF')) AS totalUsers,
+          (SELECT COUNT(*) FROM \`User\` WHERE \`role\` = 'CLIENT_ADMIN') AS adminUsers,
+          (SELECT COUNT(*) FROM \`User\` WHERE \`role\` = 'STAFF') AS staffUsers,
+          (SELECT COUNT(*) FROM \`Client\` WHERE JSON_EXTRACT(\`profile\`, '$.enabled') = TRUE) AS profilesEnabled,
+          (SELECT COUNT(*) FROM \`Lead\`) AS totalLeads,
+          (SELECT COUNT(*) FROM \`Lead\` WHERE \`createdAt\` >= ${startOfDay}) AS todayLeads,
+          (SELECT COUNT(*) FROM \`Lead\` WHERE \`createdAt\` >= ${startOfWeek}) AS weekLeads,
+          (SELECT COUNT(*) FROM \`Lead\` WHERE \`status\` = 'visited') AS visitedLeads,
+          (SELECT COUNT(*) FROM \`Lead\` WHERE \`status\` = 'lost') AS lostLeads,
+          (SELECT COUNT(*) FROM \`Appointment\` WHERE \`date\` >= ${now}) AS upcomingAppointments,
+          (SELECT COUNT(*) FROM \`Appointment\` WHERE \`status\` = 'completed') AS completedAppointments,
+          (SELECT COUNT(*) FROM \`Feedback\` WHERE \`status\` = 'open') AS openFeedback,
+          (SELECT COUNT(*) FROM \`Feedback\` WHERE \`status\` = 'resolved') AS resolvedFeedback
+      `),
       prisma.client.findMany({
         where: {
           OR: [
@@ -96,6 +95,28 @@ export async function GET(req: Request) {
         take: 5,
       }),
     ]);
+
+    const c = countsRows[0];
+    // BigInt → Number is safe for our row counts (we will not exceed 2^53).
+    const n = (v: bigint) => Number(v);
+    const totalClients = n(c.totalClients);
+    const activeClients = n(c.activeClients);
+    const trialClients = n(c.trialClients);
+    const expiredClients = n(c.expiredClients);
+    const totalUsers = n(c.totalUsers);
+    const adminUsers = n(c.adminUsers);
+    const staffUsers = n(c.staffUsers);
+    const profilesEnabled = n(c.profilesEnabled);
+    const totalLeads = n(c.totalLeads);
+    const todayLeads = n(c.todayLeads);
+    const weekLeads = n(c.weekLeads);
+    const visitedLeads = n(c.visitedLeads);
+    const lostLeads = n(c.lostLeads);
+    const upcomingAppointments = n(c.upcomingAppointments);
+    const completedAppointments = n(c.completedAppointments);
+    const openFeedback = n(c.openFeedback);
+    const resolvedFeedback = n(c.resolvedFeedback);
+    const in7Days = new Date(now.getTime() + 7 * DAY_MS);
 
     // Categorise the attention queue so the UI can colour them.
     type AttentionRow = {

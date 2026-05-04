@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 
@@ -49,13 +50,27 @@ export default function PatientsPage() {
 
 function PatientsPageInner() {
   const router = useRouter();
-  const [rows, setRows] = useState<PatientRow[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // filters
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [sourceFilter, setSourceFilter] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 250);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const swrKey = debouncedSearch
+    ? `/api/patients?search=${encodeURIComponent(debouncedSearch)}`
+    : "/api/patients";
+  const { data, isLoading, mutate } = useSWR<{ patients: PatientRow[] }>(
+    swrKey,
+    { keepPreviousData: true },
+  );
+  const rows = useMemo(() => data?.patients ?? [], [data]);
+  const load = () => mutate();
 
   // bulk selection (only "lead" rows are selectable — orphan direct
   // appointments don't have a Lead record so they can't be re-tagged or
@@ -80,22 +95,6 @@ function PatientsPageInner() {
   // import
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
-
-  const load = () => {
-    const url = new URL("/api/patients", window.location.origin);
-    if (search) url.searchParams.set("search", search);
-    fetch(url.toString(), { headers: authHeaders() })
-      .then(res => res.json())
-      .then(data => setRows(data.patients ?? []))
-      .finally(() => setLoading(false));
-  };
-
-  // Single effect handles both initial fetch and debounced search refetches.
-  useEffect(() => {
-    const t = setTimeout(load, 250);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
 
   const sources = useMemo(() => {
     const set = new Set<string>();
@@ -539,7 +538,7 @@ function PatientsPageInner() {
           </span>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
           <p className="px-6 py-6 text-sm text-slate-500">

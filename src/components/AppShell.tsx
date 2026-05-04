@@ -1,9 +1,11 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import { SWRConfig } from "swr";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
+import { fetcher } from "@/lib/fetcher";
 
 const APP_VERSION = "1.0.0";
 const YEAR = new Date().getFullYear();
@@ -47,22 +49,35 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="flex">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <SWRConfig
+      value={{
+        fetcher,
+        // Stale-while-revalidate: pages with cached data render instantly,
+        // SWR refreshes in the background. The 30s dedupe window stops
+        // back/forward navigation from spamming the API.
+        dedupingInterval: 30_000,
+        revalidateOnFocus: true,
+        revalidateOnReconnect: true,
+        shouldRetryOnError: false,
+      }}
+    >
+      <div className="min-h-screen bg-slate-50 text-slate-900">
+        <div className="flex">
+          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-          <TopBar onMenuClick={() => setSidebarOpen(true)} />
-          <ImpersonationBanner />
+          <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+            <TopBar onMenuClick={() => setSidebarOpen(true)} />
+            <ImpersonationBanner />
 
-          <main className="min-w-0 flex-1 px-6 py-8 md:px-8">{children}</main>
+            <main className="min-w-0 flex-1 px-6 py-8 md:px-8">{children}</main>
 
-          <footer className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4 text-xs text-slate-500 md:px-8">
-            <span>© {YEAR} VGAII. All rights reserved.</span>
-            <span>Version {APP_VERSION}</span>
-          </footer>
+            <footer className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4 text-xs text-slate-500 md:px-8">
+              <span>© {YEAR} VGAII. All rights reserved.</span>
+              <span>Version {APP_VERSION}</span>
+            </footer>
+          </div>
         </div>
       </div>
-    </div>
+    </SWRConfig>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
+import useSWR from "swr";
 import {
   Check,
   CheckCircle2,
@@ -39,8 +40,8 @@ export default function StaffPage() {
 }
 
 function StaffPageInner() {
-  const [staff, setStaff] = useState<Staff[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, mutate } = useSWR<{ staff: Staff[] }>("/api/staff");
+  const staff = data?.staff ?? [];
 
   // create form state
   const [showCreate, setShowCreate] = useState(false);
@@ -65,13 +66,6 @@ function StaffPageInner() {
   const [editModules, setEditModules] = useState<AssignableModule[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/staff", { headers: authHeaders() })
-      .then(res => res.json())
-      .then(data => setStaff(data.staff ?? []))
-      .finally(() => setLoading(false));
-  }, []);
 
   const toggleModule = (
     list: AssignableModule[],
@@ -103,7 +97,9 @@ function StaffPageInner() {
         );
         return;
       }
-      setStaff(s => [data.staff, ...s]);
+      mutate(prev => ({ staff: [data.staff, ...(prev?.staff ?? [])] }), {
+        revalidate: false,
+      });
       closeCreate();
     } catch {
       setCreateError("Network error");
@@ -132,7 +128,14 @@ function StaffPageInner() {
       });
       if (res.ok) {
         const data = await res.json();
-        setStaff(s => s.map(m => (m.id === id ? data.staff : m)));
+        mutate(
+          prev => ({
+            staff: (prev?.staff ?? []).map(m =>
+              m.id === id ? data.staff : m,
+            ),
+          }),
+          { revalidate: false },
+        );
         cancelEdit();
       }
     } finally {
@@ -149,7 +152,10 @@ function StaffPageInner() {
         headers: authHeaders(),
       });
       if (res.ok) {
-        setStaff(s => s.filter(m => m.id !== id));
+        mutate(
+          prev => ({ staff: (prev?.staff ?? []).filter(m => m.id !== id) }),
+          { revalidate: false },
+        );
       }
     } finally {
       setRemovingId(null);
@@ -337,7 +343,7 @@ function StaffPageInner() {
           </span>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
         ) : staff.length === 0 ? (
           <p className="px-6 py-6 text-sm text-slate-500">
