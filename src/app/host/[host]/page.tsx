@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { connectDB } from "@/lib/db";
 import ProfileRenderer from "@/components/ProfileRenderer";
 import { resolveClientByCustomDomain } from "@/lib/public-client";
 import type { Profile } from "@/lib/validators/profile";
@@ -11,9 +10,9 @@ type PageProps = {
 };
 
 type ResolvedClient = {
-  _id: { toString: () => string };
+  id: string;
   profile?: Partial<Profile> & { enabled?: boolean; faviconUrl?: string };
-  bookingUrl?: string;
+  bookingUrl?: string | null;
 };
 
 const truncate = (s: string, max: number) =>
@@ -29,7 +28,6 @@ export async function generateMetadata({
   params: Promise<{ host: string }>;
 }): Promise<Metadata> {
   const { host } = await params;
-  await connectDB();
   const client = (await resolveClientByCustomDomain(
     decodeURIComponent(host),
   )) as ResolvedClient | null;
@@ -70,7 +68,6 @@ export default async function HostPage({ params, searchParams }: PageProps) {
   const { host } = await params;
   const sp = await searchParams;
 
-  await connectDB();
   const client = (await resolveClientByCustomDomain(
     decodeURIComponent(host),
   )) as ResolvedClient | null;
@@ -84,8 +81,8 @@ export default async function HostPage({ params, searchParams }: PageProps) {
   return (
     <ProfileRenderer
       profile={client.profile}
-      ctaUrl={client.bookingUrl}
-      clientId={client._id.toString()}
+      ctaUrl={client.bookingUrl ?? undefined}
+      clientId={client.id}
       leadSource={source}
     />
   );

@@ -1,4 +1,6 @@
 import { getBusinessInfoLive } from "@/lib/dataforseo";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 
 type WorkHourEntry = { day?: string; open?: string; close?: string };
 
@@ -36,7 +38,10 @@ export type MappedBusinessInfo = {
   hours: WorkHourEntry[];
   mainPhoto?: string;
   mapsUrl?: string;
-  syncedAt: Date;
+  // ISO 8601 string instead of Date so the value is JSON-serializable
+  // when stored in the Prisma `Json` column. The dashboard staleness
+  // check parses it back when needed.
+  syncedAt: string;
 };
 
 const fmtTime = (t?: { hour?: number; minute?: number }) => {
@@ -76,7 +81,7 @@ export const mapBusinessInfo = (
     mapsUrl: placeId
       ? `https://www.google.com/maps/place/?q=place_id:${placeId}`
       : undefined,
-    syncedAt: new Date(),
+    syncedAt: new Date().toISOString(),
   };
 };
 
@@ -95,10 +100,10 @@ export const isStale = (syncedAt?: Date | string | null) => {
   return Date.now() - ts > STALE_AFTER_MS;
 };
 
-type ClientForBusinessInfo = {
-  googlePlaceId?: string;
-  googleBusinessInfo?: { syncedAt?: Date | string | null } & MappedBusinessInfo;
-  save: () => Promise<unknown>;
+type ClientSnapshot = {
+  id: string;
+  googlePlaceId?: string | null;
+  googleBusinessInfo?: { syncedAt?: Date | string | null } | null;
 };
 
 // Belt-and-suspenders ceiling on top of the axios timeout: even if the network
@@ -114,9 +119,14 @@ const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =
     ),
   ]);
 
-export const selfHealBusinessInfo = async (client: ClientForBusinessInfo) => {
-  if (!client.googlePlaceId) return false;
-  if (!isStale(client.googleBusinessInfo?.syncedAt)) return false;
+// Returns the freshly fetched business info if it was actually refreshed,
+// otherwise null. Caller can merge the returned value into its response so
+// the dashboard sees the new data without re-reading from MySQL.
+export const selfHealBusinessInfo = async (
+  client: ClientSnapshot,
+): Promise<MappedBusinessInfo | null> => {
+  if (!client.googlePlaceId) return null;
+  if (!isStale(client.googleBusinessInfo?.syncedAt)) return null;
 
   try {
     const fresh = await withTimeout(
@@ -124,12 +134,14 @@ export const selfHealBusinessInfo = async (client: ClientForBusinessInfo) => {
       SELF_HEAL_TIMEOUT_MS,
       "business-info self-heal",
     );
-    if (!fresh) return false;
-    client.googleBusinessInfo = fresh;
-    await client.save();
-    return true;
+    if (!fresh) return null;
+    await prisma.client.update({
+      where: { id: client.id },
+      data: { googleBusinessInfo: fresh as unknown as Prisma.InputJsonValue },
+    });
+    return fresh;
   } catch (err) {
     console.error("[business-info] self-heal failed:", err);
-    return false;
+    return null;
   }
 };

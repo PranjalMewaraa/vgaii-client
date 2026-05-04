@@ -1,7 +1,5 @@
-import mongoose from "mongoose";
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
@@ -35,7 +33,6 @@ const dayKey = (d: Date) => {
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (user.role !== "CLIENT_ADMIN" && user.role !== "SUPER_ADMIN") {
@@ -59,21 +56,66 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Invalid date" }, { status: 400 });
     }
 
-    // `aggregate()` does NOT auto-convert string IDs to ObjectId in $match,
-    // unlike `find()`. So we cast the user's clientId here. SUPER_ADMIN
-    // sees all clients (no filter).
-    const baseFilter: Record<string, unknown> =
+    // SUPER_ADMIN sees all clients (no filter); CLIENT_ADMIN scopes to
+    // their own. Prisma string equality replaces the manual ObjectId cast
+    // we needed in the Mongoose era.
+    const tenantClause: Prisma.LeadWhereInput =
       user.role === "SUPER_ADMIN"
         ? {}
-        : { clientId: new mongoose.Types.ObjectId(user.clientId ?? "") };
+        : { clientId: user.clientId ?? "__never__" };
 
-    const dateRange: Record<string, Date> = {};
-    if (from) dateRange.$gte = from;
-    if (to) dateRange.$lte = to;
-    // When neither bound is set, omit the date filter entirely so the
-    // aggregation pipeline returns all rows for this client.
-    const leadDateMatch = from || to ? { createdAt: dateRange } : {};
-    const apptDateMatch = from || to ? { date: dateRange } : {};
+    const leadDateRange =
+      from || to
+        ? {
+            createdAt: {
+              ...(from ? { gte: from } : {}),
+              ...(to ? { lte: to } : {}),
+            },
+          }
+        : {};
+
+    const apptDateRange =
+      from || to
+        ? {
+            date: {
+              ...(from ? { gte: from } : {}),
+              ...(to ? { lte: to } : {}),
+            },
+          }
+        : {};
+
+    const leadWhere: Prisma.LeadWhereInput = { ...tenantClause, ...leadDateRange };
+    const apptWhere: Prisma.AppointmentWhereInput = {
+      ...(tenantClause as Prisma.AppointmentWhereInput),
+      ...apptDateRange,
+    };
+
+    // Raw-SQL inputs: the tenant clause and date range expressed as inline
+    // SQL fragments. Building them via `Prisma.sql` keeps the parameters
+    // bound (no string interpolation in the final query).
+    const leadTenantSql =
+      user.role === "SUPER_ADMIN"
+        ? Prisma.sql`1=1`
+        : Prisma.sql`clientId = ${user.clientId ?? ""}`;
+    const apptTenantSql = leadTenantSql; // same column name
+
+    const leadDateSql =
+      from && to
+        ? Prisma.sql`createdAt BETWEEN ${from} AND ${to}`
+        : from
+          ? Prisma.sql`createdAt >= ${from}`
+          : to
+            ? Prisma.sql`createdAt <= ${to}`
+            : Prisma.sql`1=1`;
+
+    const apptDateSql =
+      from && to
+        ? Prisma.sql`date BETWEEN ${from} AND ${to}`
+        : from
+          ? Prisma.sql`date >= ${from}`
+          : to
+            ? Prisma.sql`date <= ${to}`
+            : Prisma.sql`1=1`;
 
     const [
       leadsByStatus,
@@ -83,82 +125,64 @@ export async function GET(req: Request) {
       leadsTimeSeries,
       apptTimeSeries,
     ] = await Promise.all([
-      Lead.aggregate([
-        { $match: { ...baseFilter, ...leadDateMatch } },
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ]),
-      Lead.aggregate([
-        { $match: { ...baseFilter, ...leadDateMatch } },
-        {
-          $group: {
-            _id: "$source",
-            total: { $sum: 1 },
-            visited: {
-              $sum: { $cond: [{ $eq: ["$status", "visited"] }, 1, 0] },
-            },
-            booked: {
-              $sum: {
-                $cond: [
-                  {
-                    $in: [
-                      "$status",
-                      ["appointment_booked", "visited"],
-                    ],
-                  },
-                  1,
-                  0,
-                ],
-              },
-            },
-            lost: {
-              $sum: { $cond: [{ $eq: ["$status", "lost"] }, 1, 0] },
-            },
-          },
-        },
-        { $sort: { total: -1 } },
-      ]),
-      Lead.aggregate([
-        {
-          $match: {
-            ...baseFilter,
-            outcomeRating: { $gte: 1, $lte: 5 },
-            ...leadDateMatch,
-          },
-        },
-        { $group: { _id: "$outcomeRating", count: { $sum: 1 } } },
-      ]),
-      Appointment.aggregate([
-        { $match: { ...baseFilter, ...apptDateMatch } },
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ]),
-      Lead.aggregate([
-        { $match: { ...baseFilter, ...leadDateMatch } },
-        {
-          $group: {
-            _id: {
-              $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
-            },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { _id: 1 } },
-      ]),
-      Appointment.aggregate([
-        { $match: { ...baseFilter, ...apptDateMatch } },
-        {
-          $group: {
-            _id: {
-              $dateToString: { format: "%Y-%m-%d", date: "$date" },
-            },
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { _id: 1 } },
-      ]),
+      prisma.lead.groupBy({
+        by: ["status"],
+        where: leadWhere,
+        _count: { _all: true },
+      }),
+      // Conditional sums per source: Prisma's groupBy can't express
+      // `SUM(CASE WHEN status='visited' THEN 1 ELSE 0 END)` directly, so
+      // we drop to raw SQL. Returns BigInt counts in MySQL — coerced
+      // to Number below.
+      prisma.$queryRaw<
+        Array<{
+          source: string | null;
+          total: bigint;
+          visited: bigint;
+          booked: bigint;
+          lost: bigint;
+        }>
+      >`
+        SELECT source,
+               COUNT(*) AS total,
+               SUM(CASE WHEN status='visited' THEN 1 ELSE 0 END) AS visited,
+               SUM(CASE WHEN status IN ('appointment_booked','visited') THEN 1 ELSE 0 END) AS booked,
+               SUM(CASE WHEN status='lost' THEN 1 ELSE 0 END) AS lost
+        FROM Lead
+        WHERE ${leadTenantSql} AND ${leadDateSql}
+        GROUP BY source
+        ORDER BY total DESC
+      `,
+      prisma.lead.groupBy({
+        by: ["outcomeRating"],
+        where: { ...leadWhere, outcomeRating: { gte: 1, lte: 5 } },
+        _count: { _all: true },
+      }),
+      prisma.appointment.groupBy({
+        by: ["status"],
+        where: apptWhere,
+        _count: { _all: true },
+      }),
+      prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+        SELECT DATE_FORMAT(createdAt, '%Y-%m-%d') AS day,
+               COUNT(*) AS count
+        FROM Lead
+        WHERE ${leadTenantSql} AND ${leadDateSql}
+        GROUP BY day
+        ORDER BY day
+      `,
+      prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
+        SELECT DATE_FORMAT(date, '%Y-%m-%d') AS day,
+               COUNT(*) AS count
+        FROM Appointment
+        WHERE ${apptTenantSql} AND ${apptDateSql}
+        GROUP BY day
+        ORDER BY day
+      `,
     ]);
 
     const byStatus: Record<string, number> = {};
-    for (const r of leadsByStatus) byStatus[r._id ?? "unknown"] = r.count;
+    for (const r of leadsByStatus) byStatus[r.status] = r._count._all;
 
     // Cumulative funnel: each stage = leads at that stage or later. Since
     // transitions are forward-only, current-status is sufficient signal for
@@ -180,14 +204,18 @@ export async function GET(req: Request) {
     const lostCount = byStatus.lost ?? 0;
     const totalLeads = funnel.new + lostCount;
 
-    const sources = leadsBySource.map(s => ({
-      source: s._id ?? "unknown",
-      total: s.total,
-      booked: s.booked,
-      visited: s.visited,
-      lost: s.lost,
-      conversionRate: s.total > 0 ? s.visited / s.total : 0,
-    }));
+    const sources = leadsBySource.map(s => {
+      const total = Number(s.total);
+      const visited = Number(s.visited);
+      return {
+        source: s.source ?? "unknown",
+        total,
+        booked: Number(s.booked),
+        visited,
+        lost: Number(s.lost),
+        conversionRate: total > 0 ? visited / total : 0,
+      };
+    });
 
     const apptCounts = {
       total: 0,
@@ -197,9 +225,9 @@ export async function GET(req: Request) {
       cancelled: 0,
     };
     for (const r of apptByStatus) {
-      const key = (r._id ?? "scheduled") as keyof typeof apptCounts;
-      if (key in apptCounts) apptCounts[key] = r.count;
-      apptCounts.total += r.count;
+      const key = r.status as keyof typeof apptCounts;
+      if (key in apptCounts) apptCounts[key] = r._count._all;
+      apptCounts.total += r._count._all;
     }
     // No-show rate is computed against appointments that have a verdict
     // (completed + no_show). Pending "scheduled" appointments don't count
@@ -218,11 +246,12 @@ export async function GET(req: Request) {
     let ratingTotal = 0;
     let ratingCount = 0;
     for (const r of ratingsByValue) {
-      const v = r._id as 1 | 2 | 3 | 4 | 5;
-      if (v >= 1 && v <= 5) {
-        ratings[v] = r.count;
-        ratingTotal += v * r.count;
-        ratingCount += r.count;
+      const v = r.outcomeRating;
+      const c = r._count._all;
+      if (v && v >= 1 && v <= 5) {
+        ratings[v as 1 | 2 | 3 | 4 | 5] = c;
+        ratingTotal += v * c;
+        ratingCount += c;
       }
     }
     const avgRating = ratingCount > 0 ? ratingTotal / ratingCount : 0;
@@ -230,12 +259,12 @@ export async function GET(req: Request) {
     // Build a continuous date axis so the chart shows zero-days too.
     const seriesByDay = new Map<string, { leads: number; appointments: number }>();
     for (const r of leadsTimeSeries) {
-      seriesByDay.set(r._id, { leads: r.count, appointments: 0 });
+      seriesByDay.set(r.day, { leads: Number(r.count), appointments: 0 });
     }
     for (const r of apptTimeSeries) {
-      const cur = seriesByDay.get(r._id) ?? { leads: 0, appointments: 0 };
-      cur.appointments = r.count;
-      seriesByDay.set(r._id, cur);
+      const cur = seriesByDay.get(r.day) ?? { leads: 0, appointments: 0 };
+      cur.appointments = Number(r.count);
+      seriesByDay.set(r.day, cur);
     }
 
     // Time-series axis bounds: prefer the explicit picker range. When the

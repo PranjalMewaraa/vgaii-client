@@ -1,5 +1,5 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
+import { prisma } from "@/lib/prisma";
+import { updateLead } from "@/repos/lead";
 import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { leadStatusSchema } from "@/lib/validators/lead";
 import { canonicalPhone } from "@/lib/phone";
@@ -9,8 +9,6 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(req: Request) {
   try {
-    await connectDB();
-
     const { client, reason } = await getClientByWebhookKey(req);
     if (!client) {
       const status = reason === "missing-key" ? 401 : 404;
@@ -31,9 +29,8 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
     }
 
-    const lead = await Lead.findOne({
-      clientId: client._id,
-      phoneNormalized: norm,
+    const lead = await prisma.lead.findFirst({
+      where: { clientId: client.id, phoneNormalized: norm },
     });
 
     if (!lead) {
@@ -41,31 +38,34 @@ export async function PATCH(req: Request) {
     }
 
     const prevStatus = lead.status;
-    lead.status = parsed.data.status;
-    lead.statusUpdatedAt = new Date();
-    if (parsed.data.outcomeRating !== undefined) {
-      lead.outcomeRating = parsed.data.outcomeRating;
-    }
-
-    await lead.save();
+    const updated = await updateLead(
+      { id: lead.id },
+      {
+        status: parsed.data.status,
+        statusUpdatedAt: new Date(),
+        ...(parsed.data.outcomeRating !== undefined
+          ? { outcomeRating: parsed.data.outcomeRating }
+          : {}),
+      },
+    );
 
     await logAudit(
       req,
-      { actorType: "webhook", source: "status-webhook", clientId: client._id.toString() },
+      { actorType: "webhook", source: "status-webhook", clientId: client.id },
       {
         action: "lead.status.changed",
         entityType: "Lead",
-        entityId: lead._id.toString(),
-        entityLabel: lead.name,
+        entityId: updated.id,
+        entityLabel: updated.name,
         summary: `Status: ${prevStatus} → ${parsed.data.status} (via webhook)`,
         metadata: { from: prevStatus, to: parsed.data.status, outcomeRating: parsed.data.outcomeRating },
       },
     );
 
     return NextResponse.json({
-      leadId: lead._id,
-      status: lead.status,
-      outcomeRating: lead.outcomeRating,
+      leadId: updated.id,
+      status: updated.status,
+      outcomeRating: updated.outcomeRating,
     });
   } catch (err: unknown) {
     console.error("[webhooks/leads/status] failed:", err);

@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getUser } from "@/middleware/auth";
 import { staffUpdateSchema } from "@/lib/validators/staff";
@@ -21,7 +20,6 @@ const requireAdmin = (user: ReturnType<typeof getUser>) => {
 
 export async function PATCH(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireAdmin(user);
     if (block) return block;
@@ -34,49 +32,54 @@ export async function PATCH(req: Request, ctx: RouteContext) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const target = await User.findOne({
-      _id: id,
-      clientId: user.clientId,
-      role: "STAFF",
+    // findFirst (not findUnique): the where clause includes scope filters
+    // (clientId, role) on top of the unique id, so we want a multi-key
+    // lookup that returns null when scope mismatches instead of bypassing
+    // it.
+    const target = await prisma.user.findFirst({
+      where: { id, clientId: user.clientId, role: "STAFF" },
     });
-
     if (!target) {
       return NextResponse.json({ error: "Staff not found" }, { status: 404 });
     }
 
     const changedFields: string[] = [];
+    const data: Record<string, unknown> = {};
     if (parsed.data.name !== undefined) {
-      target.name = parsed.data.name;
+      data.name = parsed.data.name;
       changedFields.push("name");
     }
     if (parsed.data.assignedModules !== undefined) {
-      target.assignedModules = parsed.data.assignedModules;
+      data.assignedModules = parsed.data.assignedModules;
       changedFields.push("modules");
     }
     if (parsed.data.password !== undefined) {
-      target.password = await bcrypt.hash(parsed.data.password, 10);
+      data.password = await bcrypt.hash(parsed.data.password, 10);
       changedFields.push("password");
     }
 
-    await target.save();
+    const updated = await prisma.user.update({
+      where: { id: target.id },
+      data,
+    });
 
     await logAudit(req, { actorType: "user", user }, {
       action: "staff.updated",
       entityType: "User",
-      entityId: target._id.toString(),
-      entityLabel: target.name ?? target.email ?? "Staff",
+      entityId: updated.id,
+      entityLabel: updated.name ?? updated.email ?? "Staff",
       summary: `Updated: ${changedFields.join(", ") || "no fields"}`,
       metadata: { fields: changedFields },
     });
 
     return NextResponse.json({
       staff: {
-        _id: target._id,
-        name: target.name,
-        email: target.email,
-        assignedModules: target.assignedModules,
-        createdAt: target.createdAt,
-        createdBy: target.createdBy,
+        id: updated.id,
+        name: updated.name,
+        email: updated.email,
+        assignedModules: (updated.assignedModules as string[] | null) ?? [],
+        createdAt: updated.createdAt,
+        createdBy: updated.createdById,
       },
     });
   } catch (err: unknown) {
@@ -86,38 +89,28 @@ export async function PATCH(req: Request, ctx: RouteContext) {
 
 export async function DELETE(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireAdmin(user);
     if (block) return block;
 
     const { id } = await ctx.params;
 
-    const target = await User.findOne({
-      _id: id,
-      clientId: user.clientId,
-      role: "STAFF",
-    }).lean<{ _id: unknown; name?: string; email?: string } | null>();
-
-    const result = await User.deleteOne({
-      _id: id,
-      clientId: user.clientId,
-      role: "STAFF",
+    const target = await prisma.user.findFirst({
+      where: { id, clientId: user.clientId, role: "STAFF" },
     });
-
-    if (result.deletedCount === 0) {
+    if (!target) {
       return NextResponse.json({ error: "Staff not found" }, { status: 404 });
     }
 
-    if (target) {
-      await logAudit(req, { actorType: "user", user }, {
-        action: "staff.deleted",
-        entityType: "User",
-        entityId: String(target._id),
-        entityLabel: target.name ?? target.email ?? "Staff",
-        summary: "Staff account removed",
-      });
-    }
+    await prisma.user.delete({ where: { id: target.id } });
+
+    await logAudit(req, { actorType: "user", user }, {
+      action: "staff.deleted",
+      entityType: "User",
+      entityId: target.id,
+      entityLabel: target.name ?? target.email ?? "Staff",
+      summary: "Staff account removed",
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {

@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
+import { createLead } from "@/repos/lead";
 import { resolveClientByPublicIdentifier } from "@/lib/public-client";
 import { generateFeedbackToken, buildFeedbackUrl } from "@/lib/feedback-token";
 import { getErrorMessage } from "@/lib/errors";
@@ -18,11 +17,12 @@ type RouteContext = { params: Promise<{ clientId: string }> };
 
 export async function POST(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const { clientId } = await ctx.params;
 
     const client = await resolveClientByPublicIdentifier(clientId);
-    if (!client?.profile?.enabled) {
+    // profile is a Json column; cast for the enabled check.
+    const profile = client?.profile as { enabled?: boolean } | null | undefined;
+    if (!profile?.enabled) {
       return NextResponse.json({ error: "Page not active" }, { status: 404 });
     }
 
@@ -32,7 +32,7 @@ export async function POST(req: Request, ctx: RouteContext) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const lead = await Lead.create({
+    const lead = await createLead({
       name: parsed.data.name,
       phone: parsed.data.phone,
       notes: parsed.data.message ?? "",
@@ -40,16 +40,16 @@ export async function POST(req: Request, ctx: RouteContext) {
       status: "new",
       statusUpdatedAt: new Date(),
       feedbackToken: generateFeedbackToken(),
-      clientId: client._id,
+      clientId: client!.id,
     });
 
     await logAudit(
       req,
-      { actorType: "public", source: "profile-form", clientId: client._id.toString() },
+      { actorType: "public", source: "profile-form", clientId: client!.id },
       {
         action: "lead.created",
         entityType: "Lead",
-        entityId: lead._id.toString(),
+        entityId: lead.id,
         entityLabel: lead.name,
         summary: "Lead submitted from public profile",
         metadata: { phone: lead.phone, source: lead.source },
@@ -60,8 +60,10 @@ export async function POST(req: Request, ctx: RouteContext) {
 
     return NextResponse.json(
       {
-        leadId: lead._id,
-        feedbackUrl: buildFeedbackUrl(origin, lead.feedbackToken),
+        leadId: lead.id,
+        feedbackUrl: lead.feedbackToken
+          ? buildFeedbackUrl(origin, lead.feedbackToken)
+          : null,
       },
       { status: 201 },
     );

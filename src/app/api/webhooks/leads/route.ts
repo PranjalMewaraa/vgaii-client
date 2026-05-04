@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
+import { createLead } from "@/repos/lead";
 import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { publicLeadSchema } from "@/lib/validators/lead";
 import { generateFeedbackToken, buildFeedbackUrl } from "@/lib/feedback-token";
@@ -9,8 +8,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
-
     const { client, reason } = await getClientByWebhookKey(req);
     if (!client) {
       const status = reason === "missing-key" ? 401 : 404;
@@ -26,9 +23,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const lead = await Lead.create({
+    const lead = await createLead({
       ...parsed.data,
-      clientId: client._id,
+      // publicLeadSchema doesn't accept a notes input; default to "" so
+      // the NOT NULL column is satisfied.
+      notes: "",
+      clientId: client.id,
       feedbackToken: generateFeedbackToken(),
       status: "new",
       statusUpdatedAt: new Date(),
@@ -36,11 +36,11 @@ export async function POST(req: Request) {
 
     await logAudit(
       req,
-      { actorType: "webhook", source: "lead-webhook", clientId: client._id.toString() },
+      { actorType: "webhook", source: "lead-webhook", clientId: client.id },
       {
         action: "lead.created",
         entityType: "Lead",
-        entityId: lead._id.toString(),
+        entityId: lead.id,
         entityLabel: lead.name,
         summary: "Lead created via webhook",
         metadata: { phone: lead.phone, source: lead.source },
@@ -51,9 +51,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        leadId: lead._id,
+        leadId: lead.id,
         status: lead.status,
-        feedbackUrl: buildFeedbackUrl(origin, lead.feedbackToken),
+        feedbackUrl: lead.feedbackToken
+          ? buildFeedbackUrl(origin, lead.feedbackToken)
+          : null,
       },
       { status: 201 },
     );

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { APPOINTMENT_STATUSES } from "@/models/Appointment";
+import { APPOINTMENT_STATUSES } from "@/lib/constants";
 
 const optionalDate = z
   .string()
@@ -18,9 +18,12 @@ export const appointmentUpdateSchema = z
     email: z.string().max(120).optional(),
     age: z.number().int().min(0).max(150).optional(),
     gender: z.string().max(40).optional(),
+    // Was an ObjectId-hex regex; cuid is 25 chars of [a-z0-9]. Loosen to a
+    // permissive ID shape so we don't reject valid Prisma cuids.
     leadId: z
       .string()
-      .regex(/^[a-fA-F0-9]{24}$/)
+      .min(1)
+      .max(60)
       .nullable()
       .optional(),
   })

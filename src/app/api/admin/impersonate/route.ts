@@ -1,6 +1,4 @@
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
-import Client from "@/models/Client";
+import { prisma } from "@/lib/prisma";
 import { generateToken } from "@/lib/auth";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
@@ -9,7 +7,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (user.role !== "SUPER_ADMIN") {
@@ -22,13 +19,15 @@ export async function POST(req: Request) {
       clientId?: string;
     };
 
-    let target: typeof User.prototype | null = null;
+    let target = null;
 
     if (userId) {
-      target = await User.findById(userId);
+      target = await prisma.user.findUnique({ where: { id: userId } });
     } else if (clientId) {
       // Backwards-compat: impersonate the CLIENT_ADMIN of a given client.
-      target = await User.findOne({ clientId, role: "CLIENT_ADMIN" });
+      target = await prisma.user.findFirst({
+        where: { clientId, role: "CLIENT_ADMIN" },
+      });
     }
 
     if (!target) {
@@ -46,39 +45,45 @@ export async function POST(req: Request) {
     }
 
     const client = target.clientId
-      ? await Client.findById(target.clientId).select("name").lean<{
-          _id: { toString(): string };
-          name?: string;
-        }>()
+      ? await prisma.client.findUnique({
+          where: { id: target.clientId },
+          select: { name: true },
+        })
       : null;
 
+    const modules = (target.assignedModules as string[] | null) ?? [];
+
     const token = generateToken({
-      id: target._id.toString(),
+      id: target.id,
       role: target.role,
-      clientId: target.clientId?.toString() ?? null,
-      assignedModules: target.assignedModules ?? [],
+      clientId: target.clientId ?? null,
+      assignedModules: modules,
       impersonatedBy: user.id ?? "SUPER_ADMIN",
     });
 
-    await logAudit(req, { actorType: "user", user, clientId: target.clientId?.toString() ?? null }, {
-      action: "user.impersonated",
-      entityType: "User",
-      entityId: target._id.toString(),
-      entityLabel: target.name ?? target.email ?? "User",
-      summary: `Super admin impersonated ${target.email ?? target._id}`,
-      metadata: { targetRole: target.role, clientName: client?.name ?? null },
-    });
+    await logAudit(
+      req,
+      { actorType: "user", user, clientId: target.clientId ?? null },
+      {
+        action: "user.impersonated",
+        entityType: "User",
+        entityId: target.id,
+        entityLabel: target.name ?? target.email ?? "User",
+        summary: `Super admin impersonated ${target.email ?? target.id}`,
+        metadata: { targetRole: target.role, clientName: client?.name ?? null },
+      },
+    );
 
     return NextResponse.json({
       token,
       user: {
-        id: target._id.toString(),
+        id: target.id,
         name: target.name,
         email: target.email,
         role: target.role,
-        clientId: target.clientId?.toString() ?? null,
+        clientId: target.clientId ?? null,
         clientName: client?.name ?? null,
-        assignedModules: target.assignedModules ?? [],
+        assignedModules: modules,
         impersonatedBy: user.id ?? "SUPER_ADMIN",
       },
     });

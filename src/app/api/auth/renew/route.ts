@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { generateToken } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/errors";
@@ -14,30 +13,26 @@ import { NextResponse } from "next/server";
 // the next renewal rather than waiting for full token expiry.
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (!user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const fresh = await User.findById(user.id)
-      .select("role clientId assignedModules")
-      .lean<{
-        role?: "SUPER_ADMIN" | "CLIENT_ADMIN" | "STAFF";
-        clientId?: { toString(): string } | null;
-        assignedModules?: string[];
-      } | null>();
+    const fresh = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true, clientId: true, assignedModules: true },
+    });
 
-    if (!fresh || !fresh.role) {
+    if (!fresh) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const token = generateToken({
       id: user.id,
       role: fresh.role,
-      clientId: fresh.clientId?.toString() ?? null,
-      assignedModules: fresh.assignedModules ?? [],
+      clientId: fresh.clientId ?? null,
+      assignedModules: (fresh.assignedModules as string[] | null) ?? [],
       impersonatedBy: user.impersonatedBy,
     });
 

@@ -1,5 +1,5 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
+import { prisma } from "@/lib/prisma";
+import { createLead, updateLead } from "@/repos/lead";
 import { getUser } from "@/middleware/auth";
 import { parseCsv } from "@/lib/csv";
 import { canonicalPhone } from "@/lib/phone";
@@ -20,7 +20,6 @@ const cleanString = (v: string | undefined): string | undefined => {
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (!user.clientId) {
@@ -102,31 +101,34 @@ export async function POST(req: Request) {
       const notes = cleanString(row.notes);
 
       try {
-        const existing = await Lead.findOne({
-          clientId: user.clientId,
-          phoneNormalized: phone,
+        const existing = await prisma.lead.findFirst({
+          where: { clientId: user.clientId, phoneNormalized: phone },
         });
 
         if (existing) {
-          existing.name = name;
-          existing.email = email ?? existing.email;
-          existing.age = age;
-          existing.gender = gender;
-          if (area) existing.area = area;
-          if (notes) existing.notes = notes;
-          if (
-            existing.status !== "qualified" &&
-            existing.status !== "appointment_booked" &&
-            existing.status !== "visited"
-          ) {
-            existing.status = "qualified";
-            existing.statusUpdatedAt = new Date();
-          }
-          await existing.save();
+          await updateLead(
+            { id: existing.id },
+            {
+              name,
+              email: email ?? existing.email,
+              age,
+              gender,
+              ...(area ? { area } : {}),
+              ...(notes ? { notes } : {}),
+              ...(existing.status !== "qualified" &&
+              existing.status !== "appointment_booked" &&
+              existing.status !== "visited"
+                ? {
+                    status: "qualified",
+                    statusUpdatedAt: new Date(),
+                  }
+                : {}),
+            },
+          );
           updated++;
           results.push({ row: rowNum, status: "updated" });
         } else {
-          await Lead.create({
+          await createLead({
             name,
             phone: phoneRaw,
             email,
@@ -139,7 +141,7 @@ export async function POST(req: Request) {
             statusUpdatedAt: new Date(),
             feedbackToken: generateFeedbackToken(),
             clientId: user.clientId,
-            createdBy: user.id,
+            createdById: user.id,
           });
           created++;
           results.push({ row: rowNum, status: "created" });

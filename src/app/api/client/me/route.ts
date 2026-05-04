@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Client from "@/models/Client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
@@ -12,8 +11,6 @@ import { NextResponse } from "next/server";
 // dedicated endpoints that don't expose them in plaintext to the user.
 export async function GET(req: Request) {
   try {
-    await connectDB();
-
     const user = getUser(req);
 
     if (user.role === "SUPER_ADMIN") {
@@ -24,23 +21,24 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    const client = await Client.findById(user.clientId);
+    const client = await prisma.client.findUnique({
+      where: { id: user.clientId },
+      select: {
+        id: true,
+        name: true,
+        plan: true,
+        subscriptionStatus: true,
+        renewalDate: true,
+        profileSlug: true,
+        customDomain: true,
+      },
+    });
 
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      client: {
-        id: client._id,
-        name: client.name,
-        plan: client.plan,
-        subscriptionStatus: client.subscriptionStatus,
-        renewalDate: client.renewalDate,
-        profileSlug: client.profileSlug,
-        customDomain: client.customDomain,
-      },
-    });
+    return NextResponse.json({ client });
   } catch (err: unknown) {
     return NextResponse.json(
       { error: getErrorMessage(err) },

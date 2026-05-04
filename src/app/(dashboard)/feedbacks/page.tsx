@@ -6,7 +6,7 @@ import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 
 type FeedbackRow = {
-  _id: string;
+  id: string;
   clientName?: string;
   clientPhone?: string;
   rating?: number;
@@ -16,7 +16,7 @@ type FeedbackRow = {
   submittedAt?: string;
   createdAt?: string;
   lead?: {
-    _id: string;
+    id: string;
     name?: string;
     phone?: string;
     status?: string;
@@ -55,7 +55,7 @@ function FeedbacksPageInner() {
       });
       if (res.ok) {
         setRows(rs =>
-          rs.map(r => (r._id === id ? { ...r, status: "resolved" } : r)),
+          rs.map(r => (r.id === id ? { ...r, status: "resolved" } : r)),
         );
       }
     } finally {
@@ -116,7 +116,7 @@ function FeedbacksPageInner() {
                 f.rating === 1 ? "text-red-600" : "text-amber-600";
 
               return (
-                <li key={f._id} className="px-6 py-5">
+                <li key={f.id} className="px-6 py-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -143,7 +143,7 @@ function FeedbacksPageInner() {
                       )}
                       {f.lead && (
                         <Link
-                          href={`/patients/${f.lead._id}`}
+                          href={`/patients/${f.lead.id}`}
                           className="mt-1 inline-block text-xs text-indigo-600 hover:underline"
                         >
                           View patient →
@@ -165,11 +165,11 @@ function FeedbacksPageInner() {
                     <div className="mt-3 flex justify-end">
                       <button
                         type="button"
-                        onClick={() => resolve(f._id)}
-                        disabled={busyId === f._id}
+                        onClick={() => resolve(f.id)}
+                        disabled={busyId === f.id}
                         className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
                       >
-                        {busyId === f._id ? "Resolving…" : "Mark resolved"}
+                        {busyId === f.id ? "Resolving…" : "Mark resolved"}
                       </button>
                     </div>
                   )}

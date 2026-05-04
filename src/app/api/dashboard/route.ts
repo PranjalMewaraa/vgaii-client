@@ -1,8 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
-import Feedback from "@/models/Feedback";
-import Client from "@/models/Client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
 import { selfHealBusinessInfo } from "@/lib/business-info";
@@ -11,17 +7,32 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
-
     const user = getUser(req);
-    const filter = withClientFilter(user);
+    const scope = withClientFilter(user) as { clientId?: string };
 
     const client = user.clientId
-      ? await Client.findById(user.clientId)
+      ? await prisma.client.findUnique({
+          where: { id: user.clientId },
+          select: {
+            id: true,
+            googlePlaceId: true,
+            googleBusinessInfo: true,
+            subscriptionStatus: true,
+            renewalDate: true,
+          },
+        })
       : null;
 
+    let businessInfo = client?.googleBusinessInfo ?? null;
     if (client?.googlePlaceId) {
-      await selfHealBusinessInfo(client);
+      const fresh = await selfHealBusinessInfo({
+        id: client.id,
+        googlePlaceId: client.googlePlaceId,
+        googleBusinessInfo: businessInfo as
+          | { syncedAt?: Date | string | null }
+          | null,
+      });
+      if (fresh) businessInfo = fresh;
     }
 
     const [
@@ -31,22 +42,20 @@ export async function GET(req: Request) {
       appointments,
       openFeedback,
     ] = await Promise.all([
-      Lead.countDocuments(filter),
-      Lead.countDocuments({
-        ...filter,
-        createdAt: {
-          $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+      prisma.lead.count({ where: scope }),
+      prisma.lead.count({
+        where: {
+          ...scope,
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
         },
       }),
-      Lead.countDocuments({
-        ...filter,
-        status: { $in: ["appointment_booked", "visited"] },
+      prisma.lead.count({
+        where: { ...scope, status: { in: ["appointment_booked", "visited"] } },
       }),
-      Appointment.countDocuments({
-        ...filter,
-        date: { $gte: new Date() },
+      prisma.appointment.count({
+        where: { ...scope, date: { gte: new Date() } },
       }),
-      Feedback.countDocuments({ ...filter, status: "open" }),
+      prisma.feedback.count({ where: { ...scope, status: "open" } }),
     ]);
 
     return NextResponse.json({
@@ -57,9 +66,8 @@ export async function GET(req: Request) {
       openFeedback,
       subscription: client?.subscriptionStatus,
       renewalDate: client?.renewalDate,
-      businessInfo: client?.googleBusinessInfo ?? null,
+      businessInfo,
     });
-
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }

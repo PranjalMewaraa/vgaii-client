@@ -13,7 +13,7 @@ import {
 } from "@/lib/constants";
 
 type Lead = {
-  _id: string;
+  id: string;
   name: string;
   phone: string;
   email?: string;
@@ -29,7 +29,7 @@ type Lead = {
 };
 
 type Appointment = {
-  _id: string;
+  id: string;
   name?: string;
   phone?: string;
   date?: string;
@@ -42,7 +42,7 @@ type Appointment = {
 };
 
 type Feedback = {
-  _id: string;
+  id: string;
   rating?: number;
   reviewText?: string;
   status?: string;
@@ -206,8 +206,8 @@ function PatientDetailPageInner({
   };
 
   const startEdit = (a: Appointment) => {
-    setEditingId(a._id);
-    setExpandedApptId(a._id);
+    setEditingId(a.id);
+    setExpandedApptId(a.id);
     setEditDate(
       a.date ? new Date(a.date).toISOString().slice(0, 16) : "",
     );
@@ -220,8 +220,8 @@ function PatientDetailPageInner({
   // Mark a scheduled appointment as visited — same form as edit but pre-set
   // status to completed and skip the status dropdown.
   const startMarkVisited = (a: Appointment) => {
-    setEditingId(a._id);
-    setExpandedApptId(a._id);
+    setEditingId(a.id);
+    setExpandedApptId(a.id);
     setEditDate(a.date ? new Date(a.date).toISOString().slice(0, 16) : "");
     setEditStatus("completed");
     setEditDiagnosis(a.diagnosis ?? "");
@@ -491,13 +491,13 @@ function PatientDetailPageInner({
               <div className="space-y-3">
                 {upcoming.map(a => (
                   <AppointmentCard
-                    key={a._id}
+                    key={a.id}
                     appointment={a}
-                    isEditing={editingId === a._id}
-                    isExpanded={expandedApptId === a._id || editingId === a._id}
-                    onToggleExpanded={() => toggleExpanded(a._id)}
-                    saving={savingId === a._id}
-                    busy={busyApptId === a._id}
+                    isEditing={editingId === a.id}
+                    isExpanded={expandedApptId === a.id || editingId === a.id}
+                    onToggleExpanded={() => toggleExpanded(a.id)}
+                    saving={savingId === a.id}
+                    busy={busyApptId === a.id}
                     editState={{
                       editDate,
                       editStatus,
@@ -511,11 +511,11 @@ function PatientDetailPageInner({
                       setEditNotes,
                     }}
                     onMarkVisited={() => startMarkVisited(a)}
-                    onNoShow={() => markNoShow(a._id)}
+                    onNoShow={() => markNoShow(a.id)}
                     onEdit={() => startEdit(a)}
                     onCancelEdit={cancelEdit}
-                    onSaveEdit={() => saveEdit(a._id)}
-                    onDelete={() => removeAppt(a._id)}
+                    onSaveEdit={() => saveEdit(a.id)}
+                    onDelete={() => removeAppt(a.id)}
                   />
                 ))}
               </div>
@@ -537,13 +537,13 @@ function PatientDetailPageInner({
               <div className="space-y-3">
                 {past.map(a => (
                   <AppointmentCard
-                    key={a._id}
+                    key={a.id}
                     appointment={a}
-                    isEditing={editingId === a._id}
-                    isExpanded={expandedApptId === a._id || editingId === a._id}
-                    onToggleExpanded={() => toggleExpanded(a._id)}
-                    saving={savingId === a._id}
-                    busy={busyApptId === a._id}
+                    isEditing={editingId === a.id}
+                    isExpanded={expandedApptId === a.id || editingId === a.id}
+                    onToggleExpanded={() => toggleExpanded(a.id)}
+                    saving={savingId === a.id}
+                    busy={busyApptId === a.id}
                     editState={{
                       editDate,
                       editStatus,
@@ -557,11 +557,11 @@ function PatientDetailPageInner({
                       setEditNotes,
                     }}
                     onMarkVisited={() => startMarkVisited(a)}
-                    onNoShow={() => markNoShow(a._id)}
+                    onNoShow={() => markNoShow(a.id)}
                     onEdit={() => startEdit(a)}
                     onCancelEdit={cancelEdit}
-                    onSaveEdit={() => saveEdit(a._id)}
-                    onDelete={() => removeAppt(a._id)}
+                    onSaveEdit={() => saveEdit(a.id)}
+                    onDelete={() => removeAppt(a.id)}
                   />
                 ))}
               </div>
@@ -576,7 +576,7 @@ function PatientDetailPageInner({
               <div className="rounded-xl border border-slate-200 bg-white">
                 <ul className="divide-y divide-slate-200">
                   {feedbacks.map(f => (
-                    <li key={f._id} className="px-5 py-3">
+                    <li key={f.id} className="px-5 py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-slate-800">
@@ -684,7 +684,7 @@ function PatientDetailPageInner({
 }
 
 type LeadSearchHit = {
-  _id: string;
+  id: string;
   name?: string;
   phone?: string;
   status?: string;
@@ -939,7 +939,7 @@ function AppointmentCard({
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
-          <AttachmentsSection appointmentId={a._id} canEdit />
+          <AttachmentsSection appointmentId={a.id} canEdit />
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -1001,7 +1001,7 @@ function AppointmentCard({
                 No diagnosis, medicines, or notes recorded yet.
               </p>
             )}
-            <AttachmentsSection appointmentId={a._id} canEdit={false} />
+            <AttachmentsSection appointmentId={a.id} canEdit={false} />
           </div>
         )
       )}
@@ -1049,7 +1049,7 @@ function DirectAppointmentView({
     setLinking(leadId);
     setError(null);
     try {
-      const res = await fetch(`/api/appointments/${a._id}`, {
+      const res = await fetch(`/api/appointments/${a.id}`, {
         method: "PATCH",
         headers: authHeaders(),
         body: JSON.stringify({ leadId }),
@@ -1131,7 +1131,7 @@ function DirectAppointmentView({
             <ul className="mt-3 divide-y divide-slate-200 rounded-lg border border-slate-200">
               {results.map(r => (
                 <li
-                  key={r._id}
+                  key={r.id}
                   className="flex items-center justify-between gap-3 px-4 py-3"
                 >
                   <div className="min-w-0">
@@ -1145,11 +1145,11 @@ function DirectAppointmentView({
                   </div>
                   <button
                     type="button"
-                    onClick={() => link(r._id)}
-                    disabled={linking === r._id}
+                    onClick={() => link(r.id)}
+                    disabled={linking === r.id}
                     className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
                   >
-                    {linking === r._id ? "Linking…" : "Link"}
+                    {linking === r.id ? "Linking…" : "Link"}
                   </button>
                 </li>
               ))}

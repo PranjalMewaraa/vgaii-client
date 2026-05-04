@@ -1,5 +1,5 @@
-import AuditLog from "@/models/AuditLog";
-import User from "@/models/User";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import type { AuthUser } from "@/lib/auth";
 
 const getIp = (req: Request): string | null => {
@@ -45,8 +45,15 @@ type SystemActor = {
 
 export type AuditActor = UserActor | WebhookActor | PublicActor | SystemActor;
 
-// Audit logging is best-effort: a failed write must never block the original
-// request. Any error is logged to the server console and swallowed.
+// Audit logging is best-effort: a failed write must never block the
+// original request. Any error is logged to the server console and
+// swallowed.
+//
+// Note for Phase 2 of the Mongo→Prisma migration: while User is still
+// served by Mongoose, the lookup below returns null and we fall back to
+// a "User:<id>" label. Once the User chunk lands, names resolve again.
+// We don't dual-read against Mongoose here because the audit log is
+// dev-only at this point and we'll reseed before going live.
 export async function logAudit(
   req: Request,
   actor: AuditActor,
@@ -62,9 +69,12 @@ export async function logAudit(
       actorId = actor.user.id ?? null;
       clientId = actor.clientId ?? actor.user.clientId ?? null;
       if (actorId) {
-        const u = await User.findById(actorId)
-          .select("name email")
-          .lean<{ name?: string; email?: string } | null>();
+        const u = await prisma.user
+          .findUnique({
+            where: { id: actorId },
+            select: { name: true, email: true },
+          })
+          .catch(() => null);
         actorLabel = u?.name || u?.email || `User:${actorId}`;
       } else {
         actorLabel = "Unknown user";
@@ -74,18 +84,26 @@ export async function logAudit(
       actorLabel = `${actor.actorType}:${actor.source}`;
     }
 
-    await AuditLog.create({
-      clientId,
-      actorType: actor.actorType,
-      actorId,
-      actorLabel,
-      ip,
-      action: input.action,
-      entityType: input.entityType,
-      entityId: input.entityId ?? null,
-      entityLabel: input.entityLabel ?? "",
-      summary: input.summary ?? "",
-      metadata: input.metadata ?? null,
+    await prisma.auditLog.create({
+      data: {
+        clientId,
+        actorType: actor.actorType,
+        actorId,
+        actorLabel,
+        ip,
+        action: input.action,
+        entityType: input.entityType,
+        entityId: input.entityId ?? null,
+        entityLabel: input.entityLabel ?? "",
+        summary: input.summary ?? "",
+        // Prisma's nullable JSON column rejects plain `null`; omitting the
+        // key altogether stores SQL NULL, which is what we want. The cast
+        // is needed because Prisma's `InputJsonValue` is more specific
+        // than `Record<string, unknown>` (recursive nested type).
+        ...(input.metadata
+          ? { metadata: input.metadata as Prisma.InputJsonValue }
+          : {}),
+      },
     });
   } catch (err) {
     console.error("[audit] failed to log:", err);

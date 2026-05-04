@@ -1,6 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Appointment from "@/models/Appointment";
-import Lead from "@/models/Lead";
+import { prisma } from "@/lib/prisma";
 import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { canonicalPhone } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/errors";
@@ -38,8 +36,6 @@ const findPhoneFromResponses = (
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
-
     const body = await req.json();
     const triggerEvent = body?.triggerEvent;
 
@@ -80,33 +76,41 @@ export async function POST(req: Request) {
       attendee.phoneNumber ?? findPhoneFromResponses(responses);
     const startTime = payload.startTime;
 
-    let leadId: unknown = null;
+    let leadId: string | null = null;
     if (phone) {
       const norm = canonicalPhone(phone);
       if (norm.length >= 10) {
-        const lead = await Lead.findOne({
-          clientId: client._id,
-          phoneNormalized: norm,
+        const lead = await prisma.lead.findFirst({
+          where: { clientId: client.id, phoneNormalized: norm },
         });
         if (lead) {
-          leadId = lead._id;
+          leadId = lead.id;
           if (lead.status !== "visited" && lead.status !== "lost") {
-            lead.status = "appointment_booked";
-            lead.statusUpdatedAt = new Date();
-            await lead.save();
+            await prisma.lead.update({
+              where: { id: lead.id },
+              data: {
+                status: "appointment_booked",
+                statusUpdatedAt: new Date(),
+              },
+            });
           }
         }
       }
     }
 
-    const appointment = await Appointment.create({
-      name,
-      email,
-      phone,
-      date: startTime ? new Date(startTime) : undefined,
-      clientId: client._id,
-      leadId,
-      source: "cal.com",
+    const appointment = await prisma.appointment.create({
+      data: {
+        name,
+        email,
+        phone,
+        date: startTime ? new Date(startTime) : null,
+        clientId: client.id,
+        leadId,
+        source: "cal.com",
+        notes: "",
+        diagnosis: "",
+        medicines: [],
+      },
     });
 
     const apptLabel = appointment.date
@@ -114,11 +118,11 @@ export async function POST(req: Request) {
       : name ?? "Unnamed";
     await logAudit(
       req,
-      { actorType: "webhook", source: "cal.com", clientId: client._id.toString() },
+      { actorType: "webhook", source: "cal.com", clientId: client.id },
       {
         action: "appointment.created",
         entityType: "Appointment",
-        entityId: appointment._id.toString(),
+        entityId: appointment.id,
         entityLabel: apptLabel,
         summary: leadId
           ? "Cal.com booking created (matched to patient)"

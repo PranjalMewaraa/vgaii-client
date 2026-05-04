@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import RoleGuard from "@/components/RoleGuard";
 
 type Entry = {
-  _id: string;
+  id: string;
   actorType: "user" | "webhook" | "public" | "system";
   actorId?: string | null;
   actorLabel: string;
@@ -196,7 +196,7 @@ function ActivityPageInner() {
               <div className="rounded-xl border border-slate-200 bg-white">
                 <ul className="divide-y divide-slate-200">
                   {group.items.map(e => (
-                    <li key={e._id} className="px-5 py-3">
+                    <li key={e.id} className="px-5 py-3">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">

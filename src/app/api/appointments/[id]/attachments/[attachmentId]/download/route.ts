@@ -1,6 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Appointment from "@/models/Appointment";
-import Attachment from "@/models/Attachment";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
@@ -14,28 +12,25 @@ type RouteContext = {
 
 export async function GET(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const user = getUser(req);
     checkRole(user, ["CLIENT_ADMIN", "STAFF"]);
     checkModule(user, "appointments");
 
     const { id, attachmentId } = await ctx.params;
-    const filter = withClientFilter(user);
+    const scope = withClientFilter(user) as { clientId?: string };
 
-    const appointment = await Appointment.findOne({ ...filter, _id: id })
-      .select("_id")
-      .lean<{ _id: unknown } | null>();
+    const appointment = await prisma.appointment.findFirst({
+      where: { id, ...scope },
+      select: { id: true },
+    });
     if (!appointment) {
       return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
     }
 
-    const attachment = await Attachment.findOne({
-      _id: attachmentId,
-      appointmentId: id,
-      confirmed: true,
-    })
-      .select("storageKey filename")
-      .lean<{ storageKey: string; filename: string } | null>();
+    const attachment = await prisma.attachment.findFirst({
+      where: { id: attachmentId, appointmentId: id, confirmed: true },
+      select: { storageKey: true, filename: true },
+    });
     if (!attachment) {
       return NextResponse.json({ error: "Attachment not found" }, { status: 404 });
     }

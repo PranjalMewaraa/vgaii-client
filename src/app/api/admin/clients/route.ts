@@ -1,9 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Client from "@/models/Client";
-import User from "@/models/User";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
-import Feedback from "@/models/Feedback";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { createClientSchema } from "@/lib/validators/admin-client";
@@ -21,7 +16,6 @@ const requireSuperAdmin = (user: ReturnType<typeof getUser>) => {
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireSuperAdmin(user);
     if (block) return block;
@@ -32,7 +26,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const existingUser = await User.findOne({ email: parsed.data.admin.email });
+    const existingUser = await prisma.user.findUnique({
+      where: { email: parsed.data.admin.email },
+    });
     if (existingUser) {
       return NextResponse.json(
         { error: "Email already in use" },
@@ -40,38 +36,43 @@ export async function POST(req: Request) {
       );
     }
 
-    const client = await Client.create({
-      name: parsed.data.name,
-      subscriptionStatus: parsed.data.subscriptionStatus ?? "trial",
-      renewalDate: parsed.data.renewalDate
-        ? new Date(parsed.data.renewalDate)
-        : undefined,
-      plan: parsed.data.plan ?? "basic",
-      googlePlaceId: parsed.data.googlePlaceId?.trim() || undefined,
-      bookingUrl: parsed.data.bookingUrl?.trim() || undefined,
-      webhookKey: randomBytes(16).toString("hex"),
+    // Single transaction: client + admin user are inseparable. If the user
+    // create fails (e.g. weird db error), Prisma rolls the client back too,
+    // replacing the manual `Client.deleteOne` rollback we had on Mongoose.
+    const { client, admin } = await prisma.$transaction(async tx => {
+      const c = await tx.client.create({
+        data: {
+          name: parsed.data.name,
+          subscriptionStatus: parsed.data.subscriptionStatus ?? "trial",
+          renewalDate: parsed.data.renewalDate
+            ? new Date(parsed.data.renewalDate)
+            : null,
+          plan: parsed.data.plan ?? "basic",
+          googlePlaceId: parsed.data.googlePlaceId?.trim() || null,
+          bookingUrl: parsed.data.bookingUrl?.trim() || null,
+          webhookKey: randomBytes(16).toString("hex"),
+        },
+      });
+
+      const a = await tx.user.create({
+        data: {
+          name: parsed.data.admin.name,
+          email: parsed.data.admin.email,
+          password: await bcrypt.hash(parsed.data.admin.password, 10),
+          role: "CLIENT_ADMIN",
+          clientId: c.id,
+          assignedModules: [],
+          createdById: user.id,
+        },
+      });
+
+      return { client: c, admin: a };
     });
 
-    let admin;
-    try {
-      admin = await User.create({
-        name: parsed.data.admin.name,
-        email: parsed.data.admin.email,
-        password: await bcrypt.hash(parsed.data.admin.password, 10),
-        role: "CLIENT_ADMIN",
-        clientId: client._id,
-        createdBy: user.id,
-      });
-    } catch (err) {
-      // Roll back the client if the admin couldn't be created.
-      await Client.deleteOne({ _id: client._id });
-      throw err;
-    }
-
-    await logAudit(req, { actorType: "user", user, clientId: client._id.toString() }, {
+    await logAudit(req, { actorType: "user", user, clientId: client.id }, {
       action: "client.created",
       entityType: "Client",
-      entityId: client._id.toString(),
+      entityId: client.id,
       entityLabel: client.name,
       summary: `Client created with admin ${admin.email}`,
       metadata: { plan: client.plan, subscriptionStatus: client.subscriptionStatus },
@@ -80,14 +81,14 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         client: {
-          _id: client._id,
+          id: client.id,
           name: client.name,
           subscriptionStatus: client.subscriptionStatus,
           plan: client.plan,
           webhookKey: client.webhookKey,
         },
         admin: {
-          _id: admin._id,
+          id: admin.id,
           name: admin.name,
           email: admin.email,
         },
@@ -101,74 +102,112 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireSuperAdmin(user);
     if (block) return block;
 
-    const clients = await Client.find()
-      .select(
-        "_id name subscriptionStatus plan renewalDate profileSlug customDomain googlePlaceId bookingUrl webhookKey createdAt",
-      )
-      .sort({ createdAt: -1 })
-      .lean();
+    const clients = await prisma.client.findMany({
+      select: {
+        id: true,
+        name: true,
+        subscriptionStatus: true,
+        plan: true,
+        renewalDate: true,
+        profileSlug: true,
+        customDomain: true,
+        googlePlaceId: true,
+        bookingUrl: true,
+        webhookKey: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-    const clientIds = clients.map(c => c._id);
+    const clientIds = clients.map(c => c.id);
 
     const [users, leadCounts, appointmentCounts, feedbackCounts] =
       await Promise.all([
-        User.find({ clientId: { $in: clientIds } })
-          .select(
-            "_id name email role clientId assignedModules createdAt createdBy",
-          )
-          .sort({ createdAt: 1 })
-          .lean(),
-        Lead.aggregate([
-          { $match: { clientId: { $in: clientIds } } },
-          { $group: { _id: "$clientId", count: { $sum: 1 } } },
-        ]),
-        Appointment.aggregate([
-          { $match: { clientId: { $in: clientIds } } },
-          { $group: { _id: "$clientId", count: { $sum: 1 } } },
-        ]),
-        Feedback.aggregate([
-          {
-            $match: {
-              clientId: { $in: clientIds },
-              status: "open",
-            },
+        prisma.user.findMany({
+          where: { clientId: { in: clientIds } },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            clientId: true,
+            assignedModules: true,
+            createdAt: true,
+            createdById: true,
           },
-          { $group: { _id: "$clientId", count: { $sum: 1 } } },
-        ]),
+          orderBy: { createdAt: "asc" },
+        }),
+        prisma.lead.groupBy({
+          by: ["clientId"],
+          where: { clientId: { in: clientIds } },
+          _count: { _all: true },
+        }),
+        prisma.appointment.groupBy({
+          by: ["clientId"],
+          where: { clientId: { in: clientIds } },
+          _count: { _all: true },
+        }),
+        prisma.feedback.groupBy({
+          by: ["clientId"],
+          where: { clientId: { in: clientIds }, status: "open" },
+          _count: { _all: true },
+        }),
       ]);
 
     const usersByClient = new Map<string, typeof users>();
     for (const u of users) {
-      const key = u.clientId?.toString();
-      if (!key) continue;
-      const list = usersByClient.get(key) ?? [];
+      if (!u.clientId) continue;
+      const list = usersByClient.get(u.clientId) ?? [];
       list.push(u);
-      usersByClient.set(key, list);
+      usersByClient.set(u.clientId, list);
     }
 
-    const countAt = (
-      arr: { _id: { toString(): string }; count: number }[],
+    // Prisma groupBy returns a list keyed by the `by` field; we look up by
+    // clientId against `_count._all`.
+    const prismaCountAt = (
+      arr: Array<{ clientId: string | null; _count: { _all: number } }>,
       key: string,
-    ) => arr.find(a => a._id?.toString() === key)?.count ?? 0;
+    ) => arr.find(a => a.clientId === key)?._count._all ?? 0;
 
     const enriched = clients.map(c => {
-      const key = c._id.toString();
-      const usersForClient = usersByClient.get(key) ?? [];
+      const usersForClient = usersByClient.get(c.id) ?? [];
       const admin = usersForClient.find(u => u.role === "CLIENT_ADMIN") ?? null;
       const staff = usersForClient.filter(u => u.role === "STAFF");
+      // Re-shape to expose `createdBy` (vs Prisma's `createdById`) since
+      // that's what the frontend reads. `assignedModules` is cast back to
+      // string[] from the Json column.
+      const remap = (u: typeof users[number]) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        clientId: u.clientId,
+        assignedModules: (u.assignedModules as string[] | null) ?? [],
+        createdAt: u.createdAt,
+        createdBy: u.createdById,
+      });
       return {
-        ...c,
-        admin,
-        staff,
+        id: c.id,
+        name: c.name,
+        subscriptionStatus: c.subscriptionStatus,
+        plan: c.plan,
+        renewalDate: c.renewalDate,
+        profileSlug: c.profileSlug,
+        customDomain: c.customDomain,
+        googlePlaceId: c.googlePlaceId,
+        bookingUrl: c.bookingUrl,
+        webhookKey: c.webhookKey,
+        createdAt: c.createdAt,
+        admin: admin ? remap(admin) : null,
+        staff: staff.map(remap),
         stats: {
-          leads: countAt(leadCounts, key),
-          appointments: countAt(appointmentCounts, key),
-          openFeedback: countAt(feedbackCounts, key),
+          leads: prismaCountAt(leadCounts, c.id),
+          appointments: prismaCountAt(appointmentCounts, c.id),
+          openFeedback: prismaCountAt(feedbackCounts, c.id),
         },
       };
     });

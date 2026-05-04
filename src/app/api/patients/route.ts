@@ -1,7 +1,6 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
-import Feedback from "@/models/Feedback";
+import { prisma } from "@/lib/prisma";
+import { createLead } from "@/repos/lead";
+import type { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
 import { patientCreateSchema } from "@/lib/validators/patient";
@@ -10,96 +9,89 @@ import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
-const PATIENT_LEAD_STATUSES = [
-  "qualified",
-  "appointment_booked",
-  "visited",
-] as const;
-
-const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 type PatientRow = {
   kind: "lead" | "direct";
   id: string;
   name: string;
   phone: string;
-  email?: string;
-  age?: number;
-  gender?: string;
+  email?: string | null;
+  age?: number | null;
+  gender?: string | null;
   status?: string;
-  outcomeRating?: number;
+  outcomeRating?: number | null;
   lastAppointmentDate?: Date | null;
   appointmentsCount: number;
   hasFeedback: boolean;
-  source?: string;
+  source?: string | null;
   createdAt?: Date;
 };
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
-    const filter = withClientFilter(user);
+    const scope = withClientFilter(user) as { clientId?: string };
 
     const url = new URL(req.url);
     const search = url.searchParams.get("search")?.trim();
 
-    const leadFilter: Record<string, unknown> = {
-      ...filter,
-      status: { $in: PATIENT_LEAD_STATUSES },
+    const leadWhere: Prisma.LeadWhereInput = {
+      ...scope,
+      status: { in: ["qualified", "appointment_booked", "visited"] },
     };
     if (search) {
-      const re = new RegExp(escapeRegex(search), "i");
-      leadFilter.$or = [{ name: re }, { phone: re }];
+      leadWhere.OR = [
+        { name: { contains: search } },
+        { phone: { contains: search } },
+      ];
     }
 
     const [leads, orphanAppointments, feedbacks] = await Promise.all([
-      Lead.find(leadFilter).lean(),
-      Appointment.find({
-        ...filter,
-        leadId: { $in: [null, undefined] },
-        ...(search
-          ? {
-              $or: [
-                { name: new RegExp(escapeRegex(search), "i") },
-                { phone: new RegExp(escapeRegex(search), "i") },
-              ],
-            }
-          : {}),
-      }).lean(),
-      Feedback.find(filter).select("leadId").lean(),
+      prisma.lead.findMany({ where: leadWhere }),
+      prisma.appointment.findMany({
+        where: {
+          ...scope,
+          leadId: null,
+          ...(search
+            ? {
+                OR: [
+                  { name: { contains: search } },
+                  { phone: { contains: search } },
+                ],
+              }
+            : {}),
+        },
+      }),
+      prisma.feedback.findMany({
+        where: scope,
+        select: { leadId: true },
+      }),
     ]);
 
     const feedbackByLead = new Set(
-      feedbacks.map(f => f.leadId?.toString()).filter(Boolean) as string[],
+      feedbacks.map(f => f.leadId).filter(Boolean) as string[],
     );
 
-    const leadIds = leads.map(l => l._id);
+    const leadIds = leads.map(l => l.id);
     const apptsForLeads = leadIds.length
-      ? await Appointment.find({
-          ...filter,
-          leadId: { $in: leadIds },
+      ? await prisma.appointment.findMany({
+          where: { ...scope, leadId: { in: leadIds } },
+          orderBy: { date: "desc" },
         })
-          .sort({ date: -1 })
-          .lean()
       : [];
 
     const apptsByLead = new Map<string, typeof apptsForLeads>();
     for (const a of apptsForLeads) {
-      const key = a.leadId?.toString();
-      if (!key) continue;
-      const arr = apptsByLead.get(key) ?? [];
+      if (!a.leadId) continue;
+      const arr = apptsByLead.get(a.leadId) ?? [];
       arr.push(a);
-      apptsByLead.set(key, arr);
+      apptsByLead.set(a.leadId, arr);
     }
 
     const leadRows: PatientRow[] = leads.map(l => {
-      // appts is sorted desc by date, so [0] is the most recent regardless of
-      // status — that's what the inactive logic on the client checks.
-      const appts = apptsByLead.get(l._id.toString()) ?? [];
+      const appts = apptsByLead.get(l.id) ?? [];
       return {
         kind: "lead",
-        id: l._id.toString(),
+        id: l.id,
         name: l.name,
         phone: l.phone,
         email: l.email,
@@ -109,7 +101,7 @@ export async function GET(req: Request) {
         outcomeRating: l.outcomeRating,
         lastAppointmentDate: appts[0]?.date ?? null,
         appointmentsCount: appts.length,
-        hasFeedback: feedbackByLead.has(l._id.toString()),
+        hasFeedback: feedbackByLead.has(l.id),
         source: l.source,
         createdAt: l.createdAt,
       };
@@ -117,7 +109,7 @@ export async function GET(req: Request) {
 
     const orphanRows: PatientRow[] = orphanAppointments.map(a => ({
       kind: "direct",
-      id: a._id.toString(),
+      id: a.id,
       name: a.name ?? "Unnamed",
       phone: a.phone ?? "",
       email: a.email,
@@ -144,7 +136,6 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (!user.clientId) {
@@ -160,7 +151,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const lead = await Lead.create({
+    const lead = await createLead({
       name: parsed.data.name,
       phone: parsed.data.phone,
       email: parsed.data.email,
@@ -173,13 +164,13 @@ export async function POST(req: Request) {
       statusUpdatedAt: new Date(),
       feedbackToken: generateFeedbackToken(),
       clientId: user.clientId,
-      createdBy: user.id,
+      createdById: user.id,
     });
 
     await logAudit(req, { actorType: "user", user }, {
       action: "patient.created",
       entityType: "Lead",
-      entityId: lead._id.toString(),
+      entityId: lead.id,
       entityLabel: lead.name,
       summary: "Patient added directly (qualified)",
       metadata: { source: lead.source },

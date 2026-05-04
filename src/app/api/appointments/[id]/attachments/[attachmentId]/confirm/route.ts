@@ -1,6 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Appointment from "@/models/Appointment";
-import Attachment from "@/models/Attachment";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
@@ -15,26 +13,23 @@ type RouteContext = {
 
 export async function POST(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const user = getUser(req);
     checkRole(user, ["CLIENT_ADMIN", "STAFF"]);
     checkModule(user, "appointments");
 
     const { id, attachmentId } = await ctx.params;
-    const filter = withClientFilter(user);
+    const scope = withClientFilter(user) as { clientId?: string };
 
-    // Single round-trip: load the attachment and join-check the appointment
-    // by clientId. Both shape the response for the UI.
-    const appointment = await Appointment.findOne({ ...filter, _id: id })
-      .select("_id date name")
-      .lean<{ _id: unknown; date?: Date; name?: string } | null>();
+    const appointment = await prisma.appointment.findFirst({
+      where: { id, ...scope },
+      select: { id: true, date: true, name: true },
+    });
     if (!appointment) {
       return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
     }
 
-    const attachment = await Attachment.findOne({
-      _id: attachmentId,
-      appointmentId: id,
+    const attachment = await prisma.attachment.findFirst({
+      where: { id: attachmentId, appointmentId: id },
     });
     if (!attachment) {
       return NextResponse.json({ error: "Attachment not found" }, { status: 404 });
@@ -57,8 +52,10 @@ export async function POST(req: Request, ctx: RouteContext) {
       );
     }
 
-    attachment.confirmed = true;
-    await attachment.save();
+    const confirmed = await prisma.attachment.update({
+      where: { id: attachment.id },
+      data: { confirmed: true },
+    });
 
     const apptLabel = appointment.date
       ? `${appointment.name ?? "Appointment"} · ${new Date(appointment.date).toLocaleString()}`
@@ -67,26 +64,26 @@ export async function POST(req: Request, ctx: RouteContext) {
     await logAudit(req, { actorType: "user", user }, {
       action: "appointment.attachment.uploaded",
       entityType: "Appointment",
-      entityId: String(appointment._id),
+      entityId: appointment.id,
       entityLabel: apptLabel,
-      summary: `Uploaded "${attachment.filename}" (${Math.round(attachment.size / 1024)} KB, ${attachment.kind})`,
+      summary: `Uploaded "${confirmed.filename}" (${Math.round(confirmed.size / 1024)} KB, ${confirmed.kind})`,
       metadata: {
-        attachmentId: attachment._id.toString(),
-        filename: attachment.filename,
-        size: attachment.size,
-        mimeType: attachment.mimeType,
-        kind: attachment.kind,
+        attachmentId: confirmed.id,
+        filename: confirmed.filename,
+        size: confirmed.size,
+        mimeType: confirmed.mimeType,
+        kind: confirmed.kind,
       },
     });
 
     return NextResponse.json({
       attachment: {
-        id: attachment._id.toString(),
-        filename: attachment.filename,
-        mimeType: attachment.mimeType,
-        size: attachment.size,
-        kind: attachment.kind,
-        createdAt: attachment.createdAt,
+        id: confirmed.id,
+        filename: confirmed.filename,
+        mimeType: confirmed.mimeType,
+        size: confirmed.size,
+        kind: confirmed.kind,
+        createdAt: confirmed.createdAt,
       },
     });
   } catch (err: unknown) {

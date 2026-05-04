@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Feedback from "@/models/Feedback";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
@@ -11,32 +10,36 @@ type FeedbackRouteContext = {
 
 export async function PATCH(req: Request, context: FeedbackRouteContext) {
   try {
-    await connectDB();
-
     const user = getUser(req);
     const { id } = await context.params;
 
-    const feedback = await Feedback.findOneAndUpdate(
-      {
-        _id: id,
-        clientId: user.clientId,
+    // Tenant-scoped find before update — the where clause includes both id
+    // and clientId, so findFirst keeps the scoping safe (vs findUnique
+    // which would only key on id).
+    const existing = await prisma.feedback.findFirst({
+      where: {
+        id,
+        ...(user.clientId ? { clientId: user.clientId } : {}),
       },
-      { status: "resolved" },
-      { new: true }
-    );
-
-    if (feedback) {
-      await logAudit(req, { actorType: "user", user }, {
-        action: "feedback.resolved",
-        entityType: "Feedback",
-        entityId: feedback._id.toString(),
-        entityLabel: feedback.clientName ?? "Anonymous",
-        summary: "Feedback marked resolved",
-      });
+    });
+    if (!existing) {
+      return NextResponse.json({ feedback: null });
     }
 
-    return NextResponse.json({ feedback });
+    const feedback = await prisma.feedback.update({
+      where: { id: existing.id },
+      data: { status: "resolved" },
+    });
 
+    await logAudit(req, { actorType: "user", user }, {
+      action: "feedback.resolved",
+      entityType: "Feedback",
+      entityId: feedback.id,
+      entityLabel: feedback.clientName ?? "Anonymous",
+      summary: "Feedback marked resolved",
+    });
+
+    return NextResponse.json({ feedback });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }

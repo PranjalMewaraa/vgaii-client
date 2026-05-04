@@ -5,7 +5,7 @@ import { ASSIGNABLE_MODULES, type AssignableModule } from "@/lib/rbac";
 import RoleGuard from "@/components/RoleGuard";
 
 type Staff = {
-  _id: string;
+  id: string;
   name?: string;
   email?: string;
   assignedModules: AssignableModule[];
@@ -95,7 +95,7 @@ function StaffPageInner() {
   };
 
   const startEdit = (member: Staff) => {
-    setEditingId(member._id);
+    setEditingId(member.id);
     setEditModules([...(member.assignedModules ?? [])]);
   };
 
@@ -114,7 +114,7 @@ function StaffPageInner() {
       });
       if (res.ok) {
         const data = await res.json();
-        setStaff(s => s.map(m => (m._id === id ? data.staff : m)));
+        setStaff(s => s.map(m => (m.id === id ? data.staff : m)));
         cancelEdit();
       }
     } finally {
@@ -131,7 +131,7 @@ function StaffPageInner() {
         headers: authHeaders(),
       });
       if (res.ok) {
-        setStaff(s => s.filter(m => m._id !== id));
+        setStaff(s => s.filter(m => m.id !== id));
       }
     } finally {
       setRemovingId(null);
@@ -299,10 +299,10 @@ function StaffPageInner() {
               </thead>
               <tbody>
                 {staff.map(member => {
-                  const editing = editingId === member._id;
+                  const editing = editingId === member.id;
                   return (
                     <tr
-                      key={member._id}
+                      key={member.id}
                       className="border-t border-slate-200 align-top"
                     >
                       <td className="px-6 py-4 font-medium text-slate-900">
@@ -368,11 +368,11 @@ function StaffPageInner() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => saveEdit(member._id)}
-                              disabled={savingId === member._id}
+                              onClick={() => saveEdit(member.id)}
+                              disabled={savingId === member.id}
                               className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
                             >
-                              {savingId === member._id ? "Saving…" : "Save"}
+                              {savingId === member.id ? "Saving…" : "Save"}
                             </button>
                           </div>
                         ) : (
@@ -386,11 +386,11 @@ function StaffPageInner() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => remove(member._id)}
-                              disabled={removingId === member._id}
+                              onClick={() => remove(member.id)}
+                              disabled={removingId === member.id}
                               className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
                             >
-                              {removingId === member._id
+                              {removingId === member.id
                                 ? "Removing…"
                                 : "Remove"}
                             </button>

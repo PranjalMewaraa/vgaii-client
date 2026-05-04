@@ -1,13 +1,10 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
 import { serializeCsv } from "@/lib/csv";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
-
-const PATIENT_LEAD_STATUSES = ["qualified", "appointment_booked", "visited"];
 
 const CSV_HEADERS = [
   "name",
@@ -30,43 +27,42 @@ const fmtDate = (d: Date | undefined | null) =>
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
-    const filter = withClientFilter(user);
+    const scope = withClientFilter(user) as { clientId?: string };
 
     const idsParam = new URL(req.url).searchParams.get("ids");
     const ids = idsParam
       ? idsParam.split(",").map(s => s.trim()).filter(Boolean)
       : null;
 
-    const leadFilter: Record<string, unknown> = {
-      ...filter,
-      status: { $in: PATIENT_LEAD_STATUSES },
+    const where: Prisma.LeadWhereInput = {
+      ...scope,
+      status: { in: ["qualified", "appointment_booked", "visited"] },
     };
     if (ids && ids.length > 0) {
-      leadFilter._id = { $in: ids };
+      where.id = { in: ids };
     }
 
-    const leads = await Lead.find(leadFilter).lean();
+    const leads = await prisma.lead.findMany({ where });
 
-    const leadIds = leads.map(l => l._id);
+    const leadIds = leads.map(l => l.id);
     const appts = leadIds.length
-      ? await Appointment.find({ ...filter, leadId: { $in: leadIds } })
-          .sort({ date: -1 })
-          .lean()
+      ? await prisma.appointment.findMany({
+          where: { ...scope, leadId: { in: leadIds } },
+          orderBy: { date: "desc" },
+        })
       : [];
 
     const apptsByLead = new Map<string, typeof appts>();
     for (const a of appts) {
-      const key = a.leadId?.toString();
-      if (!key) continue;
-      const arr = apptsByLead.get(key) ?? [];
+      if (!a.leadId) continue;
+      const arr = apptsByLead.get(a.leadId) ?? [];
       arr.push(a);
-      apptsByLead.set(key, arr);
+      apptsByLead.set(a.leadId, arr);
     }
 
     const rows = leads.map(l => {
-      const list = apptsByLead.get(l._id.toString()) ?? [];
+      const list = apptsByLead.get(l.id) ?? [];
       const last = list[0];
       return {
         name: l.name,

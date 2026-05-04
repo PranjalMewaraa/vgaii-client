@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Appointment from "@/models/Appointment";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
@@ -13,32 +12,33 @@ const ACTIVE_WINDOW_MS = 30 * 60 * 1000;
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
     checkRole(user, ["CLIENT_ADMIN", "STAFF"]);
     checkModule(user, "appointments");
 
-    const filter = withClientFilter(user);
+    const scope = withClientFilter(user) as { clientId?: string };
     const now = Date.now();
 
     const [active, next] = await Promise.all([
-      Appointment.findOne({
-        ...filter,
-        status: "scheduled",
-        date: {
-          $gte: new Date(now - ACTIVE_WINDOW_MS),
-          $lte: new Date(now + ACTIVE_WINDOW_MS),
+      prisma.appointment.findFirst({
+        where: {
+          ...scope,
+          status: "scheduled",
+          date: {
+            gte: new Date(now - ACTIVE_WINDOW_MS),
+            lte: new Date(now + ACTIVE_WINDOW_MS),
+          },
         },
-      })
-        .sort({ date: 1 })
-        .lean(),
-      Appointment.findOne({
-        ...filter,
-        status: "scheduled",
-        date: { $gt: new Date(now + ACTIVE_WINDOW_MS) },
-      })
-        .sort({ date: 1 })
-        .lean(),
+        orderBy: { date: "asc" },
+      }),
+      prisma.appointment.findFirst({
+        where: {
+          ...scope,
+          status: "scheduled",
+          date: { gt: new Date(now + ACTIVE_WINDOW_MS) },
+        },
+        orderBy: { date: "asc" },
+      }),
     ]);
 
     return NextResponse.json({ active, next });

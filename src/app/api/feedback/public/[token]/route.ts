@@ -1,6 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
-import Feedback from "@/models/Feedback";
+import { prisma } from "@/lib/prisma";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
@@ -22,10 +20,13 @@ type RouteContext = { params: Promise<{ token: string }> };
 
 export async function GET(_req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const { token } = await ctx.params;
 
-    const lead = await Lead.findOne({ feedbackToken: token });
+    // feedbackToken is sparse-unique on Lead, so findUnique is valid.
+    const lead = await prisma.lead.findUnique({
+      where: { feedbackToken: token },
+      select: { name: true, phone: true, feedbackTokenUsed: true },
+    });
     if (!lead) {
       return NextResponse.json({ error: "Invalid link" }, { status: 404 });
     }
@@ -42,10 +43,11 @@ export async function GET(_req: Request, ctx: RouteContext) {
 
 export async function POST(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const { token } = await ctx.params;
 
-    const lead = await Lead.findOne({ feedbackToken: token });
+    const lead = await prisma.lead.findUnique({
+      where: { feedbackToken: token },
+    });
     if (!lead) {
       return NextResponse.json({ error: "Invalid link" }, { status: 404 });
     }
@@ -61,35 +63,46 @@ export async function POST(req: Request, ctx: RouteContext) {
 
     const submittedAt = new Date();
 
-    const fb = await Feedback.create({
-      clientId: lead.clientId,
-      leadId: lead._id,
-      clientName: lead.name,
-      clientPhone: lead.phone,
-      rating: parsed.data.rating,
-      reviewText: parsed.data.reviewText,
-      status: "open",
-      submittedAt,
-    });
+    // Two writes that should be atomic: feedback insert + lead status
+    // update. If either fails we don't want a half-applied state.
+    const fb = await prisma.$transaction(async tx => {
+      const created = await tx.feedback.create({
+        data: {
+          clientId: lead.clientId,
+          leadId: lead.id,
+          clientName: lead.name,
+          clientPhone: lead.phone,
+          rating: parsed.data.rating,
+          reviewText: parsed.data.reviewText,
+          status: "open",
+          submittedAt,
+        },
+      });
 
-    lead.feedbackTokenUsed = true;
-    lead.outcomeRating = parsed.data.rating;
-    if (lead.status !== "lost") {
-      lead.status = "visited";
-      lead.statusUpdatedAt = submittedAt;
-    }
-    await lead.save();
+      await tx.lead.update({
+        where: { id: lead.id },
+        data: {
+          feedbackTokenUsed: true,
+          outcomeRating: parsed.data.rating,
+          ...(lead.status !== "lost"
+            ? { status: "visited", statusUpdatedAt: submittedAt }
+            : {}),
+        },
+      });
+
+      return created;
+    });
 
     await logAudit(
       req,
-      { actorType: "public", source: "feedback-link", clientId: lead.clientId.toString() },
+      { actorType: "public", source: "feedback-link", clientId: lead.clientId },
       {
         action: "feedback.submitted",
         entityType: "Feedback",
-        entityId: fb._id.toString(),
+        entityId: fb.id,
         entityLabel: lead.name,
         summary: `Feedback submitted (${parsed.data.rating}/5)`,
-        metadata: { rating: parsed.data.rating, leadId: lead._id.toString() },
+        metadata: { rating: parsed.data.rating, leadId: lead.id },
       },
     );
 

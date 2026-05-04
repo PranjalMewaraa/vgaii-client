@@ -7,7 +7,7 @@ import RoleGuard from "@/components/RoleGuard";
 import { LEAD_STATUSES } from "@/lib/constants";
 
 type Lead = {
-  _id: string;
+  id: string;
   name: string;
   phone: string;
   area?: string;
@@ -178,8 +178,8 @@ function LeadsPageInner() {
               <tbody>
                 {visible.map(lead => (
                   <tr
-                    key={lead._id}
-                    onClick={() => router.push(`/leads/${lead._id}`)}
+                    key={lead.id}
+                    onClick={() => router.push(`/leads/${lead.id}`)}
                     className="cursor-pointer border-t border-slate-200 hover:bg-slate-50"
                   >
                     <td className="px-6 py-4 font-medium text-slate-900">

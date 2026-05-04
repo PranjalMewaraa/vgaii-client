@@ -6,7 +6,7 @@ import RoleGuard from "@/components/RoleGuard";
 import AttachmentsSection from "@/components/AttachmentsSection";
 
 type Appointment = {
-  _id: string;
+  id: string;
   name?: string;
   email?: string;
   phone?: string;
@@ -237,8 +237,8 @@ function AppointmentsPageInner() {
   };
 
   const startEdit = (a: Appointment, presetCompleted = false) => {
-    setEditingId(a._id);
-    setExpandedId(a._id);
+    setEditingId(a.id);
+    setExpandedId(a.id);
     setEditDate(a.date ? new Date(a.date).toISOString().slice(0, 16) : "");
     setEditStatus(presetCompleted ? "completed" : a.status ?? "scheduled");
     setEditDiagnosis(a.diagnosis ?? "");
@@ -328,9 +328,9 @@ function AppointmentsPageInner() {
               tone="active"
               label="Active appointment"
               appointment={active}
-              busy={busyId === active._id}
+              busy={busyId === active.id}
               onMarkVisited={() => startEdit(active, true)}
-              onNoShow={() => markNoShow(active._id)}
+              onNoShow={() => markNoShow(active.id)}
             />
           )}
           {next && (
@@ -442,19 +442,19 @@ function AppointmentsPageInner() {
         ) : (
           <ul className="divide-y divide-slate-200">
             {visible.map(a => {
-              const isEditing = editingId === a._id;
-              const isExpanded = expandedId === a._id || isEditing;
+              const isEditing = editingId === a.id;
+              const isExpanded = expandedId === a.id || isEditing;
               const isScheduled = !a.status || a.status === "scheduled";
               const hasDetails =
                 !!a.diagnosis ||
                 (!!a.medicines && a.medicines.length > 0) ||
                 !!a.notes;
               return (
-                <li key={a._id} className="px-6 py-4">
+                <li key={a.id} className="px-6 py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <button
                       type="button"
-                      onClick={() => toggleExpand(a._id)}
+                      onClick={() => toggleExpand(a.id)}
                       className="flex min-w-0 flex-1 items-start gap-3 text-left"
                       aria-expanded={isExpanded}
                     >
@@ -490,15 +490,15 @@ function AppointmentsPageInner() {
                             <button
                               type="button"
                               onClick={() => startEdit(a, true)}
-                              disabled={busyId === a._id}
+                              disabled={busyId === a.id}
                               className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
                             >
                               Mark visited
                             </button>
                             <button
                               type="button"
-                              onClick={() => markNoShow(a._id)}
-                              disabled={busyId === a._id}
+                              onClick={() => markNoShow(a.id)}
+                              disabled={busyId === a.id}
                               className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
                             >
                               No show
@@ -515,8 +515,8 @@ function AppointmentsPageInner() {
                         {a.status === "completed" && (
                           <button
                             type="button"
-                            onClick={() => reopen(a._id)}
-                            disabled={busyId === a._id}
+                            onClick={() => reopen(a.id)}
+                            disabled={busyId === a.id}
                             className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
                           >
                             Reopen
@@ -593,7 +593,7 @@ function AppointmentsPageInner() {
                           className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                         />
                       </label>
-                      <AttachmentsSection appointmentId={a._id} canEdit />
+                      <AttachmentsSection appointmentId={a.id} canEdit />
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
@@ -604,8 +604,8 @@ function AppointmentsPageInner() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => saveEdit(a._id)}
-                          disabled={busyId === a._id}
+                          onClick={() => saveEdit(a.id)}
+                          disabled={busyId === a.id}
                           className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
                         >
                           Save
@@ -651,7 +651,7 @@ function AppointmentsPageInner() {
                           </p>
                         )}
                         <AttachmentsSection
-                          appointmentId={a._id}
+                          appointmentId={a.id}
                           canEdit={false}
                         />
                       </div>

@@ -1,0 +1,314 @@
+// Prisma schema for the VGAII CRM. Migrated from Mongoose/MongoDB; we kept
+// the original collection names as model names so any existing references
+// (e.g. AuditLog.entityType values) line up cleanly.
+//
+// Conventions used here:
+//   - All PKs are cuid strings (Prisma's @default(cuid())).
+//   - Array-of-string fields and embedded subdocs from Mongo are stored as
+//     `Json` columns since MySQL has no native array type. Nothing in the
+//     app currently filters into these arrays/subdocs.
+//   - "Sparse-unique" Mongo fields become nullable + @unique here. MySQL
+//     unique indexes allow multiple NULLs, which is the same semantic.
+//   - Tenant scoping (`clientId`) lives on every domain row that should be
+//     isolated per client. Cascading deletes follow the data-ownership tree.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  CLIENT_ADMIN
+  STAFF
+}
+
+enum SubscriptionStatus {
+  active
+  expired
+  trial
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  appointment_booked
+  visited
+  // "lost" stays in the enum for legacy data only — the state machine in
+  // src/lib/constants.ts no longer allows new transitions to it.
+  lost
+}
+
+enum AppointmentStatus {
+  scheduled
+  completed
+  no_show
+  cancelled
+}
+
+enum FeedbackStatus {
+  open
+  resolved
+}
+
+enum AttachmentKind {
+  prescription
+  lab_report
+  scan
+  xray
+  other
+}
+
+enum AuditActorType {
+  user
+  webhook
+  public
+  system
+}
+
+enum AuditEntityType {
+  Lead
+  Appointment
+  Client
+  User
+  Feedback
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Tenant: Client
+// ─────────────────────────────────────────────────────────────────────
+
+model Client {
+  id                 String             @id @default(cuid())
+  name               String
+  subscriptionStatus SubscriptionStatus @default(trial)
+  renewalDate        DateTime?
+  googlePlaceId      String?
+  bookingUrl         String?            @db.Text
+  profileSlug        String?            @unique
+  customDomain       String?            @unique
+  plan               String             @default("basic")
+  webhookKey         String?            @unique
+  // Public-profile subdoc (was an embedded Mongoose schema). Includes
+  // services[], achievements[], hours, etc. Kept as a single Json blob
+  // because nothing in the app queries inside it.
+  profile            Json?
+  // Cached Google Business listing (was an embedded subdoc). Same reason.
+  googleBusinessInfo Json?
+  reviewsTaskId      String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  users        User[]
+  leads        Lead[]
+  appointments Appointment[]
+  feedbacks    Feedback[]
+  attachments  Attachment[]
+  // AuditLog deliberately omitted — see AuditLog model for why we don't
+  // enforce a FK on its clientId column.
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// User (CLIENT_ADMIN / STAFF / SUPER_ADMIN)
+// ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  password        String    @db.VarChar(120)
+  role            UserRole  @default(STAFF)
+  clientId        String?
+  // Restrict so that a tenant can't be deleted while users still belong to
+  // it — Client deletes are super-admin only and rare.
+  client          Client?   @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  // String[] in Mongo → JSON array of module names. Validated against
+  // ASSIGNABLE_MODULES at the application layer. MySQL forbids literal
+  // defaults on JSON columns, so the app layer always writes [] instead
+  // of relying on a column default.
+  assignedModules Json
+  createdById     String?
+  createdBy       User?     @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers    User[]    @relation("UserCreatedBy")
+  lastLoginIP     String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  leadsCreated Lead[]
+  attachments  Attachment[]
+  // AuditLog deliberately omitted — see AuditLog model for why we don't
+  // enforce a FK on its actorId column.
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Lead (also represents Patients once status >= qualified)
+// ─────────────────────────────────────────────────────────────────────
+
+model Lead {
+  id                String     @id @default(cuid())
+  clientId          String
+  client            Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdById       String?
+  createdBy         User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  name              String
+  phone             String
+  // Last-10-digits canonicalisation — replaces the Mongoose pre("save")
+  // hook with an explicit compute in src/repos/lead.ts.
+  phoneNormalized   String     @db.VarChar(20)
+  email             String?
+  age               Int?
+  gender            String?
+  area              String?
+  source            String?
+  status            LeadStatus @default(new)
+  statusUpdatedAt   DateTime   @default(now())
+  outcomeRating     Int?
+  feedbackToken     String?    @unique
+  feedbackTokenUsed Boolean    @default(false)
+  // MySQL forbids literal defaults on TEXT columns; the app always writes
+  // an explicit empty string when no notes were provided.
+  notes             String     @db.Text
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  appointments Appointment[]
+  feedbacks    Feedback[]
+
+  @@index([clientId, phoneNormalized])
+  @@index([clientId, phone])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Appointment
+// ─────────────────────────────────────────────────────────────────────
+
+model Appointment {
+  id          String            @id @default(cuid())
+  clientId    String
+  client      Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  leadId      String?
+  lead        Lead?             @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  name        String?
+  phone       String?
+  email       String?
+  gender      String?
+  age         Int?
+  date        DateTime?
+  status      AppointmentStatus @default(scheduled)
+  completedAt DateTime?
+  // MySQL forbids literal defaults on TEXT/JSON columns; the app writes
+  // explicit "" / [] when no value is provided.
+  notes       String            @db.Text
+  diagnosis   String            @db.Text
+  // String[] in Mongo → JSON array.
+  medicines   Json
+  source      String            @default("cal.com")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  attachments Attachment[]
+
+  @@index([clientId, date])
+  @@index([leadId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Feedback
+// ─────────────────────────────────────────────────────────────────────
+
+model Feedback {
+  id          String         @id @default(cuid())
+  clientId    String?
+  client      Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  leadId      String?
+  lead        Lead?          @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  clientName  String?
+  clientPhone String?
+  reviewText  String?        @db.Text
+  remark      String?        @db.Text
+  rating      Int?
+  submittedAt DateTime?
+  status      FeedbackStatus @default(open)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([clientId, status])
+  @@index([leadId])
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Attachment (clinical record files in R2)
+// ─────────────────────────────────────────────────────────────────────
+
+model Attachment {
+  id            String         @id @default(cuid())
+  appointmentId String
+  appointment   Appointment    @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  clientId      String
+  // NoAction (rather than Cascade) avoids MySQL's "multiple cascade paths"
+  // error: Client→Appointment→Attachment already cascades, so a second
+  // direct Client→Attachment cascade would deadlock the FK constraint.
+  // Runtime cleanup still works via the appointment cascade.
+  client        Client         @relation(fields: [clientId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  uploadedById  String?
+  uploadedBy    User?          @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  kind          AttachmentKind
+  filename      String         @db.VarChar(200)
+  mimeType      String         @db.VarChar(120)
+  size          Int
+  storageKey    String         @unique @db.VarChar(512)
+  // Two-phase upload: row created when we sign the URL, flipped to true
+  // after the confirm endpoint HEADs the object on R2.
+  confirmed     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([appointmentId, createdAt(sort: Desc)])
+  @@index([clientId, confirmed])
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// AuditLog (append-only, no updatedAt)
+//
+// `clientId` and `actorId` are intentionally plain string columns with no
+// @relation/FK. Two reasons:
+//   1. Append-only history: an audit entry has to outlive the user or
+//      tenant it references. Snapshotted `actorLabel` / `entityLabel`
+//      cover the display needs.
+//   2. Migration-friendly: during the Mongoose→Prisma cutover, this is
+//      the first domain switched. If FKs were enforced, every audit
+//      write would fail until User and Client domains were migrated too.
+// ─────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id          String          @id @default(cuid())
+  clientId    String?
+  actorType   AuditActorType
+  actorId     String?
+  actorLabel  String          @default("") @db.VarChar(255)
+  ip          String?
+  action      String          @db.VarChar(120)
+  entityType  AuditEntityType
+  entityId    String?
+  entityLabel String          @default("") @db.VarChar(255)
+  summary     String          @default("") @db.VarChar(500)
+  // AuditLog.metadata was Schema.Types.Mixed in Mongo. Json is a 1:1 fit.
+  metadata    Json?
+  createdAt   DateTime        @default(now())
+
+  @@index([clientId, createdAt(sort: Desc)])
+  @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@index([action])
+}

@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { generateToken } from "@/lib/auth";
 import { rateLimit, clearRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -11,7 +10,6 @@ const WINDOW_MS = 15 * 60 * 1000;
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const ip = getClientIp(req);
 
     // Per-IP brute-force shield. Locks out at the 6th wrong guess inside
@@ -31,7 +29,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid creds" }, { status: 400 });
     }
 
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       // Audit failed attempts so admins can spot brute-force patterns.
       await logAudit(
@@ -48,17 +46,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid creds" }, { status: 400 });
     }
 
-    user.lastLoginAt = new Date();
-    user.lastLoginIP = ip;
-    await user.save();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date(), lastLoginIP: ip },
+    });
 
     clearRateLimit(`login:${ip}`);
 
+    // assignedModules is a Json column in Prisma; cast back to string[] for
+    // the JWT payload and the response. App writes always store an array.
+    const modules = (user.assignedModules as string[] | null) ?? [];
+
     const token = generateToken({
-      id: user._id.toString(),
+      id: user.id,
       role: user.role,
-      clientId: user.clientId?.toString() ?? null,
-      assignedModules: user.assignedModules ?? [],
+      clientId: user.clientId ?? null,
+      assignedModules: modules,
     });
 
     await logAudit(
@@ -66,15 +69,15 @@ export async function POST(req: Request) {
       {
         actorType: "user",
         user: {
-          id: user._id.toString(),
+          id: user.id,
           role: user.role,
-          clientId: user.clientId?.toString() ?? null,
+          clientId: user.clientId ?? null,
         },
       },
       {
         action: "auth.login.success",
         entityType: "User",
-        entityId: user._id.toString(),
+        entityId: user.id,
         entityLabel: user.name ?? user.email,
         summary: "Logged in",
       },
@@ -83,12 +86,12 @@ export async function POST(req: Request) {
     return NextResponse.json({
       token,
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         clientId: user.clientId,
-        assignedModules: user.assignedModules ?? [],
+        assignedModules: modules,
       },
     });
   } catch {

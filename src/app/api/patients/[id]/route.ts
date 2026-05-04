@@ -1,8 +1,4 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
-import Feedback from "@/models/Feedback";
-import Client from "@/models/Client";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
 import { getErrorMessage } from "@/lib/errors";
@@ -12,25 +8,27 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const user = getUser(req);
     const { id } = await ctx.params;
-    const filter = withClientFilter(user);
+    const scope = withClientFilter(user) as { clientId?: string };
 
-    const lead = await Lead.findOne({ ...filter, _id: id }).lean();
+    const lead = await prisma.lead.findFirst({ where: { id, ...scope } });
 
     if (lead) {
       const [appointments, feedbacks, client] = await Promise.all([
-        Appointment.find({ ...filter, leadId: lead._id })
-          .sort({ date: -1 })
-          .lean(),
-        Feedback.find({ ...filter, leadId: lead._id })
-          .sort({ createdAt: -1 })
-          .lean(),
+        prisma.appointment.findMany({
+          where: { ...scope, leadId: lead.id },
+          orderBy: { date: "desc" },
+        }),
+        prisma.feedback.findMany({
+          where: { ...scope, leadId: lead.id },
+          orderBy: { createdAt: "desc" },
+        }),
         user.clientId
-          ? Client.findById(user.clientId)
-              .select("bookingUrl")
-              .lean<{ bookingUrl?: string }>()
+          ? prisma.client.findUnique({
+              where: { id: user.clientId },
+              select: { bookingUrl: true },
+            })
           : null,
       ]);
 
@@ -43,11 +41,12 @@ export async function GET(req: Request, ctx: RouteContext) {
       });
     }
 
-    const appt = await Appointment.findOne({
-      ...filter,
-      _id: id,
-      leadId: { $in: [null, undefined] },
-    }).lean();
+    // Direct (orphan) appointment fallback — used when an appointment
+    // doesn't have a matching Lead (e.g. Cal.com booking with no
+    // matchable phone).
+    const appt = await prisma.appointment.findFirst({
+      where: { id, ...scope, leadId: null },
+    });
 
     if (!appt) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
@@ -57,7 +56,6 @@ export async function GET(req: Request, ctx: RouteContext) {
       kind: "direct",
       appointment: appt,
     });
-
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }

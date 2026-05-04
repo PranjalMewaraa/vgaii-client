@@ -1,7 +1,5 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
-import { withClientFilter } from "@/lib/query";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
@@ -13,9 +11,13 @@ const bulkSchema = z.object({
   value: z.string().trim().max(120).optional(),
 });
 
+// `set_source` doesn't touch Lead.phone, so updateMany is safe — it
+// bypasses the phoneNormalized derivation but doesn't need it. The repo
+// helpers (createLead/updateLead) are only required for paths that mutate
+// `phone`. Add a Phase-2-style review note any time a future bulk action
+// goes near phone.
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (user.role !== "CLIENT_ADMIN" && user.role !== "STAFF") {
@@ -31,9 +33,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const filter = withClientFilter(user);
-    const baseQuery = { ...filter, _id: { $in: parsed.data.ids } };
-
     if (parsed.data.action === "set_source") {
       const value = parsed.data.value?.trim();
       if (!value) {
@@ -43,15 +42,18 @@ export async function POST(req: Request) {
         );
       }
 
-      const result = await Lead.updateMany(baseQuery, { source: value });
+      const result = await prisma.lead.updateMany({
+        where: { id: { in: parsed.data.ids }, clientId: user.clientId },
+        data: { source: value },
+      });
 
       await logAudit(req, { actorType: "user", user }, {
         action: "patients.bulk.set_source",
         entityType: "Lead",
-        summary: `Bulk re-tagged ${result.modifiedCount} leads to source "${value}"`,
+        summary: `Bulk re-tagged ${result.count} leads to source "${value}"`,
         metadata: {
           requested: parsed.data.ids.length,
-          modified: result.modifiedCount,
+          modified: result.count,
           source: value,
           ids: parsed.data.ids,
         },
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         action: "set_source",
         requested: parsed.data.ids.length,
-        modified: result.modifiedCount,
+        modified: result.count,
       });
     }
 

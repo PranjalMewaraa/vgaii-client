@@ -12,7 +12,7 @@ import {
 } from "@/lib/constants";
 
 type Lead = {
-  _id: string;
+  id: string;
   name: string;
   phone: string;
   email?: string;

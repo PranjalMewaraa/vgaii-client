@@ -1,5 +1,5 @@
-import { connectDB } from "@/lib/db";
-import Client from "@/models/Client";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
 import { profileSchema } from "@/lib/validators/profile";
 import { getErrorMessage } from "@/lib/errors";
@@ -18,15 +18,14 @@ const requireAdmin = (user: ReturnType<typeof getUser>) => {
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireAdmin(user);
     if (block) return block;
 
-    const client = await Client.findById(user.clientId)
-      .select("profile")
-      .lean();
-
+    const client = await prisma.client.findUnique({
+      where: { id: user.clientId! },
+      select: { profile: true },
+    });
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
@@ -39,7 +38,6 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireAdmin(user);
     if (block) return block;
@@ -50,20 +48,16 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const client = await Client.findByIdAndUpdate(
-      user.clientId,
-      { profile: parsed.data },
-      { new: true },
-    ).select("profile");
-
-    if (!client) {
-      return NextResponse.json({ error: "Client not found" }, { status: 404 });
-    }
+    const client = await prisma.client.update({
+      where: { id: user.clientId! },
+      data: { profile: parsed.data as Prisma.InputJsonValue },
+      select: { id: true, profile: true },
+    });
 
     await logAudit(req, { actorType: "user", user }, {
       action: "client.profile.updated",
       entityType: "Client",
-      entityId: client._id.toString(),
+      entityId: client.id,
       summary: "Public profile updated",
     });
 

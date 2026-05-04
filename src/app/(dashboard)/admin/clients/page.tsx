@@ -6,7 +6,7 @@ import RoleGuard from "@/components/RoleGuard";
 import { startImpersonation } from "@/lib/impersonation";
 
 type StaffRow = {
-  _id: string;
+  id: string;
   name?: string;
   email?: string;
   role: "STAFF";
@@ -15,7 +15,7 @@ type StaffRow = {
 };
 
 type AdminRow = {
-  _id: string;
+  id: string;
   name?: string;
   email?: string;
   role: "CLIENT_ADMIN";
@@ -23,7 +23,7 @@ type AdminRow = {
 };
 
 type ClientRow = {
-  _id: string;
+  id: string;
   name: string;
   subscriptionStatus?: "active" | "trial" | "expired";
   plan?: "basic" | "pro";
@@ -328,15 +328,15 @@ function AdminClientsPageInner() {
         ) : (
           <ul className="divide-y divide-slate-200">
             {clients.map(c => {
-              const isOpen = expanded.has(c._id);
+              const isOpen = expanded.has(c.id);
               const subStyle =
                 SUBSCRIPTION_STYLES[c.subscriptionStatus ?? ""] ??
                 "bg-slate-100 text-slate-700";
               return (
-                <li key={c._id}>
+                <li key={c.id}>
                   <button
                     type="button"
-                    onClick={() => toggle(c._id)}
+                    onClick={() => toggle(c.id)}
                     className="flex w-full items-center justify-between gap-4 px-6 py-4 text-left transition hover:bg-slate-50"
                   >
                     <div className="min-w-0 flex-1">
@@ -467,11 +467,11 @@ function ClientAdminBlock({
         {client.admin && (
           <button
             type="button"
-            onClick={() => onImpersonate(client.admin!._id)}
-            disabled={busyId === client.admin._id}
+            onClick={() => onImpersonate(client.admin!.id)}
+            disabled={busyId === client.admin.id}
             className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
           >
-            {busyId === client.admin._id ? "Switching…" : "Impersonate"}
+            {busyId === client.admin.id ? "Switching…" : "Impersonate"}
           </button>
         )}
       </div>
@@ -501,7 +501,7 @@ function ClientStaffBlock({
         <ul className="divide-y divide-slate-200">
           {staff.map(s => (
             <li
-              key={s._id}
+              key={s.id}
               className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
             >
               <div className="min-w-0 flex-1">
@@ -524,11 +524,11 @@ function ClientStaffBlock({
               </div>
               <button
                 type="button"
-                onClick={() => onImpersonate(s._id)}
-                disabled={busyId === s._id}
+                onClick={() => onImpersonate(s.id)}
+                disabled={busyId === s.id}
                 className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
               >
-                {busyId === s._id ? "Switching…" : "Impersonate"}
+                {busyId === s.id ? "Switching…" : "Impersonate"}
               </button>
             </li>
           ))}
@@ -569,7 +569,7 @@ function ClientIntegrationsBlock({
     setSaving(true);
     setErr(null);
     try {
-      const res = await fetch(`/api/admin/clients/${client._id}`, {
+      const res = await fetch(`/api/admin/clients/${client.id}`, {
         method: "PATCH",
         headers: authHeaders(),
         body: JSON.stringify({
@@ -699,7 +699,7 @@ function ClientWebhooksBlock({
     setErr(null);
     try {
       const res = await fetch(
-        `/api/admin/clients/${client._id}/regenerate-key`,
+        `/api/admin/clients/${client.id}/regenerate-key`,
         { method: "POST", headers: authHeaders() },
       );
       const data = await res.json();

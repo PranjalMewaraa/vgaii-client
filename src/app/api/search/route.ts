@@ -1,7 +1,5 @@
-import { connectDB } from "@/lib/db";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
-import Feedback from "@/models/Feedback";
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
 import { canonicalPhone } from "@/lib/phone";
@@ -9,7 +7,6 @@ import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
 const PER_GROUP = 5;
-const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const PATIENT_STATUSES = ["qualified", "appointment_booked", "visited"];
 
@@ -23,7 +20,6 @@ const hasModule = (
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     const q = new URL(req.url).searchParams.get("q")?.trim();
@@ -36,55 +32,80 @@ export async function GET(req: Request) {
       });
     }
 
-    const filter = withClientFilter(user);
-    const re = new RegExp(escapeRegex(q), "i");
+    const scope = withClientFilter(user) as { clientId?: string };
     const phoneNorm = canonicalPhone(q);
-    const phoneFilter =
-      phoneNorm.length >= 4 ? { phoneNormalized: { $regex: phoneNorm } } : null;
 
-    // Build the contact-match $or once: name/phone for Leads + Appointments,
-    // clientName/clientPhone for Feedback.
-    const leadOr: Record<string, unknown>[] = [
-      { name: re },
-      { phone: re },
-      { email: re },
+    // Prisma `contains` performs LIKE %q%. MySQL's default
+    // utf8mb4_unicode_ci collation is case-insensitive, so we don't need
+    // the `mode: "insensitive"` flag (Postgres-only).
+    const leadOR: Prisma.LeadWhereInput[] = [
+      { name: { contains: q } },
+      { phone: { contains: q } },
+      { email: { contains: q } },
     ];
-    if (phoneFilter) leadOr.push(phoneFilter);
+    if (phoneNorm.length >= 4) {
+      leadOR.push({ phoneNormalized: { contains: phoneNorm } });
+    }
 
-    const apptOr: Record<string, unknown>[] = [
-      { name: re },
-      { phone: re },
-      { email: re },
-      { diagnosis: re },
+    const apptOR: Prisma.AppointmentWhereInput[] = [
+      { name: { contains: q } },
+      { phone: { contains: q } },
+      { email: { contains: q } },
+      { diagnosis: { contains: q } },
     ];
 
-    const fbOr: Record<string, unknown>[] = [
-      { clientName: re },
-      { clientPhone: re },
-      { reviewText: re },
+    const fbOR: Prisma.FeedbackWhereInput[] = [
+      { clientName: { contains: q } },
+      { clientPhone: { contains: q } },
+      { reviewText: { contains: q } },
     ];
 
     const [leadsRaw, apptsRaw, feedbacksRaw] = await Promise.all([
       hasModule(user, "leads") || hasModule(user, "patients")
-        ? Lead.find({ ...filter, $or: leadOr })
-            .select("_id name phone status source createdAt")
-            .sort({ createdAt: -1 })
-            .limit(PER_GROUP * 2)
-            .lean()
+        ? prisma.lead.findMany({
+            where: { ...scope, OR: leadOR },
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              status: true,
+              source: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            take: PER_GROUP * 2,
+          })
         : Promise.resolve([]),
       hasModule(user, "appointments")
-        ? Appointment.find({ ...filter, $or: apptOr })
-            .select("_id name phone date status diagnosis")
-            .sort({ date: -1 })
-            .limit(PER_GROUP)
-            .lean()
+        ? prisma.appointment.findMany({
+            where: { ...scope, OR: apptOR },
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              date: true,
+              status: true,
+              diagnosis: true,
+            },
+            orderBy: { date: "desc" },
+            take: PER_GROUP,
+          })
         : Promise.resolve([]),
       hasModule(user, "feedback")
-        ? Feedback.find({ ...filter, $or: fbOr })
-            .select("_id clientName clientPhone rating reviewText status submittedAt")
-            .sort({ submittedAt: -1 })
-            .limit(PER_GROUP)
-            .lean()
+        ? prisma.feedback.findMany({
+            where: { ...scope, OR: fbOR },
+            select: {
+              id: true,
+              clientName: true,
+              clientPhone: true,
+              rating: true,
+              reviewText: true,
+              status: true,
+              submittedAt: true,
+            },
+            orderBy: { submittedAt: "desc" },
+            take: PER_GROUP,
+          })
         : Promise.resolve([]),
     ]);
 
@@ -104,20 +125,20 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       leads: leadsHits.map(l => ({
-        id: l._id.toString(),
+        id: l.id,
         name: l.name,
         phone: l.phone,
         status: l.status,
         source: l.source,
       })),
       patients: patientsHits.map(l => ({
-        id: l._id.toString(),
+        id: l.id,
         name: l.name,
         phone: l.phone,
         status: l.status,
       })),
       appointments: apptsRaw.map(a => ({
-        id: a._id.toString(),
+        id: a.id,
         name: a.name,
         phone: a.phone,
         date: a.date,
@@ -125,7 +146,7 @@ export async function GET(req: Request) {
         diagnosis: a.diagnosis,
       })),
       feedbacks: feedbacksRaw.map(f => ({
-        id: f._id.toString(),
+        id: f.id,
         clientName: f.clientName,
         clientPhone: f.clientPhone,
         rating: f.rating,

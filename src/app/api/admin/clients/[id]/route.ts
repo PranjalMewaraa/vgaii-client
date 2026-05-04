@@ -1,5 +1,5 @@
-import { connectDB } from "@/lib/db";
-import Client from "@/models/Client";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
 import { adminClientUpdateSchema } from "@/lib/validators/client";
 import { getErrorMessage } from "@/lib/errors";
@@ -8,10 +8,10 @@ import { NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-const cleanString = (v: string | null | undefined): string | undefined => {
-  if (v === null || v === undefined) return undefined;
+const cleanString = (v: string | null | undefined): string | null => {
+  if (v === null || v === undefined) return null;
   const trimmed = v.trim();
-  return trimmed === "" ? "" : trimmed;
+  return trimmed === "" ? null : trimmed;
 };
 
 // Super-admin-only client patch. Used to set integration details
@@ -20,7 +20,6 @@ const cleanString = (v: string | null | undefined): string | undefined => {
 // only modify branding via /api/client/settings.
 export async function PATCH(req: Request, ctx: RouteContext) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (user.role !== "SUPER_ADMIN") {
@@ -35,51 +34,62 @@ export async function PATCH(req: Request, ctx: RouteContext) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const client = await Client.findById(id);
-    if (!client) {
-      return NextResponse.json({ error: "Client not found" }, { status: 404 });
-    }
-
     const data = parsed.data;
-    if (data.name !== undefined) client.name = data.name;
-    if (data.plan !== undefined) client.plan = data.plan;
+    const update: Record<string, unknown> = {};
+    if (data.name !== undefined) update.name = data.name;
+    if (data.plan !== undefined) update.plan = data.plan;
     if (data.subscriptionStatus !== undefined) {
-      client.subscriptionStatus = data.subscriptionStatus;
+      update.subscriptionStatus = data.subscriptionStatus;
     }
     if (data.renewalDate !== undefined) {
-      client.renewalDate = data.renewalDate ? new Date(data.renewalDate) : undefined;
+      update.renewalDate = data.renewalDate ? new Date(data.renewalDate) : null;
     }
     if (data.googlePlaceId !== undefined) {
-      client.googlePlaceId = data.googlePlaceId ?? undefined;
+      update.googlePlaceId = data.googlePlaceId ?? null;
     }
     if (data.bookingUrl !== undefined) {
-      client.bookingUrl = data.bookingUrl ?? undefined;
+      update.bookingUrl = data.bookingUrl ?? null;
     }
     if (data.profileSlug !== undefined) {
-      const slug = cleanString(data.profileSlug);
-      client.profileSlug = slug ? slug : undefined;
+      update.profileSlug = cleanString(data.profileSlug);
     }
     if (data.customDomain !== undefined) {
-      const host = cleanString(data.customDomain);
-      client.customDomain = host ? host : undefined;
+      update.customDomain = cleanString(data.customDomain);
     }
 
+    let client;
     try {
-      await client.save();
+      client = await prisma.client.update({
+        where: { id },
+        data: update,
+        select: {
+          id: true,
+          name: true,
+          plan: true,
+          subscriptionStatus: true,
+          renewalDate: true,
+          googlePlaceId: true,
+          bookingUrl: true,
+          profileSlug: true,
+          customDomain: true,
+          webhookKey: true,
+        },
+      });
     } catch (err: unknown) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "code" in err &&
-        (err as { code?: number }).code === 11000
-      ) {
-        const dup = (err as { keyPattern?: Record<string, unknown> })
-          .keyPattern;
-        const field = dup ? Object.keys(dup)[0] : "field";
-        return NextResponse.json(
-          { error: `That ${field} is already in use by another client.` },
-          { status: 409 },
-        );
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === "P2002") {
+          const target = (err.meta?.target as string[] | undefined)?.[0] ?? "field";
+          return NextResponse.json(
+            { error: `That ${target} is already in use by another client.` },
+            { status: 409 },
+          );
+        }
+        if (err.code === "P2025") {
+          return NextResponse.json(
+            { error: "Client not found" },
+            { status: 404 },
+          );
+        }
       }
       throw err;
     }
@@ -88,26 +98,13 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     await logAudit(req, { actorType: "user", user }, {
       action: "admin.client.updated",
       entityType: "Client",
-      entityId: client._id.toString(),
+      entityId: client.id,
       entityLabel: client.name,
       summary: `Super-admin updated: ${changed.join(", ") || "no fields"}`,
       metadata: { fields: changed },
     });
 
-    return NextResponse.json({
-      client: {
-        _id: client._id,
-        name: client.name,
-        plan: client.plan,
-        subscriptionStatus: client.subscriptionStatus,
-        renewalDate: client.renewalDate,
-        googlePlaceId: client.googlePlaceId,
-        bookingUrl: client.bookingUrl,
-        profileSlug: client.profileSlug,
-        customDomain: client.customDomain,
-        webhookKey: client.webhookKey,
-      },
-    });
+    return NextResponse.json({ client });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }

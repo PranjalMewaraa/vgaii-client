@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LEAD_STATUSES } from "@/models/Lead";
+import { LEAD_STATUSES } from "@/lib/constants";
 
 export const leadSchema = z.object({
   name: z.string().min(2),

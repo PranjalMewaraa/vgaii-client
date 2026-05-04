@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getUser } from "@/middleware/auth";
 import { passwordPolicy } from "@/lib/password-policy";
@@ -15,7 +14,6 @@ const changePasswordSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (!user.id) {
@@ -28,7 +26,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const target = await User.findById(user.id);
+    const target = await prisma.user.findUnique({ where: { id: user.id } });
     if (!target) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -41,7 +39,7 @@ export async function POST(req: Request) {
       await logAudit(req, { actorType: "user", user }, {
         action: "auth.password.change.failed",
         entityType: "User",
-        entityId: target._id.toString(),
+        entityId: target.id,
         entityLabel: target.name ?? target.email,
         summary: "Password change failed (wrong current password)",
       });
@@ -58,13 +56,15 @@ export async function POST(req: Request) {
       );
     }
 
-    target.password = await bcrypt.hash(parsed.data.newPassword, 10);
-    await target.save();
+    await prisma.user.update({
+      where: { id: target.id },
+      data: { password: await bcrypt.hash(parsed.data.newPassword, 10) },
+    });
 
     await logAudit(req, { actorType: "user", user }, {
       action: "auth.password.changed",
       entityType: "User",
-      entityId: target._id.toString(),
+      entityId: target.id,
       entityLabel: target.name ?? target.email,
       summary: "Password changed",
     });

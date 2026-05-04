@@ -1,16 +1,9 @@
-import { connectDB } from "@/lib/db";
-import Client from "@/models/Client";
-import User from "@/models/User";
-import Lead from "@/models/Lead";
-import Appointment from "@/models/Appointment";
-import Feedback from "@/models/Feedback";
+import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
-
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
 
     if (user.role !== "SUPER_ADMIN") {
@@ -28,6 +21,7 @@ export async function GET(req: Request) {
       totalUsers,
       adminUsers,
       staffUsers,
+      profilesEnabled,
       totalLeads,
       todayLeads,
       weekLeads,
@@ -37,25 +31,27 @@ export async function GET(req: Request) {
       completedAppointments,
       openFeedback,
       resolvedFeedback,
-      profilesEnabled,
     ] = await Promise.all([
-      Client.countDocuments({}),
-      Client.countDocuments({ subscriptionStatus: "active" }),
-      Client.countDocuments({ subscriptionStatus: "trial" }),
-      Client.countDocuments({ subscriptionStatus: "expired" }),
-      User.countDocuments({ role: { $in: ["CLIENT_ADMIN", "STAFF"] } }),
-      User.countDocuments({ role: "CLIENT_ADMIN" }),
-      User.countDocuments({ role: "STAFF" }),
-      Lead.countDocuments({}),
-      Lead.countDocuments({ createdAt: { $gte: startOfDay } }),
-      Lead.countDocuments({ createdAt: { $gte: startOfWeek } }),
-      Lead.countDocuments({ status: "visited" }),
-      Lead.countDocuments({ status: "lost" }),
-      Appointment.countDocuments({ date: { $gte: new Date() } }),
-      Appointment.countDocuments({ status: "completed" }),
-      Feedback.countDocuments({ status: "open" }),
-      Feedback.countDocuments({ status: "resolved" }),
-      Client.countDocuments({ "profile.enabled": true }),
+      prisma.client.count(),
+      prisma.client.count({ where: { subscriptionStatus: "active" } }),
+      prisma.client.count({ where: { subscriptionStatus: "trial" } }),
+      prisma.client.count({ where: { subscriptionStatus: "expired" } }),
+      prisma.user.count({ where: { role: { in: ["CLIENT_ADMIN", "STAFF"] } } }),
+      prisma.user.count({ where: { role: "CLIENT_ADMIN" } }),
+      prisma.user.count({ where: { role: "STAFF" } }),
+      // JSON path filter: counts clients where profile.enabled === true.
+      prisma.client.count({
+        where: { profile: { path: "$.enabled", equals: true } },
+      }),
+      prisma.lead.count(),
+      prisma.lead.count({ where: { createdAt: { gte: startOfDay } } }),
+      prisma.lead.count({ where: { createdAt: { gte: startOfWeek } } }),
+      prisma.lead.count({ where: { status: "visited" } }),
+      prisma.lead.count({ where: { status: "lost" } }),
+      prisma.appointment.count({ where: { date: { gte: new Date() } } }),
+      prisma.appointment.count({ where: { status: "completed" } }),
+      prisma.feedback.count({ where: { status: "open" } }),
+      prisma.feedback.count({ where: { status: "resolved" } }),
     ]);
 
     return NextResponse.json({

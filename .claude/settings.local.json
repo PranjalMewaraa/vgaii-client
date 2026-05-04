@@ -8,7 +8,12 @@
       "Bash(mv \"C:/client-vgaii/src/app/api/feedback/[token]/route.ts\" \"C:/client-vgaii/src/app/api/feedback/public/[token]/route.ts\")",
       "Bash(rmdir \"C:/client-vgaii/src/app/api/feedback/[token]\")",
       "Bash(xargs grep *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(npx prisma *)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=yes npx prisma migrate reset --force)",
+      "Bash(node -e ' *)",
+      "Bash(npm run *)",
+      "Bash(npm uninstall *)"
     ]
   }
 }

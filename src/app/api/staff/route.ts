@@ -1,5 +1,4 @@
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { getUser } from "@/middleware/auth";
 import { staffCreateSchema } from "@/lib/validators/staff";
@@ -19,21 +18,33 @@ const requireAdmin = (user: ReturnType<typeof getUser>) => {
 
 export async function GET(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireAdmin(user);
     if (block) return block;
 
-    const staff = await User.find({
-      clientId: user.clientId,
-      role: "STAFF",
-    })
-      .select("_id name email assignedModules createdAt createdBy")
-      .sort({ createdAt: -1 })
-      .lean();
+    const staff = await prisma.user.findMany({
+      where: { clientId: user.clientId, role: "STAFF" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        assignedModules: true,
+        createdAt: true,
+        createdById: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-    return NextResponse.json({ staff });
-
+    return NextResponse.json({
+      staff: staff.map(s => ({
+        id: s.id,
+        name: s.name,
+        email: s.email,
+        assignedModules: (s.assignedModules as string[] | null) ?? [],
+        createdAt: s.createdAt,
+        createdBy: s.createdById,
+      })),
+    });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }
@@ -41,7 +52,6 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    await connectDB();
     const user = getUser(req);
     const block = requireAdmin(user);
     if (block) return block;
@@ -52,7 +62,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const existing = await User.findOne({ email: parsed.data.email });
+    const existing = await prisma.user.findUnique({
+      where: { email: parsed.data.email },
+    });
     if (existing) {
       return NextResponse.json(
         { error: "Email already in use" },
@@ -62,20 +74,22 @@ export async function POST(req: Request) {
 
     const hashed = await bcrypt.hash(parsed.data.password, 10);
 
-    const staff = await User.create({
-      name: parsed.data.name,
-      email: parsed.data.email,
-      password: hashed,
-      role: "STAFF",
-      clientId: user.clientId,
-      assignedModules: parsed.data.assignedModules,
-      createdBy: user.id,
+    const staff = await prisma.user.create({
+      data: {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        password: hashed,
+        role: "STAFF",
+        clientId: user.clientId,
+        assignedModules: parsed.data.assignedModules,
+        createdById: user.id,
+      },
     });
 
     await logAudit(req, { actorType: "user", user }, {
       action: "staff.created",
       entityType: "User",
-      entityId: staff._id.toString(),
+      entityId: staff.id,
       entityLabel: staff.name ?? staff.email ?? "Staff",
       summary: `Staff added (${(parsed.data.assignedModules ?? []).join(", ") || "no modules"})`,
       metadata: { email: staff.email, assignedModules: parsed.data.assignedModules },
@@ -84,17 +98,16 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         staff: {
-          _id: staff._id,
+          id: staff.id,
           name: staff.name,
           email: staff.email,
-          assignedModules: staff.assignedModules,
+          assignedModules: (staff.assignedModules as string[] | null) ?? [],
           createdAt: staff.createdAt,
-          createdBy: staff.createdBy,
+          createdBy: staff.createdById,
         },
       },
       { status: 201 },
     );
-
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }
