@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Layers,
   Pencil,
+  Plus,
   Trash2,
   UserPlus,
   Users,
@@ -42,12 +43,22 @@ function StaffPageInner() {
   const [loading, setLoading] = useState(true);
 
   // create form state
+  const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [createModules, setCreateModules] = useState<AssignableModule[]>([]);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+
+  const closeCreate = () => {
+    setShowCreate(false);
+    setName("");
+    setEmail("");
+    setPassword("");
+    setCreateModules([]);
+    setCreateError(null);
+  };
 
   // per-row edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -93,10 +104,7 @@ function StaffPageInner() {
         return;
       }
       setStaff(s => [data.staff, ...s]);
-      setName("");
-      setEmail("");
-      setPassword("");
-      setCreateModules([]);
+      closeCreate();
     } catch {
       setCreateError("Network error");
     } finally {
@@ -150,18 +158,38 @@ function StaffPageInner() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="inline-flex items-center gap-2 text-2xl font-bold text-slate-900">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-            <Users size={16} />
-          </span>
-          Team
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Manage your staff members and the modules they can access.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="inline-flex items-center gap-2 text-2xl font-bold text-slate-900">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <Users size={16} />
+            </span>
+            Team
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Manage your staff members and the modules they can access.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => (showCreate ? closeCreate() : setShowCreate(true))}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+        >
+          {showCreate ? (
+            <>
+              <X size={14} />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Plus size={14} />
+              Add staff
+            </>
+          )}
+        </button>
       </header>
 
+      {showCreate && (
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
@@ -275,7 +303,14 @@ function StaffPageInner() {
             </p>
           )}
 
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={closeCreate}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
               disabled={creating}
@@ -287,6 +322,7 @@ function StaffPageInner() {
           </div>
         </form>
       </div>
+      )}
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
