@@ -93,28 +93,36 @@ export async function GET(req: Request) {
     // Raw-SQL inputs: the tenant clause and date range expressed as inline
     // SQL fragments. Building them via `Prisma.sql` keeps the parameters
     // bound (no string interpolation in the final query).
+    //
+    // Backticks on every identifier because:
+    //   - `Lead` is a MySQL 8 reserved word (the window function), so an
+    //     unquoted `FROM Lead` parses as `FROM <window_function>` and
+    //     throws ER_PARSE_ERROR.
+    //   - On Linux MySQL (which Railway runs) identifiers are
+    //     case-sensitive by default, and Prisma's migration emits camelCase
+    //     column names exactly as written in schema.prisma.
     const leadTenantSql =
       user.role === "SUPER_ADMIN"
         ? Prisma.sql`1=1`
-        : Prisma.sql`clientId = ${user.clientId ?? ""}`;
+        : Prisma.sql`\`clientId\` = ${user.clientId ?? ""}`;
     const apptTenantSql = leadTenantSql; // same column name
 
     const leadDateSql =
       from && to
-        ? Prisma.sql`createdAt BETWEEN ${from} AND ${to}`
+        ? Prisma.sql`\`createdAt\` BETWEEN ${from} AND ${to}`
         : from
-          ? Prisma.sql`createdAt >= ${from}`
+          ? Prisma.sql`\`createdAt\` >= ${from}`
           : to
-            ? Prisma.sql`createdAt <= ${to}`
+            ? Prisma.sql`\`createdAt\` <= ${to}`
             : Prisma.sql`1=1`;
 
     const apptDateSql =
       from && to
-        ? Prisma.sql`date BETWEEN ${from} AND ${to}`
+        ? Prisma.sql`\`date\` BETWEEN ${from} AND ${to}`
         : from
-          ? Prisma.sql`date >= ${from}`
+          ? Prisma.sql`\`date\` >= ${from}`
           : to
-            ? Prisma.sql`date <= ${to}`
+            ? Prisma.sql`\`date\` <= ${to}`
             : Prisma.sql`1=1`;
 
     const [
@@ -143,14 +151,14 @@ export async function GET(req: Request) {
           lost: bigint;
         }>
       >`
-        SELECT source,
+        SELECT \`source\`,
                COUNT(*) AS total,
-               SUM(CASE WHEN status='visited' THEN 1 ELSE 0 END) AS visited,
-               SUM(CASE WHEN status IN ('appointment_booked','visited') THEN 1 ELSE 0 END) AS booked,
-               SUM(CASE WHEN status='lost' THEN 1 ELSE 0 END) AS lost
-        FROM Lead
+               SUM(CASE WHEN \`status\`='visited' THEN 1 ELSE 0 END) AS visited,
+               SUM(CASE WHEN \`status\` IN ('appointment_booked','visited') THEN 1 ELSE 0 END) AS booked,
+               SUM(CASE WHEN \`status\`='lost' THEN 1 ELSE 0 END) AS lost
+        FROM \`Lead\`
         WHERE ${leadTenantSql} AND ${leadDateSql}
-        GROUP BY source
+        GROUP BY \`source\`
         ORDER BY total DESC
       `,
       prisma.lead.groupBy({
@@ -164,17 +172,17 @@ export async function GET(req: Request) {
         _count: { _all: true },
       }),
       prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
-        SELECT DATE_FORMAT(createdAt, '%Y-%m-%d') AS day,
+        SELECT DATE_FORMAT(\`createdAt\`, '%Y-%m-%d') AS day,
                COUNT(*) AS count
-        FROM Lead
+        FROM \`Lead\`
         WHERE ${leadTenantSql} AND ${leadDateSql}
         GROUP BY day
         ORDER BY day
       `,
       prisma.$queryRaw<Array<{ day: string; count: bigint }>>`
-        SELECT DATE_FORMAT(date, '%Y-%m-%d') AS day,
+        SELECT DATE_FORMAT(\`date\`, '%Y-%m-%d') AS day,
                COUNT(*) AS count
-        FROM Appointment
+        FROM \`Appointment\`
         WHERE ${apptTenantSql} AND ${apptDateSql}
         GROUP BY day
         ORDER BY day
