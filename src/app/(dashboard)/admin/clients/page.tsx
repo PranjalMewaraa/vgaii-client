@@ -16,6 +16,8 @@ import {
   Copy,
   ExternalLink,
   Globe,
+  HelpCircle,
+  Info,
   MapPin,
   MessageSquare,
   Pencil,
@@ -23,6 +25,7 @@ import {
   Plus,
   RefreshCw,
   RotateCcw,
+  Server,
   ShieldCheck,
   UserRound,
   Users,
@@ -703,8 +706,9 @@ function ClientIntegrationsBlock({
               value={customDomain}
               onChange={setCustomDomain}
               placeholder="example-clinic.com"
-              hint="Hostname only (no http://, no path). Empty to clear. Domain must also be added in Vercel and have DNS pointed at us — use Verify after saving."
+              hint="Hostname only (no http://, no path). Empty to clear."
             />
+            <CustomDomainSetupGuide domain={customDomain || undefined} />
             {err && (
               <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
                 {err}
@@ -746,6 +750,7 @@ function ClientIntegrationsBlock({
               clientId={client.id}
               customDomain={client.customDomain}
             />
+            <CustomDomainSetupGuide domain={client.customDomain} />
             {savedAt && (
               <p className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
                 <Check size={12} />
@@ -871,6 +876,316 @@ function ClientWebhooksBlock({
         )}
       </div>
     </div>
+  );
+}
+
+// DNS targets the registrar must point at. These are Vercel's published
+// values — keep in sync with the verify-domain endpoint and the official
+// docs at https://vercel.com/docs/projects/domains.
+const VERCEL_CNAME_TARGET = "cname.vercel-dns.com";
+const VERCEL_A_TARGET = "76.76.21.21";
+
+function CustomDomainSetupGuide({ domain }: { domain?: string }) {
+  const [open, setOpen] = useState(!domain);
+  // Default tab depends on the domain's shape: a single dot ⇒ apex,
+  // multiple dots ⇒ likely a subdomain. Cheap heuristic, the operator
+  // can flip the tab anyway.
+  const isLikelySubdomain = !!domain && (domain.match(/\./g)?.length ?? 0) > 1;
+  const [recordType, setRecordType] = useState<"a" | "cname">(
+    isLikelySubdomain ? "cname" : "a",
+  );
+  const example = domain || "yourdomain.com";
+
+  return (
+    <div className="rounded-lg border border-indigo-100 bg-indigo-50/40">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left"
+        aria-expanded={open}
+      >
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-900">
+          <HelpCircle size={12} />
+          How to set up a custom domain
+        </span>
+        <span className="text-indigo-600">
+          {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        </span>
+      </button>
+
+      {open && (
+        <div className="space-y-4 border-t border-indigo-100 px-4 py-4">
+          <p className="text-xs leading-relaxed text-slate-600">
+            A custom domain lets your client&apos;s public profile live at
+            their own URL, like{" "}
+            <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-slate-800">
+              {example}
+            </code>
+            , instead of the default <code className="font-mono">/p/&lt;slug&gt;</code>{" "}
+            URL on this app. Setup takes about 5 minutes once DNS propagates.
+          </p>
+
+          {/* Step 1 — DNS at registrar */}
+          <Step
+            number={1}
+            icon={Server}
+            title={`At the domain registrar (where ${example} was bought)`}
+            description="Log into wherever the domain was purchased — GoDaddy, Namecheap, Cloudflare DNS, Google Domains, etc. Find the DNS settings page and add one record:"
+          >
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="mb-3 inline-flex rounded-lg border border-slate-200 p-0.5 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setRecordType("a")}
+                  className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
+                    recordType === "a"
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Root domain
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRecordType("cname")}
+                  className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
+                    recordType === "cname"
+                      ? "bg-indigo-600 text-white"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Subdomain
+                </button>
+              </div>
+
+              <p className="mb-2 text-[11px] text-slate-500">
+                {recordType === "a" ? (
+                  <>
+                    Use this if the domain is the bare/root form like{" "}
+                    <code className="font-mono">example-clinic.com</code>.
+                  </>
+                ) : (
+                  <>
+                    Use this if the domain has a prefix like{" "}
+                    <code className="font-mono">profile.example-clinic.com</code>{" "}
+                    or <code className="font-mono">book.example-clinic.com</code>.
+                  </>
+                )}
+              </p>
+
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="px-2 py-1.5 font-semibold">Field</th>
+                    <th className="px-2 py-1.5 font-semibold">Value</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {recordType === "a" ? (
+                    <>
+                      <DnsRow label="Type" value="A" />
+                      <DnsRow
+                        label="Name / Host"
+                        value="@"
+                        hint="The literal “@” means the root domain."
+                      />
+                      <DnsRow label="Value / Points to" value={VERCEL_A_TARGET} copy />
+                      <DnsRow
+                        label="TTL"
+                        value="3600"
+                        hint="Or whatever default the registrar uses — TTL doesn't affect functionality."
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <DnsRow label="Type" value="CNAME" />
+                      <DnsRow
+                        label="Name / Host"
+                        value={
+                          domain && domain.includes(".")
+                            ? domain.split(".")[0]
+                            : "profile"
+                        }
+                        hint="The subdomain part — everything before the first dot."
+                      />
+                      <DnsRow
+                        label="Value / Points to"
+                        value={VERCEL_CNAME_TARGET}
+                        copy
+                      />
+                      <DnsRow label="TTL" value="3600" />
+                    </>
+                  )}
+                </tbody>
+              </table>
+
+              {recordType === "a" && (
+                <p className="mt-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">
+                  <strong>Tip:</strong> if the registrar offers{" "}
+                  <code className="font-mono">ALIAS</code>,{" "}
+                  <code className="font-mono">ANAME</code>, or
+                  &ldquo;CNAME flattening&rdquo; for the root, prefer that
+                  with the value{" "}
+                  <code className="font-mono">{VERCEL_CNAME_TARGET}</code> —
+                  it&apos;s safer if Vercel rotates IPs.
+                </p>
+              )}
+
+              <p className="mt-2 text-[11px] text-slate-500">
+                Don&apos;t forget the <code className="font-mono">www.</code>{" "}
+                version: add a second CNAME with name{" "}
+                <code className="font-mono">www</code> pointing to{" "}
+                <code className="font-mono">{VERCEL_CNAME_TARGET}</code>.
+              </p>
+            </div>
+          </Step>
+
+          {/* Step 2 — Vercel */}
+          <Step
+            number={2}
+            icon={Globe}
+            title="Add the domain to Vercel"
+            description="Our app is hosted on Vercel. Vercel needs to know the domain so it accepts traffic for it and issues an SSL certificate."
+          >
+            <ol className="list-decimal space-y-1 pl-5 text-xs leading-relaxed text-slate-600">
+              <li>
+                Open{" "}
+                <a
+                  href="https://vercel.com/dashboard"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-indigo-600 hover:underline"
+                >
+                  the Vercel dashboard <ExternalLink size={10} />
+                </a>{" "}
+                and pick this app&apos;s project.
+              </li>
+              <li>
+                Go to <strong>Settings</strong> → <strong>Domains</strong>.
+              </li>
+              <li>
+                Click <strong>Add</strong>, type{" "}
+                <code className="rounded bg-white px-1 font-mono text-[11px]">
+                  {example}
+                </code>
+                , and confirm. Repeat for{" "}
+                <code className="rounded bg-white px-1 font-mono text-[11px]">
+                  www.{example}
+                </code>
+                .
+              </li>
+              <li>
+                Vercel will show <strong>Invalid Configuration</strong> until
+                DNS propagates — that&apos;s expected. Once DNS resolves,
+                Vercel auto-issues a Let&apos;s Encrypt certificate (usually
+                under a minute).
+              </li>
+            </ol>
+          </Step>
+
+          {/* Step 3 — verify */}
+          <Step
+            number={3}
+            icon={ShieldCheck}
+            title="Save here and click Verify"
+            description="Once both steps above are done, save the domain in this form and use the Verify button. It runs two checks:"
+          >
+            <ul className="space-y-1 text-xs text-slate-600">
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700">
+                  1
+                </span>
+                <span>
+                  <strong>DNS:</strong> does{" "}
+                  <code className="font-mono">{example}</code> resolve to
+                  Vercel?
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700">
+                  2
+                </span>
+                <span>
+                  <strong>HTTPS:</strong> does{" "}
+                  <code className="font-mono">https://{example}/</code> reply
+                  successfully? (Tells you if Vercel issued the cert.)
+                </span>
+              </li>
+            </ul>
+            <p className="mt-2 inline-flex items-start gap-1.5 rounded border border-slate-200 bg-white px-2 py-1.5 text-[11px] text-slate-600">
+              <Info size={12} className="mt-0.5 shrink-0 text-indigo-500" />
+              DNS propagation usually takes 5–15 minutes but can take up to
+              24 hours. If Verify fails, wait a bit and try again.
+            </p>
+          </Step>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Step({
+  number,
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  number: number;
+  icon: typeof Globe;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex gap-3">
+      <div className="flex shrink-0 flex-col items-center">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+          {number}
+        </span>
+      </div>
+      <div className="min-w-0 flex-1 space-y-2">
+        <div>
+          <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+            <Icon size={13} className="text-indigo-600" />
+            {title}
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
+            {description}
+          </p>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function DnsRow({
+  label,
+  value,
+  hint,
+  copy,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  copy?: boolean;
+}) {
+  return (
+    <tr>
+      <td className="px-2 py-1.5 align-top font-medium text-slate-700">
+        {label}
+      </td>
+      <td className="px-2 py-1.5">
+        <div className="flex items-center gap-2">
+          <code className="rounded bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-slate-800">
+            {value}
+          </code>
+          {copy && <CopyButton value={value} />}
+        </div>
+        {hint && <p className="mt-0.5 text-[10px] text-slate-500">{hint}</p>}
+      </td>
+    </tr>
   );
 }
 
