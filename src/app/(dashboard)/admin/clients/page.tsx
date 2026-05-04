@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import RoleGuard from "@/components/RoleGuard";
+import PlaceFinderModal from "@/components/PlaceFinderModal";
 import { startImpersonation } from "@/lib/impersonation";
 import { LEAD_STATUSES } from "@/lib/constants";
 
@@ -263,11 +264,9 @@ function AdminClientsPageInner() {
                 Integrations (optional now, editable later)
               </legend>
               <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field
-                  label="Google Place ID"
+                <PlaceIdField
                   value={createGooglePlaceId}
                   onChange={setCreateGooglePlaceId}
-                  placeholder="ChIJ…"
                   hint="Pulls the client's Google Business listing."
                 />
                 <Field
@@ -681,11 +680,9 @@ function ClientIntegrationsBlock({
       <div className="space-y-3 px-4 py-3">
         {editing ? (
           <>
-            <Field
-              label="Google Place ID"
+            <PlaceIdField
               value={googlePlaceId}
               onChange={setGooglePlaceId}
-              placeholder="ChIJ…"
               hint="Empty to clear."
             />
             <Field
@@ -1230,5 +1227,52 @@ function Field({
       />
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </label>
+  );
+}
+
+// Google Place ID field with an inline "Locate" button that opens the
+// finder modal. Selecting a place fills the input with its place_id.
+function PlaceIdField({
+  value,
+  onChange,
+  hint,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <label className="block">
+        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+          Google Place ID
+        </span>
+        <div className="mt-1 flex items-stretch gap-2">
+          <input
+            type="text"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            placeholder="ChIJ…"
+            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          />
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            title="Search a business and grab its Place ID"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            <MapPin size={12} />
+            Locate
+          </button>
+        </div>
+        {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      </label>
+      <PlaceFinderModal
+        open={open}
+        onClose={() => setOpen(false)}
+        onPick={p => onChange(p.id)}
+      />
+    </div>
   );
 }
