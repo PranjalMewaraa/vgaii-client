@@ -47,6 +47,13 @@ const getR2Client = (): S3Client => {
     // Required for R2: forces virtual-hosted style routing off in favor
     // of path-style, which R2 expects.
     forcePathStyle: true,
+    // SDK v3.729+ auto-adds an x-amz-checksum-crc32 header (with a
+    // placeholder value) into presigned PutObject URLs. R2 then rejects
+    // the browser PUT because the signed checksum doesn't match the
+    // payload. WHEN_REQUIRED skips checksums on operations that don't
+    // need them — PutObject is one such case.
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
   });
   return cachedClient;
 };

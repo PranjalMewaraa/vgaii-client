@@ -2,6 +2,29 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import {
+  Building2,
+  Calendar,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Copy,
+  ExternalLink,
+  Globe,
+  MapPin,
+  MessageSquare,
+  Pencil,
+  Plug,
+  Plus,
+  RotateCcw,
+  ShieldCheck,
+  UserRound,
+  Users,
+  Webhook,
+  X,
+} from "lucide-react";
 import RoleGuard from "@/components/RoleGuard";
 import { startImpersonation } from "@/lib/impersonation";
 
@@ -172,9 +195,19 @@ function AdminClientsPageInner() {
         <button
           type="button"
           onClick={() => setShowCreate(o => !o)}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
         >
-          {showCreate ? "Cancel" : "+ New client"}
+          {showCreate ? (
+            <>
+              <X size={14} />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Plus size={14} />
+              New client
+            </>
+          )}
         </button>
       </header>
 
@@ -190,10 +223,13 @@ function AdminClientsPageInner() {
           className="rounded-xl border border-slate-200 bg-white"
         >
           <div className="border-b border-slate-200 px-6 py-4">
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <Building2 size={14} />
+              </span>
               New client
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500">
               Creates the Client tenant + its first CLIENT_ADMIN user. A
               webhook key is generated automatically. Integrations can be
               filled now or edited later.
@@ -226,7 +262,8 @@ function AdminClientsPageInner() {
             </div>
 
             <fieldset>
-              <legend className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <legend className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <Plug size={12} />
                 Integrations (optional now, editable later)
               </legend>
               <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -249,7 +286,8 @@ function AdminClientsPageInner() {
             </fieldset>
 
             <fieldset>
-              <legend className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <legend className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <ShieldCheck size={12} />
                 Client admin (first user)
               </legend>
               <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -303,8 +341,9 @@ function AdminClientsPageInner() {
             <button
               type="submit"
               disabled={creating}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
+              <Plus size={14} />
               {creating ? "Creating…" : "Create client"}
             </button>
           </div>
@@ -313,7 +352,10 @@ function AdminClientsPageInner() {
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <Building2 size={14} />
+            </span>
             All Clients
           </h2>
           <span className="text-xs text-slate-500">
@@ -358,30 +400,51 @@ function AdminClientsPageInner() {
                         )}
                         {c.googlePlaceId && (
                           <span
-                            className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-emerald-700"
+                            className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-emerald-700"
                             title="Google Place ID configured"
                           >
+                            <Globe size={10} />
                             Google
                           </span>
                         )}
                         {c.bookingUrl && (
                           <span
-                            className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-violet-700"
+                            className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-violet-700"
                             title="Cal.com booking URL configured"
                           >
+                            <Calendar size={10} />
                             Cal.com
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500">
-                        {c.staff.length}{" "}
-                        {c.staff.length === 1 ? "staff" : "staff"} ·{" "}
-                        {c.stats.leads} leads · {c.stats.appointments} appts ·{" "}
-                        {c.stats.openFeedback} open feedback
+                      <p className="mt-1 inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <span className="inline-flex items-center gap-1">
+                          <Users size={11} />
+                          {c.staff.length} staff
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <ClipboardList size={11} />
+                          {c.stats.leads} leads
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <CalendarDays size={11} />
+                          {c.stats.appointments} appts
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <MessageSquare size={11} />
+                          {c.stats.openFeedback} open feedback
+                        </span>
                       </p>
                     </div>
-                    <span className="text-slate-400" aria-hidden="true">
-                      {isOpen ? "▾" : "▸"}
+                    <span
+                      className="text-slate-400"
+                      aria-hidden="true"
+                    >
+                      {isOpen ? (
+                        <ChevronDown size={16} />
+                      ) : (
+                        <ChevronRight size={16} />
+                      )}
                     </span>
                   </button>
 
@@ -408,16 +471,21 @@ function AdminClientsPageInner() {
                           <Link
                             href={`/p/${c.profileSlug}`}
                             target="_blank"
-                            className="text-indigo-600 hover:underline"
+                            className="inline-flex items-center gap-1 text-indigo-600 hover:underline"
                           >
-                            View public profile →
+                            <ExternalLink size={11} />
+                            View public profile
                           </Link>
                         )}
                         {c.customDomain && (
-                          <span>Domain: {c.customDomain}</span>
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin size={11} />
+                            {c.customDomain}
+                          </span>
                         )}
                         {c.renewalDate && (
-                          <span>
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays size={11} />
                             Renews{" "}
                             {new Date(c.renewalDate).toLocaleDateString()}
                           </span>
@@ -448,7 +516,8 @@ function ClientAdminBlock({
     <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            <ShieldCheck size={11} />
             Client Admin
           </p>
           {client.admin ? (
@@ -469,8 +538,9 @@ function ClientAdminBlock({
             type="button"
             onClick={() => onImpersonate(client.admin!.id)}
             disabled={busyId === client.admin.id}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
           >
+            <UserRound size={12} />
             {busyId === client.admin.id ? "Switching…" : "Impersonate"}
           </button>
         )}
@@ -491,7 +561,8 @@ function ClientStaffBlock({
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-4 py-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <Users size={11} />
           Staff ({staff.length})
         </p>
       </div>
@@ -526,8 +597,9 @@ function ClientStaffBlock({
                 type="button"
                 onClick={() => onImpersonate(s.id)}
                 disabled={busyId === s.id}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
               >
+                <UserRound size={12} />
                 {busyId === s.id ? "Switching…" : "Impersonate"}
               </button>
             </li>
@@ -595,15 +667,17 @@ function ClientIntegrationsBlock({
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <Plug size={11} />
           Integrations
         </p>
         {!editing && (
           <button
             type="button"
             onClick={startEdit}
-            className="text-xs text-indigo-600 hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline"
           >
+            <Pencil size={11} />
             Edit
           </button>
         )}
@@ -643,8 +717,9 @@ function ClientIntegrationsBlock({
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
               >
+                <Check size={12} />
                 {saving ? "Saving…" : "Save"}
               </button>
             </div>
@@ -653,12 +728,18 @@ function ClientIntegrationsBlock({
           <>
             <ReadRow
               label="Google Place ID"
+              icon={Globe}
               value={client.googlePlaceId}
               copyable
             />
-            <ReadRow label="Cal.com booking URL" value={client.bookingUrl} />
+            <ReadRow
+              label="Cal.com booking URL"
+              icon={Calendar}
+              value={client.bookingUrl}
+            />
             {savedAt && (
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
+              <p className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
+                <Check size={12} />
                 Updated.
               </p>
             )}
@@ -720,15 +801,17 @@ function ClientWebhooksBlock({
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <Webhook size={11} />
           Webhooks
         </p>
         <button
           type="button"
           onClick={rotate}
           disabled={rotating}
-          className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
         >
+          <RotateCcw size={12} />
           {rotating ? "Rotating…" : "Rotate key"}
         </button>
       </div>
@@ -784,15 +867,18 @@ function ReadRow({
   value,
   copyable = false,
   mono = false,
+  icon: Icon,
 }: {
   label: string;
   value?: string;
   copyable?: boolean;
   mono?: boolean;
+  icon?: typeof Globe;
 }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+      <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        {Icon && <Icon size={11} />}
         {label}
       </p>
       <div className="mt-1 flex items-stretch gap-2">
@@ -903,8 +989,9 @@ function CopyButton({ value }: { value: string }) {
     <button
       type="button"
       onClick={copy}
-      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
     >
+      {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copied" : "Copy"}
     </button>
   );

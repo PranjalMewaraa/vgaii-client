@@ -1,6 +1,16 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import {
+  Check,
+  CheckCircle2,
+  Layers,
+  Pencil,
+  Trash2,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
 import { ASSIGNABLE_MODULES, type AssignableModule } from "@/lib/rbac";
 import RoleGuard from "@/components/RoleGuard";
 
@@ -141,18 +151,26 @@ function StaffPageInner() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Team</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="inline-flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+            <Users size={16} />
+          </span>
+          Team
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
           Manage your staff members and the modules they can access.
         </p>
       </header>
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <UserPlus size={14} />
+            </span>
             Add staff member
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500">
             They&apos;ll inherit your client and only see the modules you
             assign.
           </p>
@@ -200,7 +218,7 @@ function StaffPageInner() {
               />
               <p
                 id="password-helper"
-                className={`mt-1 flex items-center gap-1 text-xs ${
+                className={`mt-1 inline-flex items-center gap-1 text-xs ${
                   password.length === 0
                     ? "text-slate-500"
                     : password.length >= 8
@@ -208,13 +226,11 @@ function StaffPageInner() {
                       : "text-amber-600"
                 }`}
               >
-                <span aria-hidden="true">
-                  {password.length === 0
-                    ? "•"
-                    : password.length >= 8
-                      ? "✓"
-                      : "•"}
-                </span>
+                {password.length >= 8 ? (
+                  <CheckCircle2 size={12} />
+                ) : (
+                  <span aria-hidden="true">•</span>
+                )}
                 {password.length === 0
                   ? "Use at least 8 characters — share it with the staff member after they're added."
                   : password.length >= 8
@@ -225,7 +241,8 @@ function StaffPageInner() {
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <p className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+              <Layers size={12} />
               Modules
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -238,12 +255,13 @@ function StaffPageInner() {
                     onClick={() =>
                       setCreateModules(prev => toggleModule(prev, m))
                     }
-                    className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
+                    className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
                       on
                         ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                   >
+                    {on && <Check size={11} />}
                     {m}
                   </button>
                 );
@@ -261,8 +279,9 @@ function StaffPageInner() {
             <button
               type="submit"
               disabled={creating}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
+              <UserPlus size={14} />
               {creating ? "Creating…" : "Add staff"}
             </button>
           </div>
@@ -271,7 +290,10 @@ function StaffPageInner() {
 
       <div className="rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <Users size={14} />
+            </span>
             All Staff
           </h2>
           <span className="text-xs text-slate-500">
@@ -306,7 +328,14 @@ function StaffPageInner() {
                       className="border-t border-slate-200 align-top"
                     >
                       <td className="px-6 py-4 font-medium text-slate-900">
-                        {member.name || "—"}
+                        <span className="inline-flex items-center gap-2">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                            {(member.name || member.email || "?")
+                              .charAt(0)
+                              .toUpperCase()}
+                          </span>
+                          {member.name || "—"}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-slate-700">
                         {member.email}
@@ -325,12 +354,13 @@ function StaffPageInner() {
                                       toggleModule(prev, m),
                                     )
                                   }
-                                  className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider transition ${
+                                  className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider transition ${
                                     on
                                       ? "border-indigo-500 bg-indigo-50 text-indigo-700"
                                       : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                                   }`}
                                 >
+                                  {on && <Check size={10} />}
                                   {m}
                                 </button>
                               );
@@ -362,16 +392,18 @@ function StaffPageInner() {
                             <button
                               type="button"
                               onClick={cancelEdit}
-                              className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
                             >
+                              <X size={12} />
                               Cancel
                             </button>
                             <button
                               type="button"
                               onClick={() => saveEdit(member.id)}
                               disabled={savingId === member.id}
-                              className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
                             >
+                              <Check size={12} />
                               {savingId === member.id ? "Saving…" : "Save"}
                             </button>
                           </div>
@@ -380,16 +412,18 @@ function StaffPageInner() {
                             <button
                               type="button"
                               onClick={() => startEdit(member)}
-                              className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
                             >
+                              <Pencil size={12} />
                               Edit modules
                             </button>
                             <button
                               type="button"
                               onClick={() => remove(member.id)}
                               disabled={removingId === member.id}
-                              className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
                             >
+                              <Trash2 size={12} />
                               {removingId === member.id
                                 ? "Removing…"
                                 : "Remove"}
