@@ -8,6 +8,7 @@ import {
   Calendar,
   ClipboardList,
   LayoutDashboard,
+  MapPin,
   MessageSquare,
   Settings,
   Stethoscope,
@@ -40,6 +41,7 @@ const CLIENT_NAV: NavItem[] = [
 const SUPER_ADMIN_NAV: NavItem[] = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/clients", label: "Clients", icon: Building2 },
+  { href: "/admin/place-finder", label: "Place ID finder", icon: MapPin },
 ];
 
 const isVisible = (item: NavItem, user: StoredUser | null) => {
