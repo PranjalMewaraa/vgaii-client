@@ -40,3 +40,95 @@ export const getBusinessInfoLive = async (placeId: string) => {
 
   return task.result?.[0]?.items?.[0];
 };
+
+// DataForSEO reviews response item shape (the bits we use). Keys mirror
+// the API's snake_case so we can assert directly off the parsed JSON.
+export type DataForSEOReviewItem = {
+  type?: string;
+  rating?: { value?: number };
+  timestamp?: string;
+  review_text?: string;
+  profile_name?: string;
+  profile_image_url?: string;
+  profile_url?: string;
+  // Optional: response left by the business owner.
+  owner_answer?: string;
+  // Cal.com-style ID from DataForSEO; not always present.
+  review_id?: string;
+};
+
+// Reviews are only available via the async task endpoint. Call this to
+// kick off a fetch and store the returned ID in `Client.reviewsTaskId`,
+// then poll `getReviewsTaskResult` until it returns reviews.
+export const submitReviewsTask = async (
+  placeId: string,
+  depth = 30,
+): Promise<string> => {
+  const res = await axios.post(
+    `${BASE_URL}/business_data/google/reviews/task_post`,
+    [
+      {
+        keyword: `place_id:${placeId}`,
+        location_code: 2840,
+        language_code: "en",
+        depth,
+        sort_by: "newest",
+      },
+    ],
+    { auth, timeout: REQUEST_TIMEOUT_MS },
+  );
+
+  const task = res.data?.tasks?.[0];
+  if (!task || (task.status_code && task.status_code >= 40000)) {
+    const code = task?.status_code ?? res.data?.status_code;
+    const message =
+      task?.status_message ??
+      res.data?.status_message ??
+      "DataForSEO reviews task_post failed";
+    console.error("[dataforseo] reviews task_post failed", {
+      status_code: code,
+      status_message: message,
+    });
+    throw new Error(`DataForSEO ${code}: ${message}`);
+  }
+  if (typeof task.id !== "string") {
+    throw new Error("DataForSEO task_post returned no task id");
+  }
+  return task.id;
+};
+
+export type ReviewsTaskState =
+  | { ready: false }
+  | { ready: true; items: DataForSEOReviewItem[] };
+
+// Returns the task's results if ready, or `{ ready: false }` if it's
+// still in progress / the result endpoint says no result yet. Caller is
+// expected to retry on its own cadence.
+export const getReviewsTaskResult = async (
+  taskId: string,
+): Promise<ReviewsTaskState> => {
+  const res = await axios.get(
+    `${BASE_URL}/business_data/google/reviews/task_get/advanced/${encodeURIComponent(taskId)}`,
+    { auth, timeout: REQUEST_TIMEOUT_MS },
+  );
+
+  const task = res.data?.tasks?.[0];
+  // task_in_queue / task_handed status_code === 40602 etc — anything below
+  // 20000 means "still working".
+  if (!task) return { ready: false };
+
+  if (task.status_code && task.status_code >= 40000) {
+    // Stale or invalid task id — surface it; caller will start a fresh
+    // task on the next refresh.
+    throw new Error(
+      `DataForSEO ${task.status_code}: ${task.status_message ?? "task_get failed"}`,
+    );
+  }
+
+  // status_code 20000 means "ok" but result may still be empty until the
+  // task actually completes.
+  const items: DataForSEOReviewItem[] = task.result?.[0]?.items ?? [];
+  if (!items.length) return { ready: false };
+
+  return { ready: true, items };
+};

@@ -15,3 +15,19 @@ export const canonicalPhone = (input: string | null | undefined): string => {
   if (!input) return "";
   return input.replace(/[^\d]/g, "").slice(-10);
 };
+
+/**
+ * E.164 form for India: always returns `+91XXXXXXXXXX` (13 chars) when
+ * the input has at least 10 digits, or `""` if it doesn't.
+ *
+ * Reuses `canonicalPhone` to strip everything to the last 10 digits, then
+ * prepends `+91`. This means a number stored as `9717583895` or
+ * `+91 9717-583895` or `0091 9717 583895` all normalize to `+919717583895`.
+ *
+ * Used for Cal.com prefill and any other downstream that expects E.164.
+ */
+export const toE164India = (input: string | null | undefined): string => {
+  const digits = canonicalPhone(input);
+  if (digits.length < 10) return "";
+  return `+91${digits}`;
+};

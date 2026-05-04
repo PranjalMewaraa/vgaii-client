@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { toE164India } from "@/lib/phone";
 
 // Cal.com inline embed wrapper. Loads their embed.js bootstrap, mounts the
 // inline widget, and surfaces the bookingSuccessfulV2 event so the caller can
@@ -132,11 +133,18 @@ export default function BookingEmbed({
           //   2. Embed config: `responses[<identifier>]`.
           // We send both for resilience. `phone=` is also appended as a
           // fallback in case the user renames the identifier to "phone".
+          //
+          // Phone numbers are always normalized to E.164 with the +91
+          // country code so Cal.com's intl-tel-input widget recognizes
+          // them and shows the India flag pre-selected. A bare 10-digit
+          // input would otherwise default to whatever the visitor's
+          // browser locale is.
+          const e164Phone = toE164India(phone);
           let calLinkWithPrefill = calLink;
-          if (phone) {
+          if (e164Phone) {
             const params = new URLSearchParams({
-              attendeePhoneNumber: phone,
-              phone,
+              attendeePhoneNumber: e164Phone,
+              phone: e164Phone,
             });
             calLinkWithPrefill = `${calLink}?${params.toString()}`;
           }
@@ -146,14 +154,14 @@ export default function BookingEmbed({
             name,
             email,
           };
-          if (phone) {
-            config["responses[attendeePhoneNumber]"] = phone;
+          if (e164Phone) {
+            config["responses[attendeePhoneNumber]"] = e164Phone;
             // Cover the common alternative identifier the user might pick.
-            config["responses[phone]"] = phone;
+            config["responses[phone]"] = e164Phone;
             // Keep this for downstream webhook compatibility — populates
             // the booking's `metadata.phone` even if no booker field
             // matches the value.
-            config["metadata[phone]"] = phone;
+            config["metadata[phone]"] = e164Phone;
           }
           ns("inline", {
             elementOrSelector: target,
