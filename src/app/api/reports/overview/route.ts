@@ -125,6 +125,39 @@ export async function GET(req: Request) {
             ? Prisma.sql`\`date\` <= ${to}`
             : Prisma.sql`1=1`;
 
+    // Pull the cached Google business info so we can also surface its
+    // rating + (when available) per-star distribution alongside internal
+    // outcome ratings. SUPER_ADMIN reports aggregate across every client,
+    // so Google ratings only make sense for a single tenant.
+    const googleInfoPromise: Promise<
+      | {
+          rating?: number;
+          totalReviews?: number;
+          ratingDistribution?: Record<"1" | "2" | "3" | "4" | "5", number>;
+        }
+      | null
+    > =
+      user.role === "CLIENT_ADMIN" && user.clientId
+        ? prisma.client
+            .findUnique({
+              where: { id: user.clientId },
+              select: { googleBusinessInfo: true },
+            })
+            .then(c => {
+              const bi = (c?.googleBusinessInfo ?? null) as
+                | {
+                    rating?: number;
+                    totalReviews?: number;
+                    ratingDistribution?: Record<
+                      "1" | "2" | "3" | "4" | "5",
+                      number
+                    >;
+                  }
+                | null;
+              return bi;
+            })
+        : Promise.resolve(null);
+
     const [
       leadsByStatus,
       leadsBySource,
@@ -132,6 +165,7 @@ export async function GET(req: Request) {
       apptByStatus,
       leadsTimeSeries,
       apptTimeSeries,
+      googleInfo,
     ] = await Promise.all([
       prisma.lead.groupBy({
         by: ["status"],
@@ -187,6 +221,7 @@ export async function GET(req: Request) {
         GROUP BY day
         ORDER BY day
       `,
+      googleInfoPromise,
     ]);
 
     const byStatus: Record<string, number> = {};
@@ -304,6 +339,32 @@ export async function GET(req: Request) {
       cursor.setDate(cursor.getDate() + 1);
     }
 
+    // Compose the Google ratings block. We only ship a histogram when
+    // DataForSEO actually returned `rating_distribution`; otherwise the
+    // UI shows just the aggregate (rating + total reviews) and a hint
+    // that the breakdown isn't available.
+    const googleDist = googleInfo?.ratingDistribution;
+    const googleCount = googleDist
+      ? Object.values(googleDist).reduce((s, v) => s + (v ?? 0), 0)
+      : googleInfo?.totalReviews ?? 0;
+    const googleRatings = googleInfo
+      ? {
+          rating: googleInfo.rating ?? null,
+          totalReviews: googleInfo.totalReviews ?? null,
+          // Histogram present only when distribution is non-empty.
+          distribution: googleDist
+            ? {
+                1: googleDist["1"] ?? 0,
+                2: googleDist["2"] ?? 0,
+                3: googleDist["3"] ?? 0,
+                4: googleDist["4"] ?? 0,
+                5: googleDist["5"] ?? 0,
+              }
+            : null,
+          count: googleCount,
+        }
+      : null;
+
     return NextResponse.json({
       range: {
         from: from ? from.toISOString() : null,
@@ -319,6 +380,7 @@ export async function GET(req: Request) {
         average: avgRating,
         count: ratingCount,
       },
+      googleRatings,
       timeSeries,
     });
   } catch (err: unknown) {

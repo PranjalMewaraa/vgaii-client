@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import useSWR from "swr";
 import {
+  AlertCircle,
   Braces,
   Building2,
   Calendar,
@@ -20,6 +21,7 @@ import {
   Pencil,
   Plug,
   Plus,
+  RefreshCw,
   RotateCcw,
   ShieldCheck,
   UserRound,
@@ -615,6 +617,7 @@ function ClientIntegrationsBlock({
   const [editing, setEditing] = useState(false);
   const [googlePlaceId, setGooglePlaceId] = useState(client.googlePlaceId ?? "");
   const [bookingUrl, setBookingUrl] = useState(client.bookingUrl ?? "");
+  const [customDomain, setCustomDomain] = useState(client.customDomain ?? "");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -622,6 +625,7 @@ function ClientIntegrationsBlock({
   const startEdit = () => {
     setGooglePlaceId(client.googlePlaceId ?? "");
     setBookingUrl(client.bookingUrl ?? "");
+    setCustomDomain(client.customDomain ?? "");
     setErr(null);
     setSavedAt(null);
     setEditing(true);
@@ -642,6 +646,7 @@ function ClientIntegrationsBlock({
         body: JSON.stringify({
           googlePlaceId: googlePlaceId.trim() || null,
           bookingUrl: bookingUrl.trim() || null,
+          customDomain: customDomain.trim() || null,
         }),
       });
       const data = await res.json();
@@ -693,6 +698,13 @@ function ClientIntegrationsBlock({
               placeholder="https://cal.com/account/event"
               hint="Empty to clear."
             />
+            <Field
+              label="Custom domain"
+              value={customDomain}
+              onChange={setCustomDomain}
+              placeholder="example-clinic.com"
+              hint="Hostname only (no http://, no path). Empty to clear. Domain must also be added in Vercel and have DNS pointed at us — use Verify after saving."
+            />
             {err && (
               <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
                 {err}
@@ -729,6 +741,10 @@ function ClientIntegrationsBlock({
               label="Cal.com booking URL"
               icon={Calendar}
               value={client.bookingUrl}
+            />
+            <CustomDomainRow
+              clientId={client.id}
+              customDomain={client.customDomain}
             />
             {savedAt && (
               <p className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
@@ -854,6 +870,143 @@ function ClientWebhooksBlock({
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+type VerifyResult = {
+  domain: string;
+  dns: {
+    resolved: boolean;
+    cname?: string[];
+    a?: string[];
+    pointsToVercel: boolean;
+    error?: string;
+  };
+  http: {
+    ok: boolean;
+    status?: number;
+    error?: string;
+  };
+  verified: boolean;
+  error?: string;
+};
+
+function CustomDomainRow({
+  clientId,
+  customDomain,
+}: {
+  clientId: string;
+  customDomain?: string;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<VerifyResult | null>(null);
+
+  const verify = async () => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const res = await fetch(
+        `/api/admin/clients/${clientId}/verify-domain`,
+        { method: "POST", headers: authHeaders() },
+      );
+      const data = (await res.json()) as VerifyResult;
+      setResult(res.ok ? data : { ...data, error: data.error ?? "Failed" });
+    } catch {
+      setResult({
+        domain: customDomain ?? "",
+        dns: { resolved: false, pointsToVercel: false },
+        http: { ok: false },
+        verified: false,
+        error: "Network error",
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <Globe size={11} />
+        Custom domain
+      </p>
+      <div className="mt-1 flex items-stretch gap-2">
+        <code
+          className={`flex-1 truncate rounded-lg bg-slate-50 px-3 py-2 text-xs ${
+            customDomain ? "text-slate-700" : "text-slate-400"
+          }`}
+        >
+          {customDomain || "(not set)"}
+        </code>
+        {customDomain && <CopyButton value={customDomain} />}
+        {customDomain && (
+          <button
+            type="button"
+            onClick={verify}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+          >
+            <RefreshCw size={12} className={busy ? "animate-spin" : ""} />
+            {busy ? "Verifying…" : "Verify"}
+          </button>
+        )}
+      </div>
+      {result && <VerifyResultPanel result={result} />}
+    </div>
+  );
+}
+
+function VerifyResultPanel({ result }: { result: VerifyResult }) {
+  const tone = result.verified
+    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+    : "border-amber-200 bg-amber-50 text-amber-900";
+  const Icon = result.verified ? Check : AlertCircle;
+  return (
+    <div
+      className={`mt-2 space-y-1.5 rounded-lg border px-3 py-2 text-[11px] ${tone}`}
+    >
+      <p className="inline-flex items-center gap-1.5 font-semibold">
+        <Icon size={12} />
+        {result.verified
+          ? "Verified — domain resolves to us and serves over HTTPS."
+          : "Not yet verified."}
+        {result.error && <span className="font-normal">— {result.error}</span>}
+      </p>
+      <ul className="space-y-0.5 pl-4">
+        <li className="list-disc">
+          <span className="font-medium">DNS:</span>{" "}
+          {result.dns.resolved
+            ? result.dns.pointsToVercel
+              ? "resolves to Vercel."
+              : "resolves but not to Vercel — check the DNS target."
+            : "didn't resolve. Check the registrar for typos and propagation."}
+          {result.dns.cname && result.dns.cname.length > 0 && (
+            <span className="ml-1 text-[10px] opacity-80">
+              CNAME: {result.dns.cname.join(", ")}
+            </span>
+          )}
+          {result.dns.a && result.dns.a.length > 0 && (
+            <span className="ml-1 text-[10px] opacity-80">
+              A: {result.dns.a.join(", ")}
+            </span>
+          )}
+        </li>
+        <li className="list-disc">
+          <span className="font-medium">HTTPS:</span>{" "}
+          {result.http.ok
+            ? `OK (${result.http.status ?? 200}).`
+            : result.http.error
+              ? `failed — ${result.http.error}`
+              : `failed (${result.http.status ?? "?"}). If DNS is right, the cert may still be issuing.`}
+        </li>
+      </ul>
+      {!result.verified && (
+        <p className="text-[10px] opacity-80">
+          Add the domain in Vercel → Project → Settings → Domains if you
+          haven&apos;t. DNS may take a few minutes to propagate.
+        </p>
+      )}
     </div>
   );
 }

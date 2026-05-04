@@ -10,7 +10,13 @@ type DataForSEOBusinessInfo = {
   phone?: string;
   url?: string;
   category?: string;
-  rating?: { value?: number; votes_count?: number };
+  rating?: {
+    value?: number;
+    votes_count?: number;
+    // DataForSEO sometimes includes a per-star breakdown when Google
+    // exposes the histogram. Keys are stringified star counts ("1"–"5").
+    rating_distribution?: Partial<Record<"1" | "2" | "3" | "4" | "5", number>>;
+  };
   work_time?: {
     work_hours?: {
       timetable?: Record<
@@ -27,6 +33,8 @@ type DataForSEOBusinessInfo = {
   place_id?: string;
 };
 
+export type RatingDistribution = Record<"1" | "2" | "3" | "4" | "5", number>;
+
 export type MappedBusinessInfo = {
   name?: string;
   address?: string;
@@ -35,6 +43,9 @@ export type MappedBusinessInfo = {
   category?: string;
   rating?: number;
   totalReviews?: number;
+  // Per-star breakdown when Google exposes it. Absent when DataForSEO's
+  // response doesn't include the histogram.
+  ratingDistribution?: RatingDistribution;
   hours: WorkHourEntry[];
   mainPhoto?: string;
   mapsUrl?: string;
@@ -63,6 +74,21 @@ const mapHours = (info: DataForSEOBusinessInfo): WorkHourEntry[] => {
   );
 };
 
+const mapDistribution = (
+  raw?: NonNullable<DataForSEOBusinessInfo["rating"]>["rating_distribution"],
+): RatingDistribution | undefined => {
+  if (!raw) return undefined;
+  // Coerce to a complete 1..5 record so consumers can iterate without
+  // null checks. Missing buckets fall back to 0.
+  return {
+    "1": Number(raw["1"] ?? 0),
+    "2": Number(raw["2"] ?? 0),
+    "3": Number(raw["3"] ?? 0),
+    "4": Number(raw["4"] ?? 0),
+    "5": Number(raw["5"] ?? 0),
+  };
+};
+
 export const mapBusinessInfo = (
   info: DataForSEOBusinessInfo,
   fallbackPlaceId?: string,
@@ -76,6 +102,7 @@ export const mapBusinessInfo = (
     category: info.category,
     rating: info.rating?.value,
     totalReviews: info.rating?.votes_count,
+    ratingDistribution: mapDistribution(info.rating?.rating_distribution),
     hours: mapHours(info),
     mainPhoto: info.main_image || info.logo,
     mapsUrl: placeId

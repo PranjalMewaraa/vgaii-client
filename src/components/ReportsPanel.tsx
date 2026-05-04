@@ -42,6 +42,12 @@ type ReportData = {
     average: number;
     count: number;
   };
+  googleRatings: {
+    rating: number | null;
+    totalReviews: number | null;
+    distribution: { 1: number; 2: number; 3: number; 4: number; 5: number } | null;
+    count: number;
+  } | null;
   timeSeries: Array<{ date: string; leads: number; appointments: number }>;
 };
 
@@ -107,6 +113,9 @@ export default function ReportsPanel() {
   const [preset, setPreset] = useState<Preset>("all");
   const [fromCustom, setFromCustom] = useState("");
   const [toCustom, setToCustom] = useState("");
+  const [ratingsSource, setRatingsSource] = useState<"internal" | "google">(
+    "internal",
+  );
 
   const range = useMemo(
     () => computeRange(preset, fromCustom, toCustom),
@@ -365,41 +374,89 @@ export default function ReportsPanel() {
         </section>
 
         <section className="rounded-xl border border-slate-200 bg-white px-6 py-5">
-          <h3 className="text-base font-semibold text-slate-900">
-            Patient ratings
-          </h3>
-          <p className="text-xs text-slate-500">
-            Outcome ratings collected from leads in this period (5 = best).
-          </p>
-          {ratings.count === 0 ? (
-            <p className="mt-4 text-sm text-slate-500">
-              No ratings collected yet.
-            </p>
-          ) : (
-            <div className="mt-4 space-y-2">
-              {([5, 4, 3, 2, 1] as const).map(score => {
-                const count = ratings[score];
-                const ratio = ratings.count > 0 ? count / ratings.count : 0;
-                return (
-                  <div key={score}>
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span className="font-semibold text-slate-700">
-                        {"⭐".repeat(score)}
-                      </span>
-                      <span>
-                        {count} · {pct(count, ratings.count)}
-                      </span>
-                    </div>
-                    <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full bg-amber-400"
-                        style={{ width: `${Math.max(ratio * 100, count > 0 ? 4 : 0)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">
+                Patient ratings
+              </h3>
+              <p className="text-xs text-slate-500">
+                {ratingsSource === "internal"
+                  ? "Outcome ratings collected from leads in this period (5 = best)."
+                  : "Star distribution from your Google Business listing (all-time)."}
+              </p>
             </div>
+            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setRatingsSource("internal")}
+                className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
+                  ratingsSource === "internal"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                Internal
+              </button>
+              <button
+                type="button"
+                onClick={() => setRatingsSource("google")}
+                className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
+                  ratingsSource === "google"
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                Google
+              </button>
+            </div>
+          </div>
+          {ratingsSource === "internal" ? (
+            <RatingsHistogram
+              empty={ratings.count === 0}
+              emptyLabel="No ratings collected yet."
+              count={ratings.count}
+              average={ratings.average}
+              buckets={{
+                1: ratings[1],
+                2: ratings[2],
+                3: ratings[3],
+                4: ratings[4],
+                5: ratings[5],
+              }}
+            />
+          ) : !data.googleRatings ? (
+            <p className="mt-4 text-sm text-slate-500">
+              Google reviews not connected. Ask your platform admin to set
+              the Google Place ID, then refresh from the dashboard listing.
+            </p>
+          ) : !data.googleRatings.distribution ? (
+            // Aggregate-only fallback when DataForSEO doesn't return
+            // rating_distribution. Show the rating + total reviews so the
+            // panel isn't blank.
+            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+              <p>
+                <span className="font-semibold">
+                  ⭐ {(data.googleRatings.rating ?? 0).toFixed(1)}
+                </span>{" "}
+                from{" "}
+                <span className="font-semibold">
+                  {(data.googleRatings.totalReviews ?? 0).toLocaleString()}
+                </span>{" "}
+                review
+                {data.googleRatings.totalReviews === 1 ? "" : "s"}.
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Per-star breakdown isn&apos;t available for this listing.
+              </p>
+            </div>
+          ) : (
+            <RatingsHistogram
+              empty={data.googleRatings.count === 0}
+              emptyLabel="No reviews on Google yet."
+              count={data.googleRatings.count}
+              average={data.googleRatings.rating ?? 0}
+              buckets={data.googleRatings.distribution}
+            />
           )}
         </section>
       </div>
@@ -511,5 +568,62 @@ function Legend({ swatch, label }: { swatch: string; label: string }) {
       <span className={`inline-block h-2 w-2 rounded-sm ${swatch}`} />
       <span className="text-slate-600">{label}</span>
     </span>
+  );
+}
+
+function RatingsHistogram({
+  empty,
+  emptyLabel,
+  count,
+  average,
+  buckets,
+}: {
+  empty: boolean;
+  emptyLabel: string;
+  count: number;
+  average: number;
+  buckets: { 1: number; 2: number; 3: number; 4: number; 5: number };
+}) {
+  if (empty) {
+    return <p className="mt-4 text-sm text-slate-500">{emptyLabel}</p>;
+  }
+  return (
+    <>
+      {average > 0 && (
+        <p className="mt-3 text-xs text-slate-600">
+          Average{" "}
+          <span className="font-semibold text-slate-900">
+            {average.toFixed(1)}
+          </span>{" "}
+          from {count.toLocaleString()} rating{count === 1 ? "" : "s"}.
+        </p>
+      )}
+      <div className="mt-3 space-y-2">
+        {([5, 4, 3, 2, 1] as const).map(score => {
+          const c = buckets[score];
+          const ratio = count > 0 ? c / count : 0;
+          return (
+            <div key={score}>
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span className="font-semibold text-slate-700">
+                  {"⭐".repeat(score)}
+                </span>
+                <span>
+                  {c} · {pct(c, count)}
+                </span>
+              </div>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-amber-400"
+                  style={{
+                    width: `${Math.max(ratio * 100, c > 0 ? 4 : 0)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
