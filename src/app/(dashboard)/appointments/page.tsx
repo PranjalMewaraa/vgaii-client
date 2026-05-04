@@ -51,6 +51,12 @@ const endOfDay = (d: Date) => {
   return x;
 };
 
+// "All upcoming" / "All history" deliberately return no date bounds:
+// the tab itself splits by status (scheduled vs everything else), so a
+// completed appointment dated in the future still belongs in History,
+// and a scheduled appointment dated in the past still belongs in Upcoming
+// (e.g. a past slot the team forgot to mark visited). The narrower
+// presets layer on top with explicit date ranges when the user opts in.
 const rangeForUpcoming = (
   preset: UpcomingPreset,
 ): { from: Date | null; to: Date | null } => {
@@ -75,7 +81,7 @@ const rangeForUpcoming = (
     }
     case "all":
     default:
-      return { from: now, to: null };
+      return { from: null, to: null };
   }
 };
 
@@ -103,7 +109,7 @@ const rangeForHistory = (
     }
     case "all":
     default:
-      return { from: null, to: now };
+      return { from: null, to: null };
   }
 };
 
