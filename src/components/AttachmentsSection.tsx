@@ -381,22 +381,35 @@ export default function AttachmentsSection({
             onDragLeave={() => setDragActive(false)}
             onDrop={onDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`mt-3 cursor-pointer rounded-lg border-2 border-dashed px-3 py-4 text-center text-xs transition ${
+            role="button"
+            tabIndex={0}
+            onKeyDown={e => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            className={`mt-3 cursor-pointer rounded-lg border-2 border-dashed px-3 py-5 text-center text-xs transition ${
               dragActive
                 ? "border-indigo-500 bg-indigo-50"
                 : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100"
             }`}
           >
             <Upload
-              size={20}
-              className="mx-auto mb-1 text-slate-400"
+              size={22}
+              className="mx-auto mb-1.5 text-slate-400"
               aria-hidden
             />
             <p className="font-medium text-slate-700">
-              Drop files here or click to choose
+              Drop multiple files here, or
             </p>
-            <p className="mt-0.5 text-[11px] text-slate-500">
-              PDF or images, up to {fmtSize(MAX_BYTES)} each
+            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+              <Upload size={12} />
+              Choose files
+            </span>
+            <p className="mt-2 text-[11px] text-slate-500">
+              Select several at once — they upload in parallel. PDF or
+              images, up to {fmtSize(MAX_BYTES)} each.
             </p>
             <input
               ref={fileInputRef}
