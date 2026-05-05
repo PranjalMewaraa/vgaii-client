@@ -52,6 +52,7 @@ export async function GET(req: Request) {
     const requestBody = [
       {
         place_id: placeId,
+        location_code: 2356,
         language_code: "en",
         depth: 30,
         sort_by: "newest",

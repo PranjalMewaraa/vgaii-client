@@ -74,6 +74,12 @@ export const submitReviewsTask = async (
   const body = [
     {
       place_id: placeId,
+      // DataForSEO's reviews endpoint requires a location even when
+      // place_id is specified (error 40501 otherwise). 2356 = India,
+      // which is where our clinics operate. The place_id is globally
+      // unique so this only affects locale/Google domain (.in vs .com),
+      // not which listing gets queried.
+      location_code: 2356,
       language_code: "en",
       depth,
       sort_by: "newest",
