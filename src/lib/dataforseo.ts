@@ -61,21 +61,28 @@ export type DataForSEOReviewItem = {
 // endpoint for this resource (despite my_business_info having one). We
 // submit a task here, then poll task_get/advanced until it completes.
 // Tasks usually finish in 30s–3min depending on listing size.
+//
+// Important: unlike my_business_info, the Reviews endpoint takes
+// `place_id` as its own request field — NOT prefixed inside `keyword`.
+// Posting `keyword: "place_id:..."` looks like it works (the task posts
+// fine) but DataForSEO can't resolve the listing and returns zero items.
+// See https://docs.dataforseo.com/v3/business_data/google/reviews/task_post/
 export const submitReviewsTask = async (
   placeId: string,
   depth = 30,
 ): Promise<string> => {
+  const body = [
+    {
+      place_id: placeId,
+      language_code: "en",
+      depth,
+      sort_by: "newest",
+    },
+  ];
+
   const res = await axios.post(
     `${BASE_URL}/business_data/google/reviews/task_post`,
-    [
-      {
-        keyword: `place_id:${placeId}`,
-        location_code: 2840,
-        language_code: "en",
-        depth,
-        sort_by: "newest",
-      },
-    ],
+    body,
     { auth, timeout: REQUEST_TIMEOUT_MS },
   );
 
@@ -89,10 +96,16 @@ export const submitReviewsTask = async (
     console.error("[dataforseo] reviews task_post failed", {
       status_code: code,
       status_message: message,
+      place_id: placeId,
+      response: res.data,
     });
     throw new Error(`DataForSEO ${code}: ${message}`);
   }
   if (typeof task.id !== "string") {
+    console.error("[dataforseo] reviews task_post returned no id", {
+      place_id: placeId,
+      response: res.data,
+    });
     throw new Error("DataForSEO task_post returned no task id");
   }
   return task.id;
@@ -131,6 +144,11 @@ export const getReviewsTaskResult = async (
   if (task.status_code && task.status_code >= 40000) {
     // Real error (auth issue, invalid id, expired task, etc). Surface
     // it so the caller can drop the stale id and start fresh.
+    console.error("[dataforseo] reviews task_get error", {
+      task_id: taskId,
+      status_code: task.status_code,
+      status_message: task.status_message,
+    });
     throw new Error(
       `DataForSEO ${task.status_code}: ${task.status_message ?? "task_get failed"}`,
     );
