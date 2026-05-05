@@ -46,6 +46,7 @@ export default function LandingPage() {
       <Features />
       <Roi />
       <Pricing />
+      <Addons />
       <Faq />
       <FinalCta />
       <Footer />
@@ -81,6 +82,9 @@ function Nav() {
           </a>
           <a href="#pricing" className="hover:text-slate-900">
             Pricing
+          </a>
+          <a href="#addons" className="hover:text-slate-900">
+            Add-ons
           </a>
           <a href="#faq" className="hover:text-slate-900">
             FAQ
@@ -616,8 +620,8 @@ function Roi() {
     { label: "Patients recovered (20% conversion)", value: "7 / month" },
     { label: "Avg revenue per patient", value: "₹15,000" },
     { label: "Additional revenue / month", value: "₹1,05,000", emphasis: true },
-    { label: "VGAII subscription", value: "− ₹10,000" },
-    { label: "Net gain / month", value: "₹95,000", emphasis: true },
+    { label: "Essential plan", value: "− ₹9,999" },
+    { label: "Net gain / month", value: "₹95,001", emphasis: true },
   ];
   return (
     <section
@@ -632,12 +636,12 @@ function Roi() {
               The math
             </span>
             <h2 className="mt-5 text-3xl font-bold leading-tight tracking-tight md:text-4xl">
-              ~9.5× ROI in the average month.
+              ~10× ROI in the average month.
             </h2>
             <p className="mt-5 text-base leading-relaxed text-slate-300">
               For a clinic spending ₹50k/mo on ads, recovering even 20% of
-              currently-lost leads is enough to pay back the subscription{" "}
-              <span className="font-semibold text-white">9.5 times over</span>.
+              currently-lost leads is enough to pay back the Essential plan{" "}
+              <span className="font-semibold text-white">10 times over</span>.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
               The math gets stronger for high-LTV specialties — dental
@@ -693,125 +697,377 @@ function Roi() {
 
 function Pricing() {
   return (
-    <section className="bg-white py-20 md:py-28" id="pricing">
+    <section className="bg-slate-50 py-20 md:py-28" id="pricing">
       <div className="mx-auto max-w-6xl px-6 md:px-8">
-        <SectionHeader
-          eyebrow="Pricing"
-          title="One plan. Three ways to start."
-          subtitle="Setup, training, and unlimited staff seats are included at every tier. No setup fees."
-        />
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
-          <PricingCard
-            name="90-day pilot"
-            price="₹25,000"
-            cadence="flat"
-            blurb="De-risk it. Applies as credit if you continue annually."
-            cta="Start a pilot"
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 md:text-4xl">
+            Choose Your System Plan
+          </h2>
+          <p className="mt-3 text-base text-slate-600">
+            Scale your patient flow with the perfect automation tier.
+          </p>
+        </div>
+
+        <div className="mt-14 grid items-stretch gap-6 lg:grid-cols-3">
+          {/* Essential — light card */}
+          <PricingCardLight
+            name="Essential"
+            tagline="Base clinic automation"
+            price="₹9,999"
+            cadence="/mo"
+            setup="₹4,999"
+            cta="Start Essential"
             features={[
-              "Everything in the product",
-              "Setup + training included",
-              "Weekly check-ins",
-              "Credit applies to annual",
+              "All basic automations",
+              "GMB Optimization",
+              "WhatsApp Lead Warming",
+              "Appointment Booking",
             ]}
           />
-          <PricingCard
-            name="Annual"
-            price="₹1,00,000"
-            cadence="/ year"
-            blurb="Best value — saves ₹20,000 vs monthly. Locked-in pricing."
-            cta="Get started"
+
+          {/* Growth — featured dark card */}
+          <PricingCardDark
+            name="Growth"
+            tagline="For aggressive scaling"
+            price="₹15,999"
+            cadence="/mo"
+            setup="₹6,999"
+            cta="Upgrade to Growth"
             features={[
-              "Everything in the product",
-              "Setup + training included",
-              "Weekly check-ins for first 30 days",
-              "Locked-in pricing",
-              "Priority WhatsApp support",
+              { text: "Everything in Essential", star: true },
+              { text: "Reddit & Quora replies — up to 10/mo" },
+              { text: "Free email marketing (15k mails, 1k contacts)" },
+              { text: "Free local listing & data correction" },
+              { text: "Free premium single-page website (React/HTML)" },
+              { text: "Free SMS marketing setup (DLT extra)" },
             ]}
-            highlight
           />
-          <PricingCard
-            name="Monthly"
-            price="₹10,000"
-            cadence="/ month"
-            blurb="Same product. Pay as you go. Cancel any time."
-            cta="Get started"
+
+          {/* Power — light card, custom price */}
+          <PricingCardLight
+            name="Power"
+            tagline="Enterprise & multi-doctor"
+            price="Custom"
+            cadence=""
+            setup=""
+            customLabel="Prices on demand"
+            cta="Request Pricing"
             features={[
-              "Everything in the product",
-              "Setup + training included",
-              "Cancel any time",
-              "Standard support",
+              "Everything included",
+              "Custom workflow architectures",
+              "Dedicated support tiers",
+              "High-volume multi-branch setup",
             ]}
           />
         </div>
 
-        <p className="mt-8 text-center text-xs text-slate-500">
-          Prices in INR. Includes setup, branding, custom domain wiring,
-          unlimited staff seats, and 25 GB document storage.
+        <p className="mt-10 text-center text-xs text-slate-500">
+          All prices in INR. Setup includes onboarding, branding, custom
+          domain wiring, and staff training.
         </p>
       </div>
     </section>
   );
 }
 
-function PricingCard({
+function PricingCardLight({
   name,
+  tagline,
   price,
   cadence,
-  blurb,
+  setup,
+  customLabel,
   cta,
   features,
-  highlight,
 }: {
   name: string;
+  tagline: string;
   price: string;
   cadence: string;
-  blurb: string;
+  setup: string;
+  customLabel?: string;
   cta: string;
   features: string[];
-  highlight?: boolean;
 }) {
+  const isCustom = !!customLabel;
   return (
-    <div
-      className={`relative rounded-2xl border p-7 ${
-        highlight
-          ? "border-indigo-300 bg-gradient-to-b from-indigo-50 to-white shadow-xl shadow-indigo-900/5 ring-2 ring-indigo-500"
-          : "border-slate-200 bg-white"
-      }`}
-    >
-      {highlight && (
-        <span className="absolute -top-3 left-7 inline-flex items-center gap-1 rounded-full bg-indigo-600 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">
-          <Sparkles size={10} />
-          Recommended
-        </span>
-      )}
-      <h3 className="text-base font-semibold text-slate-900">{name}</h3>
-      <div className="mt-3 flex items-baseline gap-1">
-        <span className="text-4xl font-bold tracking-tight text-slate-900">
-          {price}
-        </span>
-        <span className="text-sm text-slate-500">{cadence}</span>
+    <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
+      <div>
+        <h3 className="text-2xl font-bold text-slate-900">{name}</h3>
+        <p className="mt-1 text-sm text-slate-500">{tagline}</p>
       </div>
-      <p className="mt-2 text-sm text-slate-600">{blurb}</p>
+
+      <div className="mt-6">
+        {isCustom ? (
+          <>
+            <p className="text-4xl font-bold leading-none tracking-tight text-slate-900">
+              {price}
+            </p>
+            <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              {customLabel}
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-1">
+              <span className="text-4xl font-bold tracking-tight text-slate-900">
+                {price}
+              </span>
+              <span className="text-sm text-slate-400">{cadence}</span>
+            </div>
+            {setup && (
+              <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-indigo-600">
+                + {setup} Setup
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      <ul className="mt-7 flex-1 space-y-3 text-sm text-slate-700">
+        {features.map(f => (
+          <li key={f} className="flex items-start gap-2">
+            <Check size={14} className="mt-0.5 shrink-0 text-indigo-600" />
+            {f}
+          </li>
+        ))}
+      </ul>
 
       <Link
         href="/login"
-        className={`mt-5 inline-flex w-full items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
-          highlight
-            ? "bg-indigo-600 text-white hover:bg-indigo-700"
-            : "border border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-        }`}
+        className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
       >
         {cta}
-        <ArrowRight size={14} />
       </Link>
+    </div>
+  );
+}
 
-      <ul className="mt-6 space-y-2.5 text-sm text-slate-600">
+function PricingCardDark({
+  name,
+  tagline,
+  price,
+  cadence,
+  setup,
+  cta,
+  features,
+}: {
+  name: string;
+  tagline: string;
+  price: string;
+  cadence: string;
+  setup: string;
+  cta: string;
+  features: Array<{ text: string; star?: boolean }>;
+}) {
+  return (
+    <div className="relative">
+      {/* Most Popular pill */}
+      <div className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2">
+        <span className="inline-flex items-center rounded-full border border-indigo-300/40 bg-indigo-600 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-lg shadow-indigo-900/40">
+          Most Popular
+        </span>
+      </div>
+
+      <div className="flex h-full flex-col rounded-2xl border border-indigo-400/30 bg-slate-950 p-7 text-white shadow-2xl shadow-indigo-900/30 ring-1 ring-indigo-500/40 lg:scale-[1.03]">
+        <div>
+          <h3 className="text-2xl font-bold">{name}</h3>
+          <p className="mt-1 text-sm text-indigo-200">{tagline}</p>
+        </div>
+
+        <div className="mt-6">
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-bold tracking-tight">{price}</span>
+            <span className="text-sm text-slate-400">{cadence}</span>
+          </div>
+          {setup && (
+            <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-indigo-300">
+              + {setup} Setup
+            </p>
+          )}
+        </div>
+
+        <div className="mt-5 border-t border-white/10" />
+
+        <ul className="mt-5 flex-1 space-y-3 text-sm text-slate-200">
+          {features.map(f => (
+            <li key={f.text} className="flex items-start gap-2">
+              {f.star ? (
+                <Star
+                  size={14}
+                  className="mt-0.5 shrink-0 fill-indigo-300 text-indigo-300"
+                />
+              ) : (
+                <Check size={14} className="mt-0.5 shrink-0 text-indigo-300" />
+              )}
+              <span className={f.star ? "font-semibold text-white" : ""}>
+                {f.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <Link
+          href="/login"
+          className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-900/40 transition hover:bg-indigo-500"
+        >
+          {cta}
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Add-ons                                                                     */
+/* -------------------------------------------------------------------------- */
+
+function Addons() {
+  return (
+    <section
+      className="relative overflow-hidden bg-slate-950 py-20 text-white md:py-28"
+      id="addons"
+    >
+      {/* Subtle grid backdrop for visual interest. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-30 [mask-image:linear-gradient(to_bottom,white,transparent)]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(99,102,241,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(99,102,241,0.12) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-6xl px-6 md:px-8">
+        <div className="grid items-end gap-8 md:grid-cols-3">
+          <div className="md:col-span-2">
+            <h2 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
+              Branding & Authority{" "}
+              <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                Add-ons
+              </span>
+            </h2>
+            <p className="mt-3 text-base italic text-slate-400">
+              Upgrade your presence with high-impact advertising and
+              email follow-ups.
+            </p>
+          </div>
+
+          {/* Email marketing — small accented card */}
+          <div className="rounded-2xl border-2 border-indigo-400/60 bg-slate-900/60 p-5 ring-1 ring-indigo-500/20">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-300">
+              Email Marketing
+            </p>
+            <p className="mt-2 text-2xl font-bold text-white">
+              ₹599 <span className="text-sm font-normal text-slate-400">/ 1000 clients</span>
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Includes feedback &amp; review follow-ups
+            </p>
+          </div>
+        </div>
+
+        {/* Ads tier */}
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          <AdCard label="Google Search Ads" price="₹5,999" extra="+ 5% of ad budget" />
+          <AdCard label="Meta (FB / Insta) Ads" price="₹5,999" extra="+ 5% of ad budget" />
+          <AdCard label="YouTube / Video Ads" price="₹9,999" extra="+ 5% of ad budget" />
+        </div>
+
+        {/* SMM tier */}
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <SmmCard
+            label="SMM Basic"
+            accent="from-blue-400 to-blue-600"
+            price="₹2,999"
+            cadence="/mo"
+            features={["2 channels", "2 posts / week / channel", "1 reel / week"]}
+          />
+          <SmmCard
+            label="SMM Intermediate"
+            accent="from-violet-400 to-fuchsia-500"
+            price="₹5,999"
+            cadence="/mo"
+            features={["4 channels", "2 posts / week / channel", "1 reel / week"]}
+          />
+          <SmmCard
+            label="SMM Advanced"
+            accent="from-amber-400 to-orange-500"
+            price="₹9,999"
+            cadence="/mo"
+            features={["5 channels", "4 posts / week / channel", "3 reels / week"]}
+          />
+        </div>
+
+        <p className="mt-12 text-center text-xs text-slate-500">
+          Add-ons stack on top of any system plan. Contact us to bundle —
+          larger combos get priority pricing.
+        </p>
+
+        <div className="mt-6 flex justify-center">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+          >
+            Talk to us about add-ons
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AdCard({
+  label,
+  price,
+  extra,
+}: {
+  label: string;
+  price: string;
+  extra: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-bold text-white">{price}</p>
+      <p className="mt-1 text-xs text-slate-400">{extra}</p>
+    </div>
+  );
+}
+
+function SmmCard({
+  label,
+  accent,
+  price,
+  cadence,
+  features,
+}: {
+  label: string;
+  accent: string;
+  price: string;
+  cadence: string;
+  features: string[];
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm">
+      {/* Top accent bar */}
+      <div
+        aria-hidden
+        className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${accent}`}
+      />
+      <h3 className="text-lg font-bold text-white">{label}</h3>
+      <div className="mt-2 flex items-baseline gap-1">
+        <span className="text-3xl font-bold text-white">{price}</span>
+        <span className="text-sm text-slate-400">{cadence}</span>
+      </div>
+      <ul className="mt-4 space-y-1.5 text-sm text-slate-300">
         {features.map(f => (
           <li key={f} className="flex items-start gap-2">
-            <CheckCircle2
-              size={14}
-              className={`mt-0.5 shrink-0 ${highlight ? "text-indigo-600" : "text-emerald-600"}`}
-            />
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-500" />
             {f}
           </li>
         ))}
@@ -855,8 +1111,16 @@ function Faq() {
       a: "Honestly, we're probably not the right fit yet. Most of the value is in lead recovery and reputation gating — both compound with volume. If you ramp up ad spend later, call us back.",
     },
     {
+      q: "What's the difference between Essential, Growth, and Power?",
+      a: "Essential covers the core clinic-automation stack — GMB optimization, WhatsApp lead warming, appointment booking. Growth adds marketing reach (Reddit/Quora replies, email marketing, free single-page website, SMS marketing setup) for clinics that want to scale aggressively. Power is a custom enterprise tier for multi-doctor / multi-branch setups with dedicated support and bespoke workflows.",
+    },
+    {
       q: "Can I cancel any time?",
-      a: "Yes on monthly. Annual prepaid is locked in for 12 months but transfers month-by-month into year two unless you say otherwise. Your data is always yours — we'll export it whenever you ask.",
+      a: "Yes — all monthly plans run month-to-month. The setup fee is one-time and non-refundable since it covers real onboarding work. Your data is always yours; we'll export it whenever you ask.",
+    },
+    {
+      q: "Are add-ons required?",
+      a: "No — every system plan stands on its own. Add-ons (ads management, SMM, email marketing) are optional and stack on top whenever you're ready. Larger combos get priority pricing — talk to us.",
     },
   ];
   return (
@@ -998,6 +1262,9 @@ function Footer() {
             </a>
             <a href="#pricing" className="hover:text-slate-900">
               Pricing
+            </a>
+            <a href="#addons" className="hover:text-slate-900">
+              Add-ons
             </a>
             <a href="#faq" className="hover:text-slate-900">
               FAQ
