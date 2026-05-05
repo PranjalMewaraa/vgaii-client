@@ -57,9 +57,53 @@ export type DataForSEOReviewItem = {
   review_id?: string;
 };
 
-// Reviews are only available via the async task endpoint. Call this to
-// kick off a fetch and store the returned ID in `Client.reviewsTaskId`,
-// then poll `getReviewsTaskResult` until it returns reviews.
+// Synchronous reviews fetcher. DataForSEO's `live/advanced` endpoint
+// runs the request inline and returns reviews in 5–30s typically. This
+// is what the UI calls; the task-based fallback below handles the rare
+// case where the live endpoint isn't enabled on the account.
+export const getReviewsLive = async (
+  placeId: string,
+  depth = 30,
+): Promise<DataForSEOReviewItem[]> => {
+  const res = await axios.post(
+    `${BASE_URL}/business_data/google/reviews/live/advanced`,
+    [
+      {
+        keyword: `place_id:${placeId}`,
+        location_code: 2840,
+        language_code: "en",
+        depth,
+        sort_by: "newest",
+      },
+    ],
+    {
+      auth,
+      // The live endpoint can take up to 30s. Override the default to
+      // give it room without hanging the request handler indefinitely.
+      timeout: 30_000,
+    },
+  );
+
+  const task = res.data?.tasks?.[0];
+  if (!task || (task.status_code && task.status_code >= 40000)) {
+    const code = task?.status_code ?? res.data?.status_code;
+    const message =
+      task?.status_message ??
+      res.data?.status_message ??
+      "DataForSEO live reviews failed";
+    console.error("[dataforseo] reviews/live/advanced failed", {
+      status_code: code,
+      status_message: message,
+    });
+    throw new Error(`DataForSEO ${code}: ${message}`);
+  }
+
+  return (task.result?.[0]?.items ?? []) as DataForSEOReviewItem[];
+};
+
+// Async fallback. Reviews via task_post + task_get. Use this if the live
+// endpoint isn't available on the account; otherwise prefer
+// `getReviewsLive` — simpler and synchronous.
 export const submitReviewsTask = async (
   placeId: string,
   depth = 30,

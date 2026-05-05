@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import {
   type DataForSEOReviewItem,
+  getReviewsLive,
   getReviewsTaskResult,
   submitReviewsTask,
 } from "@/lib/dataforseo";
@@ -61,10 +62,13 @@ export type RefreshOutcome =
   | { status: "pending"; taskId: string }
   | { status: "no-place-id" };
 
-// Refresh google reviews for a single client. Bounded polling: post a
-// task if none is in flight, then poll task_get for up to 25s. Returns
-// either the freshly cached reviews or a "still pending" state — the
-// caller (and the user) can hit refresh again to keep polling.
+// Refresh Google reviews for a single client. Strategy:
+//   1. Try DataForSEO's *live* endpoint — synchronous, returns in 5–30s.
+//      This is the happy path; covers ~95% of refreshes cleanly.
+//   2. If live fails (account doesn't have access, network blip, etc.),
+//      fall back to the task-based flow: submit a task, poll for ~45s,
+//      return pending if it's still working — the same task id persists
+//      in `Client.reviewsTaskId` and gets picked up on the next refresh.
 export const refreshClientReviews = async (
   clientId: string,
 ): Promise<RefreshOutcome> => {
@@ -79,7 +83,20 @@ export const refreshClientReviews = async (
   if (!client) throw new Error("Client not found");
   if (!client.googlePlaceId) return { status: "no-place-id" };
 
-  // Reuse an in-flight task ID if one was started recently.
+  // Step 1 — Live endpoint. Fast path.
+  try {
+    const items = await getReviewsLive(client.googlePlaceId);
+    return persistAndReturn(clientId, client.googleBusinessInfo, items);
+  } catch (err) {
+    console.warn(
+      "[google-reviews] live endpoint failed, falling back to task-based",
+      err,
+    );
+    // Fall through to task-based path.
+  }
+
+  // Step 2 — Task fallback. Reuse an existing in-flight task if one is
+  // around, otherwise submit a new one.
   let taskId = client.reviewsTaskId ?? null;
 
   const tryFetch = async (): Promise<
@@ -93,18 +110,15 @@ export const refreshClientReviews = async (
       if (r.ready) return { kind: "ready", items: r.items };
       return { kind: "pending" };
     } catch {
-      // Stale or invalid task id — drop it and start over below.
       return { kind: "stale" };
     }
   };
 
-  // Step 1: see if an in-flight task is already done.
   const initial = taskId ? await tryFetch() : { kind: "pending" as const };
   if (initial.kind === "ready") {
     return persistAndReturn(clientId, client.googleBusinessInfo, initial.items);
   }
 
-  // Stale or no task — submit a fresh one.
   if (initial.kind === "stale" || !taskId) {
     taskId = await submitReviewsTask(client.googlePlaceId);
     await prisma.client.update({
@@ -113,7 +127,6 @@ export const refreshClientReviews = async (
     });
   }
 
-  // Step 2: poll until ready or we hit the budget.
   const start = Date.now();
   while (Date.now() - start < POLL_TOTAL_MS) {
     await sleep(POLL_INTERVAL_MS);
