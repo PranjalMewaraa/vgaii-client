@@ -26,7 +26,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isTokenUsable(getStoredToken())) {
-      router.replace("/");
+      router.replace("/dashboard");
     }
   }, [router]);
 
@@ -58,7 +58,11 @@ export default function LoginPage() {
       }
 
       const params = new URLSearchParams(window.location.search);
-      router.replace(params.get("next") || "/");
+      const next = params.get("next");
+      // Send freshly logged-in users to the dashboard. If `?next=` was
+      // captured by AuthGuard from a deep link (anything not the marketing
+      // root), honour it.
+      router.replace(next && next !== "/" ? next : "/dashboard");
     } catch {
       setError("Unable to sign in right now");
     } finally {

@@ -26,7 +26,7 @@ type NavItem = {
 };
 
 const CLIENT_NAV: NavItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/leads", label: "Leads", icon: ClipboardList, module: "leads" },
   { href: "/patients", label: "Patients", icon: Stethoscope, module: "patients" },
   { href: "/appointments", label: "Appointments", icon: Calendar, module: "appointments" },
@@ -38,7 +38,7 @@ const CLIENT_NAV: NavItem[] = [
 ];
 
 const SUPER_ADMIN_NAV: NavItem[] = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/clients", label: "Clients", icon: Building2 },
 ];
 

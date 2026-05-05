@@ -176,7 +176,7 @@ function AdminClientsPageInner() {
     setError(null);
     try {
       await startImpersonation(userId);
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Impersonation failed");
       setBusyId(null);

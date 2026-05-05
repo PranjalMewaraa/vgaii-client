@@ -7,7 +7,7 @@ import { clearStoredAuth, useStoredUser } from "@/lib/client-auth";
 import GlobalSearch from "@/components/GlobalSearch";
 
 const PAGE_TITLES: Record<string, string> = {
-  "/": "Dashboard",
+  "/dashboard": "Dashboard",
   "/leads": "Leads",
   "/patients": "Patients",
   "/appointments": "Appointments",
