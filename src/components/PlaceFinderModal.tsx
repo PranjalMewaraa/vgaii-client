@@ -157,21 +157,29 @@ function ModalContents({
         });
 
         const handleSelect = async (event: Event) => {
-          const detail = (event as CustomEvent).detail as {
-            placePrediction?: {
-              toPlace: () => {
-                fetchFields: (opts: { fields: string[] }) => Promise<void>;
-                location?: { lat: () => number; lng: () => number };
-                viewport?: unknown;
-                displayName?: string;
-                formattedAddress?: string;
-                id?: string;
-              };
+          // The new PlaceAutocompleteElement attaches `placePrediction`
+          // directly to the event object (not under `event.detail` like
+          // the legacy web component). We check both shapes for safety
+          // across Google API versions.
+          type PlacePrediction = {
+            toPlace: () => {
+              fetchFields: (opts: { fields: string[] }) => Promise<void>;
+              location?: { lat: () => number; lng: () => number };
+              viewport?: unknown;
+              displayName?: string;
+              formattedAddress?: string;
+              id?: string;
             };
           };
-          if (!detail?.placePrediction) return;
+          const direct = (event as Event & {
+            placePrediction?: PlacePrediction;
+          }).placePrediction;
+          const fromDetail = (event as CustomEvent).detail
+            ?.placePrediction as PlacePrediction | undefined;
+          const placePrediction = direct ?? fromDetail;
+          if (!placePrediction) return;
 
-          const p = detail.placePrediction.toPlace();
+          const p = placePrediction.toPlace();
           await p.fetchFields({
             fields: ["displayName", "formattedAddress", "location", "id"],
           });
