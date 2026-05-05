@@ -7,6 +7,7 @@ import {
   Copy,
   ExternalLink,
   MapPin,
+  Search,
   X,
 } from "lucide-react";
 import { loadGoogleMaps } from "@/lib/google-maps";
@@ -28,8 +29,6 @@ export default function PlaceFinderModal({
 }: {
   open: boolean;
   onClose: () => void;
-  // Called when the user clicks "Use this Place ID". Receives the full
-  // selected place so callers can persist whatever fields they need.
   onPick: (place: SelectedPlace) => void;
 }) {
   // Only mount the modal contents when open. Closing unmounts, so internal
@@ -46,8 +45,8 @@ function ModalContents({
   onClose: () => void;
   onPick: (place: SelectedPlace) => void;
 }) {
-  const mapRef = useRef<HTMLElement | null>(null);
-  const autocompleteRef = useRef<HTMLElement | null>(null);
+  const mapDivRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [place, setPlace] = useState<SelectedPlace | null>(null);
   const missingKey = !API_KEY;
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -79,43 +78,27 @@ function ModalContents({
         const importLibrary = window.google?.maps?.importLibrary as (
           name: string,
         ) => Promise<unknown>;
-        // The places library has to be imported so the
-        // <gmp-place-autocomplete> custom element registers and starts
-        // emitting `gmp-select` events.
-        const [mapsLib, markerLib] = await Promise.all([
+        // Maps + Marker + Places. We use the legacy
+        // `places.Autocomplete` (attached to a plain <input>) instead of
+        // the newer <gmp-place-autocomplete> web component because the
+        // legacy version renders predictions in a body-level overlay,
+        // which means no clipping issues regardless of modal/overflow
+        // styling.
+        const [mapsLib, markerLib, placesLib] = await Promise.all([
           importLibrary("maps"),
           importLibrary("marker"),
           importLibrary("places"),
         ]);
 
-        const mapEl = mapRef.current as unknown as { innerMap: unknown } | null;
-        const placeAutocomplete =
-          autocompleteRef.current as unknown as HTMLElement | null;
-        if (!mapEl || !placeAutocomplete) return;
+        const mapDiv = mapDivRef.current;
+        const input = inputRef.current;
+        if (!mapDiv || !input) return;
 
-        const map = mapEl.innerMap as {
-          setOptions: (o: Record<string, unknown>) => void;
-          addListener: (e: string, cb: () => void) => void;
-          getBounds: () => unknown;
-          fitBounds: (b: unknown) => void;
-          setCenter: (loc: unknown) => void;
-          setZoom: (z: number) => void;
-        };
-        map.setOptions({
-          clickableIcons: false,
-          mapTypeControl: false,
-          streetViewControl: false,
-        });
-        map.addListener("bounds_changed", () => {
-          const b = map.getBounds();
-          if (b) {
-            (
-              placeAutocomplete as unknown as { locationBias: unknown }
-            ).locationBias = b;
-          }
-        });
-
-        const { InfoWindow } = mapsLib as {
+        const { Map: GMap, InfoWindow } = mapsLib as {
+          Map: new (
+            el: HTMLElement,
+            opts: Record<string, unknown>,
+          ) => GoogleMap;
           InfoWindow: new () => {
             close: () => void;
             open: (m: unknown, mk: unknown) => void;
@@ -127,6 +110,35 @@ function ModalContents({
             addEventListener: (e: string, cb: () => void) => void;
           };
         };
+        const { Autocomplete } = placesLib as {
+          Autocomplete: new (
+            input: HTMLInputElement,
+            opts: Record<string, unknown>,
+          ) => GoogleAutocomplete;
+        };
+
+        // Center on India by default; the bounds bias narrows results to
+        // wherever the map is currently looking, which the user adjusts by
+        // panning/zooming.
+        const map = new GMap(mapDiv, {
+          center: { lat: 20.5937, lng: 78.9629 },
+          zoom: 5,
+          mapId: "DEMO_MAP_ID",
+          clickableIcons: false,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        });
+
+        const ac = new Autocomplete(input, {
+          fields: [
+            "place_id",
+            "name",
+            "formatted_address",
+            "geometry",
+          ],
+        });
+        ac.bindTo("bounds", map);
 
         const infoWindow = new InfoWindow();
         const marker = new AdvancedMarkerElement({
@@ -137,46 +149,31 @@ function ModalContents({
           infoWindow.open(map, marker);
         });
 
-        const onSelect = async (event: Event) => {
-          const detail = (event as CustomEvent).detail as {
-            placePrediction: {
-              toPlace: () => {
-                fetchFields: (opts: { fields: string[] }) => Promise<void>;
-                location?: { lat: () => number; lng: () => number };
-                viewport?: unknown;
-                displayName?: string;
-                formattedAddress?: string;
-                id?: string;
-              };
-            };
-          };
-          if (!detail?.placePrediction) return;
+        const handlePlaceChanged = () => {
+          const p = ac.getPlace();
+          if (!p?.geometry?.location) return;
 
-          const p = detail.placePrediction.toPlace();
-          await p.fetchFields({
-            fields: ["displayName", "formattedAddress", "location", "id"],
-          });
-          if (!p.location) return;
-
-          if (p.viewport) map.fitBounds(p.viewport);
-          else {
-            map.setCenter(p.location);
+          if (p.geometry.viewport) {
+            map.fitBounds(p.geometry.viewport);
+          } else {
+            map.setCenter(p.geometry.location);
             map.setZoom(17);
           }
 
-          marker.position = p.location;
+          marker.position = p.geometry.location;
           setPlace({
-            id: p.id ?? "",
-            displayName: p.displayName ?? "",
-            formattedAddress: p.formattedAddress ?? "",
-            lat: p.location.lat(),
-            lng: p.location.lng(),
+            id: p.place_id ?? "",
+            displayName: p.name ?? "",
+            formattedAddress: p.formatted_address ?? "",
+            lat: p.geometry.location.lat(),
+            lng: p.geometry.location.lng(),
           });
         };
 
-        placeAutocomplete.addEventListener("gmp-select", onSelect);
-        cleanup = () =>
-          placeAutocomplete.removeEventListener("gmp-select", onSelect);
+        const listener = ac.addListener("place_changed", handlePlaceChanged);
+        cleanup = () => {
+          listener.remove();
+        };
 
         setLoading(false);
       } catch (e: unknown) {
@@ -270,37 +267,38 @@ function ModalContents({
             </div>
           )}
 
+          {/*
+            Plain <input> with the legacy places.Autocomplete attached.
+            Predictions are appended to <body> by Google's API, so they
+            never get clipped by modal overflow.
+          */}
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <Search size={14} />
+            </span>
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder={
+                loading
+                  ? "Loading map…"
+                  : "Start typing a business name (e.g. “Aarogya Dental”)"
+              }
+              disabled={loading || !!error}
+              className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-50"
+            />
+            <p className="mt-1 text-[11px] text-slate-500">
+              Pick a result from the dropdown — the map below will jump
+              to it and the Place ID appears above.
+            </p>
+          </div>
+
           <div className="rounded-xl border border-slate-200 bg-white p-1">
-            {loading && !error && (
-              <p className="px-3 py-2 text-xs text-slate-500">Loading map…</p>
-            )}
             <div
-              className="relative w-full overflow-hidden rounded-lg"
-              style={{ height: "50vh", minHeight: 360 }}
-            >
-              <gmp-map
-                ref={mapRef as unknown as React.Ref<HTMLElement>}
-                center="20.5937,78.9629"
-                zoom={5}
-                map-id="DEMO_MAP_ID"
-                style={{ width: "100%", height: "100%" }}
-              >
-                <gmp-place-autocomplete
-                  ref={autocompleteRef as unknown as React.Ref<HTMLElement>}
-                  slot="control-inline-start-block-start"
-                  style={{
-                    position: "absolute",
-                    top: 10,
-                    left: 10,
-                    width: "min(440px, calc(100% - 20px))",
-                    height: 36,
-                    borderRadius: 10,
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-                    colorScheme: "light",
-                  }}
-                />
-              </gmp-map>
-            </div>
+              ref={mapDivRef}
+              className="w-full overflow-hidden rounded-lg"
+              style={{ height: "45vh", minHeight: 320 }}
+            />
           </div>
         </div>
 
@@ -348,6 +346,33 @@ function ModalContents({
     </div>
   );
 }
+
+// Minimal type aliases for the bits of the legacy Maps JS API we touch.
+// We don't pull in @types/google.maps to keep the bundle slim — these
+// shapes are stable across Maps JS versions.
+type GoogleLatLng = { lat: () => number; lng: () => number };
+type GoogleViewport = unknown;
+type GoogleMap = {
+  setOptions: (o: Record<string, unknown>) => void;
+  setCenter: (loc: GoogleLatLng) => void;
+  setZoom: (z: number) => void;
+  fitBounds: (b: GoogleViewport) => void;
+  addListener: (e: string, cb: () => void) => { remove: () => void };
+  getBounds: () => unknown;
+};
+type GoogleAutocomplete = {
+  bindTo: (key: string, target: GoogleMap) => void;
+  addListener: (e: string, cb: () => void) => { remove: () => void };
+  getPlace: () => {
+    place_id?: string;
+    name?: string;
+    formatted_address?: string;
+    geometry?: {
+      location?: GoogleLatLng;
+      viewport?: GoogleViewport;
+    };
+  };
+};
 
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
