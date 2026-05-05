@@ -3,12 +3,11 @@ import { refreshClientReviews } from "@/lib/google-reviews";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
-// 60s upper bound: helper polls for ~45s, plus we want headroom for
-// outbound DataForSEO calls. Hobby tier has a hard 60s ceiling; Pro can
-// go higher but 60 is plenty for this. If the request itself times out,
-// the task is still queued at DataForSEO and will be picked up on the
-// next refresh — the in-flight taskId persists in `Client.reviewsTaskId`.
-export const maxDuration = 60;
+// 15s is plenty: refreshClientReviews now returns immediately after one
+// of (a) opportunistically checking an in-flight task, or (b) submitting
+// a new task. No more long server-held polling — the client polls the
+// read endpoint, which lazy-advances the task on every GET.
+export const maxDuration = 15;
 
 export async function POST(req: Request) {
   try {

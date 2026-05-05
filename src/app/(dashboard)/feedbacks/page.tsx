@@ -292,9 +292,47 @@ function GoogleReviews() {
     load();
   }, []);
 
-  // One refresh attempt. Returns whether reviews came back ready so the
-  // outer wrapper can decide whether to retry once.
-  const attemptRefresh = async (): Promise<"ready" | "pending" | "error"> => {
+  // While a fetch is in flight at DataForSEO, poll the read endpoint
+  // every 15s so the UI fills in as soon as the task completes — no
+  // user action required. Each GET lazy-advances the in-flight task
+  // server-side, so the polling does double duty. Stop polling once
+  // pending clears or after 10 minutes (typical task max is ~3min).
+  useEffect(() => {
+    if (!data?.pending) return;
+    let cancelled = false;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 40; // 40 × 15s = 10 minutes
+    const id = setInterval(() => {
+      if (cancelled) return;
+      attempts += 1;
+      if (attempts >= MAX_ATTEMPTS) {
+        clearInterval(id);
+        return;
+      }
+      fetch("/api/google-reviews", { headers: authHeaders() })
+        .then(r => r.json())
+        .then((d: GoogleReviewsResponse) => {
+          if (cancelled) return;
+          setData(d);
+          if (!d.pending) clearInterval(id);
+        })
+        .catch(() => {});
+    }, 15_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [data?.pending]);
+
+  // Refresh kicks off (or checks on) a DataForSEO task and returns
+  // immediately. The auto-poll effect above takes over from there —
+  // each subsequent GET lazy-advances the same task server-side, so the
+  // reviews fill in as soon as the batch completes (typically 30s–3min)
+  // without any further user action.
+  const refresh = async () => {
+    setRefreshing(true);
+    setRefreshError(null);
+    setRefreshNote(null);
     try {
       const res = await fetch("/api/google-reviews/refresh", {
         method: "POST",
@@ -305,42 +343,23 @@ function GoogleReviews() {
         setRefreshError(
           typeof body.error === "string" ? body.error : "Refresh failed",
         );
-        return "error";
+        return;
       }
       if (body.status === "ready") {
         setRefreshNote(`Synced ${body.reviews?.length ?? 0} reviews.`);
         await load();
-        return "ready";
+      } else if (body.status === "pending") {
+        setRefreshNote(
+          "Fetching reviews from Google. This usually takes 30s–3min — the page will update automatically when they arrive.",
+        );
+        // Reflect pending so the auto-poll effect kicks in.
+        setData(d => (d ? { ...d, pending: true } : { ...d!, pending: true }));
       }
-      // pending — reflect it without re-fetching the list.
-      setData(d => (d ? { ...d, pending: true } : d));
-      return "pending";
     } catch {
       setRefreshError("Network error");
-      return "error";
+    } finally {
+      setRefreshing(false);
     }
-  };
-
-  // Two-attempt refresh: most tasks finish inside the first 45s budget,
-  // but slow batches cross over to a second cycle. Auto-retrying once
-  // saves the user a second click and the corresponding "still
-  // preparing" message — they only see it after ~90s total.
-  const refresh = async () => {
-    setRefreshing(true);
-    setRefreshError(null);
-    setRefreshNote(null);
-    setRefreshNote("Pulling reviews from Google — this can take 30–60s.");
-    const first = await attemptRefresh();
-    if (first === "pending") {
-      setRefreshNote("Still preparing — sticking around for one more pass…");
-      const second = await attemptRefresh();
-      if (second === "pending") {
-        setRefreshNote(
-          "DataForSEO is still preparing the review batch. Tap Refresh again in a minute — the in-flight job is preserved, so progress isn't wasted.",
-        );
-      }
-    }
-    setRefreshing(false);
   };
 
   if (loading || !data) {
@@ -427,9 +446,10 @@ function GoogleReviews() {
         </p>
       )}
       {data.pending && !refreshing && (
-        <p className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
-          A previous refresh is still preparing in the background. Tap
-          Refresh again to check on it.
+        <p className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
+          <RefreshCw size={12} className="animate-spin" />
+          Fetching reviews from Google in the background. This page is
+          checking every 15s — reviews will appear automatically.
         </p>
       )}
 
