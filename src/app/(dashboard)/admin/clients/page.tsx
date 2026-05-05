@@ -781,6 +781,7 @@ function ClientWebhooksBlock({
   const leadUrl = `${origin}/api/webhooks/leads`;
   const leadStatusUrl = `${origin}/api/webhooks/leads/status`;
   const bookingUrl = `${origin}/api/webhooks/booking`;
+  const feedbackUrl = `${origin}/api/webhooks/feedback`;
 
   const rotate = async () => {
     if (
@@ -867,6 +868,14 @@ function ClientWebhooksBlock({
               webhookKey={client.webhookKey}
               defaultMode="query"
               schema={CAL_BOOKING_SCHEMA}
+            />
+            <WebhookRow
+              method="POST"
+              label="Feedback capture"
+              hint="External survey tools / SMS providers POST patient feedback here."
+              url={feedbackUrl}
+              webhookKey={client.webhookKey}
+              schema={FEEDBACK_SCHEMA}
             />
           </>
         ) : (
@@ -1415,6 +1424,30 @@ const LEAD_STATUS_SCHEMA: WebhookSchema = {
 }`,
   responseStatus: "200 OK",
   notes: "404 if no lead matches this phone for the client. The webhook key scopes the lookup, so phones don't need to be globally unique.",
+};
+
+const FEEDBACK_SCHEMA: WebhookSchema = {
+  fields: [
+    { name: "phone", type: "string", required: true, description: "Patient's phone. If a Lead with this phone exists in this client, the feedback links to it and the lead's outcomeRating + status are updated." },
+    { name: "rating", type: "number (1–5)", required: true, description: "Star rating. Unlike the public-token flow, all values 1–5 are accepted here." },
+    { name: "reviewText", type: "string", required: false, description: "What the patient wrote. Up to 2000 chars." },
+    { name: "remark", type: "string", required: false, description: "Internal note from the operator who collected the feedback. Never shown publicly." },
+    { name: "name", type: "string", required: false, description: "Used only when no Lead matches the phone — gives the standalone feedback row a name." },
+  ],
+  exampleRequest: `{
+  "phone": "+91 98765 43210",
+  "rating": 4,
+  "reviewText": "Doctor was patient and explained things well.",
+  "remark": "Collected via post-visit SMS survey"
+}`,
+  exampleResponse: `{
+  "feedbackId": "cmox5xyz1234567890",
+  "leadId": "cmox4abc1234567890",
+  "leadMatched": true,
+  "status": "open"
+}`,
+  responseStatus: "201 Created",
+  notes: "leadMatched: true means the phone matched a Lead within this client, so the feedback is linked and the lead's status flipped to visited. leadMatched: false stores it standalone — still queryable from the Feedbacks tab.",
 };
 
 const CAL_BOOKING_SCHEMA: WebhookSchema = {

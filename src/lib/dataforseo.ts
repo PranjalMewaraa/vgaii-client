@@ -101,9 +101,18 @@ export type ReviewsTaskState =
   | { ready: false }
   | { ready: true; items: DataForSEOReviewItem[] };
 
+// DataForSEO status codes that mean "still working" — the task exists,
+// just hasn't finished. Treating these as errors caused refreshes to
+// discard in-flight tasks and submit new ones each click, so progress
+// never accumulated.
+const IN_PROGRESS_STATUS_CODES = new Set([
+  40100, // task created
+  40601, // task handed
+  40602, // task in queue
+]);
+
 // Returns the task's results if ready, or `{ ready: false }` if it's
-// still in progress / the result endpoint says no result yet. Caller is
-// expected to retry on its own cadence.
+// still in progress. Caller polls on its own cadence.
 export const getReviewsTaskResult = async (
   taskId: string,
 ): Promise<ReviewsTaskState> => {
@@ -113,22 +122,25 @@ export const getReviewsTaskResult = async (
   );
 
   const task = res.data?.tasks?.[0];
-  // task_in_queue / task_handed status_code === 40602 etc — anything below
-  // 20000 means "still working".
   if (!task) return { ready: false };
 
+  if (task.status_code && IN_PROGRESS_STATUS_CODES.has(task.status_code)) {
+    return { ready: false };
+  }
   if (task.status_code && task.status_code >= 40000) {
-    // Stale or invalid task id — surface it; caller will start a fresh
-    // task on the next refresh.
+    // Real error (auth issue, invalid id, expired task, etc). Surface
+    // it so the caller can drop the stale id and start fresh.
     throw new Error(
       `DataForSEO ${task.status_code}: ${task.status_message ?? "task_get failed"}`,
     );
   }
 
-  // status_code 20000 means "ok" but result may still be empty until the
-  // task actually completes.
-  const items: DataForSEOReviewItem[] = task.result?.[0]?.items ?? [];
-  if (!items.length) return { ready: false };
+  // status_code 20000 = ok. `result === null` means the task is still
+  // working even when the API didn't return an in-progress code.
+  // `items === []` is a *valid* completed state (business has no reviews
+  // yet) — we still return ready: true so the caller stops polling.
+  if (task.result == null) return { ready: false };
 
+  const items: DataForSEOReviewItem[] = task.result?.[0]?.items ?? [];
   return { ready: true, items };
 };

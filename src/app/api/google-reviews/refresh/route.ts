@@ -3,12 +3,12 @@ import { refreshClientReviews } from "@/lib/google-reviews";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
-// 30s upper bound: helper polls for ~25s, plus we want headroom for
-// outbound DataForSEO calls. Vercel's default function timeout is 10s on
-// Hobby; on Pro the dashboard can be configured higher. If the request
-// itself times out, the task is still queued at DataForSEO and will be
-// picked up on the next refresh.
-export const maxDuration = 30;
+// 60s upper bound: helper polls for ~45s, plus we want headroom for
+// outbound DataForSEO calls. Hobby tier has a hard 60s ceiling; Pro can
+// go higher but 60 is plenty for this. If the request itself times out,
+// the task is still queued at DataForSEO and will be picked up on the
+// next refresh — the in-flight taskId persists in `Client.reviewsTaskId`.
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {

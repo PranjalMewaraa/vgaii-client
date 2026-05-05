@@ -43,7 +43,12 @@ const mapReview = (
   ownerAnswer: item.owner_answer,
 });
 
-const POLL_TOTAL_MS = 25_000;
+// Poll budget for one refresh cycle. DataForSEO Google reviews tasks
+// usually finish in 10–60s; we cap our server-held connection at 45s so
+// a single click resolves most of the time without hitting Vercel's
+// function timeout. The taskId persists between refreshes either way,
+// so a slow batch is just one more click.
+const POLL_TOTAL_MS = 45_000;
 const POLL_INTERVAL_MS = 3_000;
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 

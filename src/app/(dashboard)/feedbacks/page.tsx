@@ -292,10 +292,9 @@ function GoogleReviews() {
     load();
   }, []);
 
-  const refresh = async () => {
-    setRefreshing(true);
-    setRefreshError(null);
-    setRefreshNote(null);
+  // One refresh attempt. Returns whether reviews came back ready so the
+  // outer wrapper can decide whether to retry once.
+  const attemptRefresh = async (): Promise<"ready" | "pending" | "error"> => {
     try {
       const res = await fetch("/api/google-reviews/refresh", {
         method: "POST",
@@ -306,23 +305,42 @@ function GoogleReviews() {
         setRefreshError(
           typeof body.error === "string" ? body.error : "Refresh failed",
         );
-        return;
+        return "error";
       }
       if (body.status === "ready") {
         setRefreshNote(`Synced ${body.reviews?.length ?? 0} reviews.`);
         await load();
-      } else if (body.status === "pending") {
-        setRefreshNote(
-          "DataForSEO is still preparing the review batch. Tap Refresh again in a minute.",
-        );
-        // Reflect the pending flag without re-fetching the list.
-        setData(d => (d ? { ...d, pending: true } : d));
+        return "ready";
       }
+      // pending — reflect it without re-fetching the list.
+      setData(d => (d ? { ...d, pending: true } : d));
+      return "pending";
     } catch {
       setRefreshError("Network error");
-    } finally {
-      setRefreshing(false);
+      return "error";
     }
+  };
+
+  // Two-attempt refresh: most tasks finish inside the first 45s budget,
+  // but slow batches cross over to a second cycle. Auto-retrying once
+  // saves the user a second click and the corresponding "still
+  // preparing" message — they only see it after ~90s total.
+  const refresh = async () => {
+    setRefreshing(true);
+    setRefreshError(null);
+    setRefreshNote(null);
+    setRefreshNote("Pulling reviews from Google — this can take 30–60s.");
+    const first = await attemptRefresh();
+    if (first === "pending") {
+      setRefreshNote("Still preparing — sticking around for one more pass…");
+      const second = await attemptRefresh();
+      if (second === "pending") {
+        setRefreshNote(
+          "DataForSEO is still preparing the review batch. Tap Refresh again in a minute — the in-flight job is preserved, so progress isn't wasted.",
+        );
+      }
+    }
+    setRefreshing(false);
   };
 
   if (loading || !data) {
