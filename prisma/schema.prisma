@@ -92,6 +92,7 @@ model Client {
   name               String
   subscriptionStatus SubscriptionStatus @default(trial)
   renewalDate        DateTime?
+  subscriptionKey     String?            @db.VarChar(500)
   googlePlaceId      String?
   bookingUrl         String?            @db.Text
   profileSlug        String?            @unique

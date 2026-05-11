@@ -50,6 +50,7 @@ export async function POST(req: Request) {
           plan: parsed.data.plan ?? "basic",
           googlePlaceId: parsed.data.googlePlaceId?.trim() || null,
           bookingUrl: parsed.data.bookingUrl?.trim() || null,
+          subscriptionKey: parsed.data.subscriptionKey?.trim() || null,
           webhookKey: randomBytes(16).toString("hex"),
         },
       });
@@ -117,6 +118,7 @@ export async function GET(req: Request) {
         customDomain: true,
         googlePlaceId: true,
         bookingUrl: true,
+        subscriptionKey: true,
         webhookKey: true,
         createdAt: true,
       },
@@ -200,6 +202,7 @@ export async function GET(req: Request) {
         customDomain: c.customDomain,
         googlePlaceId: c.googlePlaceId,
         bookingUrl: c.bookingUrl,
+        subscriptionKey: c.subscriptionKey,
         webhookKey: c.webhookKey,
         createdAt: c.createdAt,
         admin: admin ? remap(admin) : null,

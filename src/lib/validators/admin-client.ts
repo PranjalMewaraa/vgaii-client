@@ -14,6 +14,7 @@ export const createClientSchema = z.object({
   // write access.
   googlePlaceId: z.string().trim().max(500).optional(),
   bookingUrl: z.string().trim().max(500).optional(),
+  subscriptionKey: z.string().trim().max(500).optional(),
   admin: z.object({
     name: z.string().trim().min(2).max(80),
     email: z.string().trim().email().toLowerCase(),

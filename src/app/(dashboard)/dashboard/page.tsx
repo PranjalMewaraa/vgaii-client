@@ -20,6 +20,8 @@ type DashboardData = {
   internalFeedback: InternalFeedbackSummary;
   subscription?: string;
   renewalDate?: string | null;
+  subscriptionSource?: "external" | "local";
+  subscriptionError?: string;
   businessInfo: BusinessInfo | null;
 };
 
@@ -77,6 +79,8 @@ export default function Dashboard() {
       <SubscriptionCard
         status={data.subscription}
         renewalDate={data.renewalDate}
+        source={data.subscriptionSource}
+        error={data.subscriptionError}
       />
 
       {user?.role === "CLIENT_ADMIN" && <ReportsPanel />}

@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import {
   ArrowRight,
   BarChart3,
-  Bot,
   Building2,
   Calendar,
   Check,
@@ -15,25 +14,30 @@ import {
   MessageSquare,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
   Star,
   TrendingUp,
   Users,
-  Workflow,
   Zap,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "VGAII — AI-driven patient acquisition for ad-running clinics",
+  title: "ClinicEssential - WhatsApp-first clinic growth automation",
   description:
-    "VGAII captures every Google/Meta ad lead, keeps it in the loop with AI automations, and gates post-visit feedback so bad reviews never reach Google. Built for multi-doctor clinics in India.",
+    "ClinicEssential helps clinics automate patient follow-ups, bookings, appointment reminders, and Google review collection through one WhatsApp-first system.",
   openGraph: {
-    title: "VGAII — Your patients, captured.",
+    title: "ClinicEssential - automate follow-ups, bookings & Google reviews",
     description:
-      "AI keeps every lead in the loop. Bad reviews stay internal. Built for ad-running clinics in India.",
+      "A practical growth system for Indian clinics that want faster lead response, cleaner bookings, and better Google reviews.",
     type: "website",
   },
 };
+
+const DEMO_HREF = "/login";
+const WHATSAPP_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919876543210";
+const WHATSAPP_HREF = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  "Hi, I want to book a free ClinicEssential demo.",
+)}`;
 
 export default function LandingPage() {
   return (
@@ -42,14 +46,21 @@ export default function LandingPage() {
       <Hero />
       <SocialProofBar />
       <TwoStories />
+      <BeforeAfter />
       <HowItWorks />
+      <AutomationPreview />
       <Features />
+      <ProductScreenshots />
+      <WhoThisIsFor />
       <Roi />
+      <Onboarding />
       <Pricing />
       <Addons />
+      <Comparison />
       <Faq />
       <FinalCta />
       <Footer />
+      <FloatingWhatsAppCta />
     </main>
   );
 }
@@ -64,10 +75,10 @@ function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5 md:px-8">
         <Link href="/" className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-            V
+            C
           </span>
           <span className="text-sm font-bold tracking-wide text-slate-900">
-            VGAII
+            ClinicEssential
           </span>
         </Link>
         <nav className="hidden items-center gap-7 text-sm text-slate-600 md:flex">
@@ -92,16 +103,16 @@ function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           <Link
-            href="/login"
+            href={DEMO_HREF}
             className="hidden rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 sm:inline-flex"
           >
             Sign in
           </Link>
           <Link
-            href="/login"
+            href={DEMO_HREF}
             className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
           >
-            Get started
+            Book Free Demo
             <ArrowRight size={14} />
           </Link>
         </div>
@@ -122,46 +133,24 @@ function Hero() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-indigo-700">
-              <Sparkles size={12} />
-              For ad-running clinics in India
+              <MessageSquare size={12} />
+              WhatsApp-first system for Indian clinics
             </span>
             <h1 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-slate-900 md:text-5xl lg:text-6xl">
-              Your patients,{" "}
-              <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-                captured.
-              </span>
+              Automate follow-ups, bookings & Google reviews for your clinic.
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-600 md:text-lg">
-              VGAII captures every Google/Meta ad lead, runs AI automations
-              behind the scenes that keep each one in the loop, and gates
-              post-visit feedback so{" "}
-              <span className="font-semibold text-slate-900">
-                no bad review goes directly to Google
-              </span>
-              .
+              ClinicEssential helps clinics automate patient follow-ups,
+              appointment reminders, and review collection - all from one
+              WhatsApp-first system.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-              >
-                Get started
-                <ArrowRight size={14} />
-              </Link>
-              <a
-                href="#how"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                See how it works
-              </a>
+              <PrimaryCta />
+              <WhatsAppCta />
             </div>
 
-            <ul className="mt-7 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-600 sm:grid-cols-3">
-              <HeroBullet>Live in 5 days</HeroBullet>
-              <HeroBullet>Setup included</HeroBullet>
-              <HeroBullet>Cancel anytime</HeroBullet>
-            </ul>
+            <TrustStrip />
           </div>
 
           <div className="relative">
@@ -173,12 +162,66 @@ function Hero() {
   );
 }
 
-function HeroBullet({ children }: { children: React.ReactNode }) {
+function PrimaryCta({
+  className = "",
+  inverted = false,
+}: {
+  className?: string;
+  inverted?: boolean;
+}) {
   return (
-    <li className="inline-flex items-center gap-1.5">
-      <Check size={14} className="text-emerald-600" />
+    <Link
+      href={DEMO_HREF}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-5 py-3 text-sm font-semibold shadow-sm transition ${
+        inverted
+          ? "bg-white text-indigo-700 hover:bg-indigo-50"
+          : "bg-indigo-600 text-white hover:bg-indigo-700"
+      } ${className}`}
+    >
+      Book Free Demo
+      <ArrowRight size={14} />
+    </Link>
+  );
+}
+
+function WhatsAppCta({ className = "" }: { className?: string }) {
+  return (
+    <a
+      href={WHATSAPP_HREF}
+      target="_blank"
+      rel="noreferrer"
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 ${className}`}
+    >
+      <MessageSquare size={14} />
+      Talk on WhatsApp
+    </a>
+  );
+}
+
+function TrustStrip() {
+  return (
+    <div className="mt-7 flex flex-wrap items-center gap-2">
+      <TrustBadge icon={MessageSquare}>WhatsApp-first</TrustBadge>
+      <TrustBadge icon={Star}>Google Reviews</TrustBadge>
+      <TrustBadge icon={Building2}>Used by clinics in India</TrustBadge>
+      <TrustBadge icon={Calendar}>Setup in 7 days</TrustBadge>
+      <TrustBadge icon={CheckCircle2}>No app required</TrustBadge>
+    </div>
+  );
+}
+
+function TrustBadge({
+  icon: Icon,
+  children,
+}: {
+  icon: LucideIcon;
+  children: React.ReactNode;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
+      <Icon size={13} className="text-indigo-600" />
       {children}
-    </li>
+    </span>
   );
 }
 
@@ -198,97 +241,147 @@ function BackgroundGrid() {
 }
 
 function HeroProductMock() {
-  // Stylised product preview — built in plain Tailwind so we don't need a
-  // screenshot asset shipped. Once we have polished captures, swap this for
-  // real screenshots in <Image>.
   return (
     <div className="relative">
-      <div className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-indigo-200/40 via-violet-200/30 to-emerald-200/30 blur-2xl" />
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-indigo-900/10">
+      <div className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-indigo-200/40 via-emerald-100/40 to-amber-100/40 blur-2xl" />
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-indigo-900/10">
         <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-          <span className="ml-3 text-[11px] text-slate-400">vgaii.in/dashboard</span>
+          <span className="ml-3 text-[11px] text-slate-400">
+            clinicessential.in/dashboard
+          </span>
         </div>
 
-        <div className="grid gap-4 p-5 md:grid-cols-2">
-          <MockTile
-            title="New leads (today)"
-            value="42"
-            delta="+18 vs yesterday"
-            tone="indigo"
-            icon={ClipboardList}
-          />
-          <MockTile
-            title="Booked appts"
-            value="29"
-            delta="+9 this week"
-            tone="emerald"
-            icon={Calendar}
-          />
-
-          <div className="md:col-span-2 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                <Star size={11} className="fill-amber-400 text-amber-400" />
-                Reputation
-              </p>
-              <span className="text-[10px] uppercase tracking-wider text-slate-400">
-                Last 30 days
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="border-b border-slate-100 p-5 lg:border-b-0 lg:border-r">
+            <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-slate-400">
-                  Google rating
+                <p className="text-sm font-semibold text-slate-900">
+                  Aarogya Dental - Today
                 </p>
-                <p className="mt-1 inline-flex items-center gap-1 text-2xl font-bold text-slate-900">
-                  4.8
-                  <Star size={16} className="fill-amber-400 text-amber-400" />
+                <p className="text-xs text-slate-500">
+                  Leads, appointments, reviews
                 </p>
-                <p className="text-[11px] text-emerald-700">+ 23 new reviews</p>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-slate-400">
-                  Caught privately
-                </p>
-                <p className="mt-1 text-2xl font-bold text-slate-900">7</p>
-                <p className="text-[11px] text-slate-500">1–2 ★ never went public</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="md:col-span-2 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white">
-                <Bot size={14} />
-              </span>
-              <p className="text-sm font-semibold text-slate-900">
-                AI lead loop
-              </p>
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
                 Live
               </span>
             </div>
-            <ul className="space-y-1.5 text-xs text-slate-600">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 size={12} className="text-emerald-600" />
-                Auto-acknowledged 14 leads in last hour
-              </li>
-              <li className="flex items-center gap-2">
-                <RefreshCw size={12} className="text-indigo-600" />
-                Re-engaging 3 cold leads (day 7)
-              </li>
-              <li className="flex items-center gap-2">
-                <Workflow size={12} className="text-indigo-600" />
-                2 hot leads routed to Riya at front desk
-              </li>
-            </ul>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <MockTile
+                title="New leads"
+                value="42"
+                delta="14 auto-replied"
+                tone="indigo"
+                icon={ClipboardList}
+              />
+              <MockTile
+                title="Booked"
+                value="29"
+                delta="+9 this week"
+                tone="emerald"
+                icon={Calendar}
+              />
+              <MockTile
+                title="Reviews"
+                value="4.8"
+                delta="+23 this month"
+                tone="amber"
+                icon={Star}
+              />
+            </div>
+
+            <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Patient pipeline
+                </p>
+                <p className="text-[11px] text-slate-400">Last 24 hours</p>
+              </div>
+              <div className="mt-4 space-y-3">
+                {[
+                  ["Priya S.", "Dental implant inquiry", "Auto reply sent"],
+                  ["Manish R.", "Booked for 6:30 PM", "Reminder queued"],
+                  ["Neha K.", "Post-visit feedback", "Google review link sent"],
+                ].map(([name, need, status]) => (
+                  <div
+                    key={name}
+                    className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg bg-white px-3 py-2.5 text-xs"
+                  >
+                    <div>
+                      <p className="font-semibold text-slate-900">{name}</p>
+                      <p className="text-slate-500">{need}</p>
+                    </div>
+                    <span className="rounded-full bg-indigo-50 px-2 py-1 font-semibold text-indigo-700">
+                      {status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
+
+          <WhatsAppPreviewCard />
         </div>
       </div>
+    </div>
+  );
+}
+
+function WhatsAppPreviewCard() {
+  return (
+    <div className="bg-emerald-50/70 p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white">
+            <MessageSquare size={15} />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-slate-900">WhatsApp flow</p>
+            <p className="text-[11px] text-slate-500">No app required</p>
+          </div>
+        </div>
+        <span className="text-[11px] font-semibold text-emerald-700">
+          Online
+        </span>
+      </div>
+      <div className="space-y-2.5 rounded-2xl border border-emerald-100 bg-white p-3">
+        <ChatBubble side="left">Hi, I want to know implant cost.</ChatBubble>
+        <ChatBubble side="right">
+          Thanks, Priya. Our clinic will call you shortly. You can also book a
+          slot here: clinic.link/book
+        </ChatBubble>
+        <ChatBubble side="right">
+          Reminder: your appointment is today at 6:30 PM.
+        </ChatBubble>
+        <ChatBubble side="right">
+          Hope your visit went well. Please share feedback: clinic.link/review
+        </ChatBubble>
+      </div>
+    </div>
+  );
+}
+
+function ChatBubble({
+  children,
+  side,
+}: {
+  children: React.ReactNode;
+  side: "left" | "right";
+}) {
+  return (
+    <div className={`flex ${side === "right" ? "justify-end" : "justify-start"}`}>
+      <p
+        className={`max-w-[86%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+          side === "right"
+            ? "rounded-br-md bg-emerald-600 text-white"
+            : "rounded-bl-md bg-slate-100 text-slate-700"
+        }`}
+      >
+        {children}
+      </p>
     </div>
   );
 }
@@ -303,12 +396,13 @@ function MockTile({
   title: string;
   value: string;
   delta: string;
-  tone: "indigo" | "emerald";
+  tone: "indigo" | "emerald" | "amber";
   icon: LucideIcon;
 }) {
   const map = {
     indigo: "bg-indigo-50 text-indigo-600",
     emerald: "bg-emerald-50 text-emerald-600",
+    amber: "bg-amber-50 text-amber-600",
   };
   return (
     <div className="rounded-xl border border-slate-100 bg-white p-4">
@@ -363,18 +457,18 @@ function TwoStories() {
         <SectionHeader
           eyebrow="Two stories that change the math"
           title="Stop losing leads. Stop losing reviews."
-          subtitle="Most clinics already pay for ads. Most clinics already get patients. The difference is in the cracks — leads not followed up, bad reviews not caught in time. We close both."
+          subtitle="Most clinics already pay for ads. The loss happens after the inquiry: slow replies, manual reminders, and review requests that never go out."
         />
 
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           <StoryCard
             tone="indigo"
-            icon={Bot}
-            kicker="AI lead loop"
-            title="Every lead, kept in the loop."
-            body="When a Google or Meta lead arrives, our AI automations take over. Auto-acknowledge in seconds, follow-up nudges on smart cadences, re-engagement on stale leads, hot routing to whichever staff member is free. Your team works from a clean to-do list — not a chaotic inbox."
+            icon={MessageSquare}
+            kicker="Lead response"
+            title="Every inquiry gets an instant reply."
+            body="When a lead arrives, ClinicEssential sends the first WhatsApp reply, shares the right booking path, and keeps nudging until your team can take over. Your receptionist gets a clean pipeline, not a messy inbox."
             stats={[
-              { label: "Slip-through", value: "↓ significantly" },
+              { label: "Missed leads", value: "↓ sharply" },
               { label: "Response time", value: "Under 60s" },
               { label: "Lost-lead recovery", value: "Up to 35%" },
             ]}
@@ -382,13 +476,13 @@ function TwoStories() {
           <StoryCard
             tone="amber"
             icon={ShieldCheck}
-            kicker="Reputation gating"
-            title="No bad review goes directly to Google."
-            body="After every visit, the patient gets a private feedback link. 4 or 5 stars are guided to leave a Google review. 1 or 2 stars route to you privately — no public post. You call them back the same day, fix the issue, and turn an unhappy patient into a loyal one."
+            kicker="Review workflow"
+            title="Good reviews go public. Complaints reach you first."
+            body="After every visit, patients receive a private feedback link. Happy patients are guided to Google. Unhappy patients are routed internally so your team can call, fix, and protect the clinic's reputation."
             stats={[
               { label: "Public reviews", value: "Skew positive" },
-              { label: "Bad-review save rate", value: "↑ dramatically" },
-              { label: "Patient saved", value: "Same day" },
+              { label: "Complaints", value: "Private first" },
+              { label: "Follow-up", value: "Same day" },
             ]}
           />
         </div>
@@ -462,6 +556,73 @@ function StoryCard({
 }
 
 /* -------------------------------------------------------------------------- */
+/* Before / after                                                              */
+/* -------------------------------------------------------------------------- */
+
+function BeforeAfter() {
+  const rows = [
+    ["Missed WhatsApp leads", "Instant auto-replies"],
+    ["No review follow-up", "Automated review requests"],
+    ["Manual appointment reminders", "Automated reminders"],
+    ["Receptionist overload", "Centralized patient pipeline"],
+  ];
+
+  return (
+    <section className="bg-white pb-20 md:pb-28">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 md:p-7">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
+            What changes with ClinicEssential
+          </h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <ComparisonColumn
+              title="Traditional Clinic Workflow"
+              tone="muted"
+              items={rows.map(([before]) => before)}
+            />
+            <ComparisonColumn
+              title="With ClinicEssential"
+              tone="active"
+              items={rows.map(([, after]) => after)}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ComparisonColumn({
+  title,
+  tone,
+  items,
+}: {
+  title: string;
+  tone: "muted" | "active";
+  items: string[];
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+        {title}
+      </h3>
+      <ul className="mt-4 space-y-3">
+        {items.map(item => (
+          <li key={item} className="flex items-center gap-2 text-sm text-slate-700">
+            {tone === "active" ? (
+              <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
+            ) : (
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300" />
+            )}
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* How it works                                                                */
 /* -------------------------------------------------------------------------- */
 
@@ -471,19 +632,19 @@ function HowItWorks() {
       n: "01",
       icon: Zap,
       title: "Lead arrives",
-      body: "Google Ad / Meta lead form / your landing page POSTs into VGAII via webhook. The patient gets an instant auto-acknowledge.",
+      body: "A Google ad, Meta form, website, or WhatsApp inquiry lands in one clinic pipeline.",
     },
     {
       n: "02",
-      icon: Bot,
-      title: "AI follows up",
-      body: "Smart nudges at the right cadence. Stale leads get re-engaged. Hot leads route to whichever staff member is free.",
+      icon: MessageSquare,
+      title: "WhatsApp reply goes out",
+      body: "The patient gets an instant acknowledgement, booking link, and helpful next step.",
     },
     {
       n: "03",
       icon: Calendar,
       title: "Patient books",
-      body: "Cal.com slot picker, phone & name pre-filled. Confirmation goes by WhatsApp. The visit lands on the calendar.",
+      body: "Phone, name, and time are captured. Confirmation and reminders go by WhatsApp.",
     },
     {
       n: "04",
@@ -494,8 +655,8 @@ function HowItWorks() {
     {
       n: "05",
       icon: ShieldCheck,
-      title: "Reputation gating",
-      body: "Patient gets a private feedback link. 4–5 ★ → Google review. 1–2 ★ → routes to you privately. You decide what goes public.",
+      title: "Review request goes out",
+      body: "Happy patients are guided to Google. Complaints are routed privately for your team.",
     },
     {
       n: "06",
@@ -510,7 +671,7 @@ function HowItWorks() {
         <SectionHeader
           eyebrow="How it works"
           title="From ad click to 5-star review."
-          subtitle="One system, six steps. No spreadsheets, no WhatsApp groups, no leaks."
+          subtitle="One system, six steps. No spreadsheets, no scattered WhatsApp chats, no missed follow-ups."
         />
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {steps.map(s => (
@@ -541,6 +702,73 @@ function HowItWorks() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* WhatsApp automation preview                                                 */
+/* -------------------------------------------------------------------------- */
+
+function AutomationPreview() {
+  const steps = [
+    {
+      icon: ClipboardList,
+      title: "Patient inquiry received",
+      body: "New lead is captured with name, phone, source, and treatment interest.",
+    },
+    {
+      icon: MessageSquare,
+      title: "Instant WhatsApp auto reply",
+      body: "The patient gets a clear reply before they message another clinic.",
+    },
+    {
+      icon: Calendar,
+      title: "Booking link shared",
+      body: "They can choose a slot without waiting for a callback.",
+    },
+    {
+      icon: RefreshCw,
+      title: "Reminder automation",
+      body: "Appointment reminders reduce no-shows and manual chasing.",
+    },
+    {
+      icon: Star,
+      title: "Google review request",
+      body: "Post-visit feedback routes happy patients to Google.",
+    },
+  ];
+
+  return (
+    <section className="bg-slate-50 pb-20 md:pb-28">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <SectionHeader
+          eyebrow="Patient automation"
+          title="How patient automation works"
+          subtitle="Patients interact directly through WhatsApp - no app installation required."
+        />
+        <div className="mt-12 grid gap-3 md:grid-cols-5">
+          {steps.map((step, index) => (
+            <div
+              key={step.title}
+              className="relative rounded-xl border border-slate-200 bg-white p-5"
+            >
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <step.icon size={18} />
+              </span>
+              <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Step {index + 1}
+              </p>
+              <h3 className="mt-1 text-sm font-semibold text-slate-900">
+                {step.title}
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                {step.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* Features                                                                    */
 /* -------------------------------------------------------------------------- */
 
@@ -549,7 +777,7 @@ function Features() {
     {
       icon: ClipboardList,
       title: "Lead capture",
-      body: "Webhooks for Google Ads, Meta forms, your landing pages. Every lead in one CRM, instantly.",
+      body: "Google Ads, Meta forms, website inquiries, and WhatsApp leads in one pipeline.",
     },
     {
       icon: Calendar,
@@ -559,22 +787,22 @@ function Features() {
     {
       icon: Users,
       title: "Patient records",
-      body: "Visit history, prescriptions, lab reports, X-rays — searchable from any device.",
+      body: "Visit history, prescriptions, lab reports, and X-rays searchable from any device.",
     },
     {
       icon: MessageSquare,
       title: "Feedback flow",
-      body: "Post-visit feedback link. Star-rating gates the review. Bad reviews stay internal.",
+      body: "Post-visit feedback link routes happy patients to Google and complaints internally.",
     },
     {
       icon: Globe,
       title: "Branded profile",
-      body: "Public landing page at your-clinic.com. Pulls live Google rating. Captures inquiries.",
+      body: "Public clinic profile on your domain with ratings, services, and inquiry capture.",
     },
     {
       icon: BarChart3,
       title: "Reports",
-      body: "Funnel, source attribution, no-show rate, rating trend. Monday-morning view for the owner.",
+      body: "Lead response, bookings, no-shows, review trend, and source performance in one view.",
     },
   ];
   return (
@@ -583,7 +811,7 @@ function Features() {
         <SectionHeader
           eyebrow="Everything you need"
           title="One panel. The whole funnel."
-          subtitle="Built for ad-running clinics — every feature earns its place."
+          subtitle="Built for growing clinics - every feature connects to patients, appointments, or trust."
         />
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(f => (
@@ -599,6 +827,128 @@ function Features() {
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
                 {f.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Product screenshots                                                         */
+/* -------------------------------------------------------------------------- */
+
+function ProductScreenshots() {
+  return (
+    <section className="bg-white pb-20 md:pb-28">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <div className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+              Real clinic workflows, not another spreadsheet.
+            </h2>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
+              Your team sees leads, appointments, WhatsApp activity, patient
+              records, and review requests in one operational dashboard.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ScreenshotCard
+              icon={ClipboardList}
+              title="Lead dashboard"
+              body="Patient source, status, owner, and next follow-up visible at a glance."
+            />
+            <ScreenshotCard
+              icon={MessageSquare}
+              title="WhatsApp preview"
+              body="Inquiry, auto-reply, booking link, reminder, and review request in sequence."
+            />
+            <ScreenshotCard
+              icon={Calendar}
+              title="Appointment view"
+              body="Bookings, reminders, no-show status, and patient records connected."
+            />
+            <ScreenshotCard
+              icon={Star}
+              title="Review workflow"
+              body="Google review requests and private feedback issues tracked separately."
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ScreenshotCard({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: LucideIcon;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+      <div className="mb-4 flex h-24 items-end rounded-lg border border-slate-200 bg-white p-3">
+        <div className="w-full space-y-2">
+          <div className="h-2 w-2/3 rounded-full bg-slate-200" />
+          <div className="grid grid-cols-3 gap-2">
+            <div className="h-8 rounded-md bg-indigo-100" />
+            <div className="h-8 rounded-md bg-emerald-100" />
+            <div className="h-8 rounded-md bg-amber-100" />
+          </div>
+          <div className="h-2 w-full rounded-full bg-slate-100" />
+        </div>
+      </div>
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+        <Icon size={17} />
+      </span>
+      <h3 className="mt-3 text-sm font-semibold text-slate-900">{title}</h3>
+      <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{body}</p>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Who this is for                                                             */
+/* -------------------------------------------------------------------------- */
+
+function WhoThisIsFor() {
+  const clinics = [
+    ["Dental Clinics", "Reduce missed appointments and automate patient recalls."],
+    ["Skin Clinics", "Capture high-intent enquiries for aesthetics and procedures."],
+    ["Physiotherapy Clinics", "Keep treatment plans and follow-ups moving on time."],
+    ["IVF Clinics", "Respond faster to sensitive, high-value patient inquiries."],
+    ["Cosmetic Clinics", "Turn ad leads into consultations with fewer manual calls."],
+    ["Multi-doctor Clinics", "Give managers one pipeline across doctors and staff."],
+  ];
+
+  return (
+    <section className="bg-slate-50 py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <SectionHeader
+          eyebrow="Clinic fit"
+          title="Built for growing clinics"
+          subtitle="Best for clinics where every missed lead or weak review costs real revenue."
+        />
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {clinics.map(([title, body]) => (
+            <div
+              key={title}
+              className="rounded-xl border border-slate-200 bg-white p-5"
+            >
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <Heart size={17} />
+              </span>
+              <h3 className="mt-3 text-base font-semibold text-slate-900">
+                {title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+                {body}
               </p>
             </div>
           ))}
@@ -649,10 +999,10 @@ function Roi() {
               one converted patient covers a full year of subscription.
             </p>
             <Link
-              href="/login"
+              href={DEMO_HREF}
               className="mt-7 inline-flex items-center gap-1.5 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
             >
-              Run your numbers
+              Book Free Demo
               <ArrowRight size={14} />
             </Link>
           </div>
@@ -692,6 +1042,50 @@ function Roi() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Onboarding                                                                  */
+/* -------------------------------------------------------------------------- */
+
+function Onboarding() {
+  const steps = [
+    ["01", "WhatsApp setup", "We connect your WhatsApp Business flow and demo messages."],
+    ["02", "GMB optimization", "Your Google Business Profile is checked for trust gaps."],
+    ["03", "Workflow setup", "Lead, reminder, booking, and review flows are mapped to your clinic."],
+    ["04", "Staff training", "Reception and managers learn the daily operating rhythm."],
+    ["05", "Launch & support", "We sit through the first real leads and fix issues quickly."],
+  ];
+
+  return (
+    <section className="bg-white py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <SectionHeader
+          eyebrow="Onboarding"
+          title="Go live in 7 days"
+          subtitle="No technical setup for your team. We configure, train, launch, and support the first week."
+        />
+        <div className="mt-12 grid gap-4 md:grid-cols-5">
+          {steps.map(([n, title, body]) => (
+            <div
+              key={title}
+              className="rounded-xl border border-slate-200 bg-slate-50 p-5"
+            >
+              <p className="text-xs font-bold tracking-widest text-indigo-600">
+                {n}
+              </p>
+              <h3 className="mt-3 text-sm font-semibold text-slate-900">
+                {title}
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                {body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* Pricing                                                                     */
 /* -------------------------------------------------------------------------- */
 
@@ -701,10 +1095,10 @@ function Pricing() {
       <div className="mx-auto max-w-6xl px-6 md:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 md:text-4xl">
-            Choose Your System Plan
+            Choose your clinic growth plan
           </h2>
           <p className="mt-3 text-base text-slate-600">
-            Scale your patient flow with the perfect automation tier.
+            Simple monthly plans for follow-ups, bookings, reviews, and patient visibility.
           </p>
         </div>
 
@@ -716,11 +1110,11 @@ function Pricing() {
             price="₹9,999"
             cadence="/mo"
             setup="₹4,999"
-            cta="Start Essential"
+            cta="Book Free Demo"
             features={[
-              "All basic automations",
+              "WhatsApp follow-up automation",
               "GMB Optimization",
-              "WhatsApp Lead Warming",
+              "Lead capture and routing",
               "Appointment Booking",
             ]}
           />
@@ -732,14 +1126,14 @@ function Pricing() {
             price="₹15,999"
             cadence="/mo"
             setup="₹6,999"
-            cta="Upgrade to Growth"
+            cta="Book Free Demo"
             features={[
               { text: "Everything in Essential", star: true },
-              { text: "Reddit & Quora replies — up to 10/mo" },
-              { text: "Free email marketing (15k mails, 1k contacts)" },
-              { text: "Free local listing & data correction" },
+              { text: "Authority growth support" },
+              { text: "Patient email follow-ups" },
+              { text: "Local listing and data correction" },
               { text: "Free premium single-page website (React/HTML)" },
-              { text: "Free SMS marketing setup (DLT extra)" },
+              { text: "SMS reminder setup (DLT extra)" },
             ]}
           />
 
@@ -751,11 +1145,11 @@ function Pricing() {
             cadence=""
             setup=""
             customLabel="Prices on demand"
-            cta="Request Pricing"
+            cta="Book Free Demo"
             features={[
               "Everything included",
-              "Custom workflow architectures",
-              "Dedicated support tiers",
+              "Custom clinic workflows",
+              "Dedicated launch support",
               "High-volume multi-branch setup",
             ]}
           />
@@ -834,7 +1228,7 @@ function PricingCardLight({
       </ul>
 
       <Link
-        href="/login"
+        href={DEMO_HREF}
         className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
       >
         {cta}
@@ -908,7 +1302,7 @@ function PricingCardDark({
         </ul>
 
         <Link
-          href="/login"
+          href={DEMO_HREF}
           className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-900/40 transition hover:bg-indigo-500"
         >
           {cta}
@@ -943,21 +1337,21 @@ function Addons() {
         <div className="grid items-end gap-8 md:grid-cols-3">
           <div className="md:col-span-2">
             <h2 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
-              Branding & Authority{" "}
+              Online visibility{" "}
               <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
                 Add-ons
               </span>
             </h2>
             <p className="mt-3 text-base italic text-slate-400">
-              Upgrade your presence with high-impact advertising and
-              email follow-ups.
+              Add patient acquisition support when you want more demand on top
+              of the clinic automation system.
             </p>
           </div>
 
           {/* Email marketing — small accented card */}
           <div className="rounded-2xl border-2 border-indigo-400/60 bg-slate-900/60 p-5 ring-1 ring-indigo-500/20">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-300">
-              Email Marketing
+              Patient Email Follow-ups
             </p>
             <p className="mt-2 text-2xl font-bold text-white">
               ₹599 <span className="text-sm font-normal text-slate-400">/ 1000 clients</span>
@@ -1001,18 +1395,20 @@ function Addons() {
         </div>
 
         <p className="mt-12 text-center text-xs text-slate-500">
-          Add-ons stack on top of any system plan. Contact us to bundle —
-          larger combos get priority pricing.
+          Add-ons stack on top of any system plan. We keep the scope practical:
+          patient acquisition, visibility, trust, and appointment growth.
         </p>
 
         <div className="mt-6 flex justify-center">
-          <Link
-            href="/login"
+          <a
+            href={WHATSAPP_HREF}
+            target="_blank"
+            rel="noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
           >
-            Talk to us about add-ons
-            <ArrowRight size={14} />
-          </Link>
+            <MessageSquare size={14} />
+            Talk on WhatsApp
+          </a>
         </div>
       </div>
     </section>
@@ -1077,42 +1473,86 @@ function SmmCard({
 }
 
 /* -------------------------------------------------------------------------- */
+/* Switch comparison                                                           */
+/* -------------------------------------------------------------------------- */
+
+function Comparison() {
+  const rows = [
+    ["Manual follow-ups", "Automated"],
+    ["Missed reviews", "Review workflows"],
+    ["Multiple tools", "One system"],
+    ["Slow lead response", "Instant WhatsApp replies"],
+  ];
+
+  return (
+    <section className="bg-white py-20 md:py-28">
+      <div className="mx-auto max-w-5xl px-6 md:px-8">
+        <SectionHeader
+          eyebrow="Why switch"
+          title="Why clinics switch to ClinicEssential"
+          subtitle="A simpler operating layer for reception, managers, and owners."
+        />
+        <div className="mt-12 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div className="grid grid-cols-2 bg-slate-50 text-sm font-bold text-slate-900">
+            <div className="border-r border-slate-200 p-4">
+              Traditional Setup
+            </div>
+            <div className="p-4">ClinicEssential</div>
+          </div>
+          {rows.map(([before, after]) => (
+            <div key={before} className="grid grid-cols-2 border-t border-slate-200">
+              <div className="border-r border-slate-200 p-4 text-sm text-slate-600">
+                {before}
+              </div>
+              <div className="flex items-center gap-2 p-4 text-sm font-semibold text-slate-900">
+                <CheckCircle2 size={15} className="text-emerald-600" />
+                {after}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /* FAQ                                                                         */
 /* -------------------------------------------------------------------------- */
 
 function Faq() {
   const items = [
     {
-      q: "Will this replace my existing EMR / billing software?",
-      a: "No — and we don't try to. VGAII is the layer between your ads and your calendar. Clinical records, prescriptions, lab reports get attached to patients here for the front desk's workflow, but if you have a dedicated billing system, keep using it.",
+      q: "Will this work with my existing receptionist?",
+      a: "Yes. ClinicEssential supports your receptionist by handling instant replies, reminders, and review prompts. Your staff still manages real patient conversations.",
     },
     {
-      q: "How is this 'AI'? Sounds like just automation.",
-      a: "The AI sits in the follow-up loop — deciding when to re-engage a stale lead, what cadence works for which source, when to escalate to a real human, when to trigger the review prompt after a visit. Your receptionist sees a clean to-do list. The system handles the timing and the chase.",
+      q: "Do patients need an app?",
+      a: "No. Patients interact through WhatsApp links and messages. No patient app installation is required.",
     },
     {
-      q: "What stops a patient from leaving a 1-star Google review directly?",
-      a: "Nothing stops them — but our flow gets to them first. After every visit they get a private feedback link. If they're upset, that link captures the complaint internally before they think to vent on Google. Most upset patients use the first prompt that arrives, and we make sure ours arrives first.",
+      q: "Can this work with WhatsApp Business?",
+      a: "Yes. We set up the WhatsApp-first workflow around your clinic's preferred WhatsApp Business process and the provider you use.",
     },
     {
       q: "How long does setup take?",
-      a: "We're live with your real data within 5 working days. Day 0 is a kickoff call (45 min). Days 1–7 we white-glove your existing patient list (CSV import) and train two staff members. We sit in for the first real lead intake.",
+      a: "Most clinics can go live in 7 days. Setup includes WhatsApp flow setup, GMB checks, workflow configuration, staff training, and launch support.",
     },
     {
-      q: "Do you integrate with WhatsApp, Google Ads, Meta lead forms?",
-      a: "Yes — webhooks for all three. WhatsApp confirmations and feedback links use whatever provider you already pay (Twilio, Gupshup, etc.). We wire it up; the carrier bill is yours.",
+      q: "Will this improve Google reviews?",
+      a: "It improves the review process. Happy patients get guided to Google after visits, while unhappy patients can be handled privately before the issue becomes public.",
     },
     {
-      q: "Who actually uses the software day-to-day?",
-      a: "Your front-desk staff and clinic manager use it most. The doctor logs in once a week to review patients and the dashboard. The owner reviews the Monday-morning report.",
+      q: "Can multiple doctors use it?",
+      a: "Yes. Multi-doctor clinics can manage leads, appointments, patients, and reviews across doctors from one shared operating panel.",
     },
     {
       q: "What if our ad spend is below ₹50k/month?",
-      a: "Honestly, we're probably not the right fit yet. Most of the value is in lead recovery and reputation gating — both compound with volume. If you ramp up ad spend later, call us back.",
+      a: "You can still use it, but the value is strongest when lead volume is high enough that missed replies and missed reviews cost real money.",
     },
     {
       q: "What's the difference between Essential, Growth, and Power?",
-      a: "Essential covers the core clinic-automation stack — GMB optimization, WhatsApp lead warming, appointment booking. Growth adds marketing reach (Reddit/Quora replies, email marketing, free single-page website, SMS marketing setup) for clinics that want to scale aggressively. Power is a custom enterprise tier for multi-doctor / multi-branch setups with dedicated support and bespoke workflows.",
+      a: "Essential covers WhatsApp follow-ups, booking, and review workflows. Growth adds visibility and patient communication support. Power is for multi-doctor or multi-branch clinics that need custom workflows.",
     },
     {
       q: "Can I cancel any time?",
@@ -1129,7 +1569,7 @@ function Faq() {
         <SectionHeader
           eyebrow="Common questions"
           title="Things every clinic asks."
-          subtitle="If you don't see yours, ping us on WhatsApp."
+          subtitle="Simple answers for owners, managers, and front-desk teams."
         />
         <div className="mt-12 space-y-3">
           {items.map(i => (
@@ -1193,35 +1633,30 @@ function FinalCta() {
           />
           <div className="relative">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white ring-1 ring-white/20">
-              <Sparkles size={12} />
-              Live in 5 days
+              <Calendar size={12} />
+              Go live in 7 days
             </span>
             <h2 className="mx-auto mt-5 max-w-2xl text-3xl font-bold leading-tight tracking-tight text-white md:text-5xl">
-              Stop losing leads.
-              <br />
-              Start gating reviews.
+              Capture more patients without adding more front-desk chaos.
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-indigo-100">
-              Join the clinics already running every Google Ad lead, every
-              booking, and every review through one panel.
+              ClinicEssential helps your clinic reply faster, book cleaner,
+              remind patients on time, and collect more Google reviews.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-white px-6 py-3.5 text-sm font-semibold text-indigo-700 shadow-md transition hover:bg-indigo-50"
-              >
-                Get started
-                <ArrowRight size={14} />
-              </Link>
-              <Link
-                href="/login"
+              <PrimaryCta inverted className="px-6 py-3.5" />
+              <a
+                href={WHATSAPP_HREF}
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
               >
-                Sign in
-              </Link>
+                <MessageSquare size={14} />
+                Talk on WhatsApp
+              </a>
             </div>
             <p className="mt-6 text-xs text-indigo-200">
-              No credit card to start. Cancel any time.
+              No app required for patients. Setup and staff training included.
             </p>
           </div>
         </div>
@@ -1241,14 +1676,14 @@ function Footer() {
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div className="flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-              V
+              C
             </span>
             <div>
               <p className="text-sm font-bold tracking-wide text-slate-900">
-                VGAII
+                ClinicEssential
               </p>
               <p className="text-[11px] text-slate-500">
-                AI-driven patient acquisition for clinics in India
+                WhatsApp-first clinic growth system for India
               </p>
             </div>
           </div>
@@ -1269,17 +1704,54 @@ function Footer() {
             <a href="#faq" className="hover:text-slate-900">
               FAQ
             </a>
-            <Link href="/login" className="font-semibold text-indigo-600 hover:text-indigo-700">
-              Sign in →
-            </Link>
+            <a
+              href={WHATSAPP_HREF}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-indigo-600 hover:text-indigo-700"
+            >
+              Talk on WhatsApp
+            </a>
           </div>
         </div>
 
-        <div className="mt-8 border-t border-slate-200 pt-6 text-center text-[11px] text-slate-500">
-          © {new Date().getFullYear()} VGAII. All rights reserved.
+        <div className="mt-8 grid gap-3 border-t border-slate-200 pt-6 text-[11px] text-slate-500 md:grid-cols-2">
+          <div>
+            <p>Company address: Add your registered office address</p>
+            <p>GSTIN: Add GSTIN</p>
+          </div>
+          <div className="md:text-right">
+            <p>Support: support@clinicessential.in</p>
+            <p>WhatsApp: +91 98765 43210</p>
+            <p className="mt-2">
+              Privacy policy · Terms · Refund policy
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 text-center text-[11px] text-slate-500">
+          © {new Date().getFullYear()} ClinicEssential. All rights reserved.
         </div>
       </div>
     </footer>
+  );
+}
+
+function FloatingWhatsAppCta() {
+  return (
+    <a
+      href={WHATSAPP_HREF}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Talk on WhatsApp"
+      className="group fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-900/20 transition hover:bg-emerald-700 sm:px-5"
+    >
+      <MessageSquare size={18} />
+      <span>Book Free Demo</span>
+      <span className="hidden border-l border-white/25 pl-2 text-xs font-medium text-emerald-50 group-hover:inline">
+        Talk on WhatsApp
+      </span>
+    </a>
   );
 }
 

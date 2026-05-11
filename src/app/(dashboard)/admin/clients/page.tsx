@@ -18,6 +18,7 @@ import {
   Globe,
   HelpCircle,
   Info,
+  KeyRound,
   MapPin,
   MessageSquare,
   Pencil,
@@ -27,6 +28,7 @@ import {
   RotateCcw,
   Server,
   ShieldCheck,
+  type LucideIcon,
   UserRound,
   Users,
   Webhook,
@@ -64,6 +66,7 @@ type ClientRow = {
   customDomain?: string;
   googlePlaceId?: string;
   bookingUrl?: string;
+  subscriptionKey?: string;
   webhookKey?: string;
   createdAt?: string;
   admin: AdminRow | null;
@@ -115,6 +118,7 @@ function AdminClientsPageInner() {
   const [plan, setPlan] = useState<"basic" | "pro">("basic");
   const [createGooglePlaceId, setCreateGooglePlaceId] = useState("");
   const [createBookingUrl, setCreateBookingUrl] = useState("");
+  const [createSubscriptionKey, setCreateSubscriptionKey] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -133,6 +137,7 @@ function AdminClientsPageInner() {
           plan,
           googlePlaceId: createGooglePlaceId.trim() || undefined,
           bookingUrl: createBookingUrl.trim() || undefined,
+          subscriptionKey: createSubscriptionKey.trim() || undefined,
           admin: {
             name: adminName,
             email: adminEmail,
@@ -154,6 +159,7 @@ function AdminClientsPageInner() {
       setPlan("basic");
       setCreateGooglePlaceId("");
       setCreateBookingUrl("");
+      setCreateSubscriptionKey("");
       setShowCreate(false);
       refresh();
     } catch {
@@ -281,6 +287,13 @@ function AdminClientsPageInner() {
                   type="url"
                   placeholder="https://cal.com/account/event"
                   hint="Embedded on the patient detail booking modal."
+                />
+                <Field
+                  label="Subscription key"
+                  value={createSubscriptionKey}
+                  onChange={setCreateSubscriptionKey}
+                  placeholder="External subscription token"
+                  hint="Used server-side to check subscription status."
                 />
               </div>
             </fieldset>
@@ -414,6 +427,15 @@ function AdminClientsPageInner() {
                           >
                             <Calendar size={10} />
                             Cal.com
+                          </span>
+                        )}
+                        {c.subscriptionKey && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-sky-700"
+                            title="Subscription API key configured"
+                          >
+                            <KeyRound size={10} />
+                            Subscription API
                           </span>
                         )}
                       </div>
@@ -620,6 +642,7 @@ function ClientIntegrationsBlock({
   const [editing, setEditing] = useState(false);
   const [googlePlaceId, setGooglePlaceId] = useState(client.googlePlaceId ?? "");
   const [bookingUrl, setBookingUrl] = useState(client.bookingUrl ?? "");
+  const [subscriptionKey, setSubscriptionKey] = useState(client.subscriptionKey ?? "");
   const [customDomain, setCustomDomain] = useState(client.customDomain ?? "");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -628,6 +651,7 @@ function ClientIntegrationsBlock({
   const startEdit = () => {
     setGooglePlaceId(client.googlePlaceId ?? "");
     setBookingUrl(client.bookingUrl ?? "");
+    setSubscriptionKey(client.subscriptionKey ?? "");
     setCustomDomain(client.customDomain ?? "");
     setErr(null);
     setSavedAt(null);
@@ -649,6 +673,7 @@ function ClientIntegrationsBlock({
         body: JSON.stringify({
           googlePlaceId: googlePlaceId.trim() || null,
           bookingUrl: bookingUrl.trim() || null,
+          subscriptionKey: subscriptionKey.trim() || null,
           customDomain: customDomain.trim() || null,
         }),
       });
@@ -702,6 +727,13 @@ function ClientIntegrationsBlock({
               hint="Empty to clear."
             />
             <Field
+              label="Subscription key"
+              value={subscriptionKey}
+              onChange={setSubscriptionKey}
+              placeholder="External subscription token"
+              hint="Empty to clear. Sent to the subscription API as form field 'key'."
+            />
+            <Field
               label="Custom domain"
               value={customDomain}
               onChange={setCustomDomain}
@@ -745,6 +777,13 @@ function ClientIntegrationsBlock({
               label="Cal.com booking URL"
               icon={Calendar}
               value={client.bookingUrl}
+            />
+            <ReadRow
+              label="Subscription key"
+              icon={KeyRound}
+              value={client.subscriptionKey}
+              copyable
+              mono
             />
             <CustomDomainRow
               clientId={client.id}
@@ -1346,7 +1385,7 @@ function ReadRow({
   value?: string;
   copyable?: boolean;
   mono?: boolean;
-  icon?: typeof Globe;
+  icon?: LucideIcon;
 }) {
   return (
     <div>

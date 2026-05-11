@@ -47,6 +47,7 @@ export const adminClientUpdateSchema = z
       .optional(),
     googlePlaceId: z.string().trim().max(500).nullable().optional(),
     bookingUrl: z.string().trim().max(500).nullable().optional(),
+    subscriptionKey: z.string().trim().max(500).nullable().optional(),
     profileSlug: optionalSlug.nullable().optional(),
     customDomain: optionalHostname.nullable().optional(),
   })

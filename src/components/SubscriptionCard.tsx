@@ -1,6 +1,8 @@
 type SubscriptionCardProps = {
   status?: string;
   renewalDate?: string | Date | null;
+  source?: "external" | "local";
+  error?: string;
 };
 
 const STATUS_DOT: Record<string, string> = {
@@ -18,6 +20,8 @@ const STATUS_TEXT: Record<string, string> = {
 export default function SubscriptionCard({
   status,
   renewalDate,
+  source,
+  error,
 }: SubscriptionCardProps) {
   const dot = STATUS_DOT[status || ""] ?? "bg-slate-400";
   const text = STATUS_TEXT[status || ""] ?? "text-slate-700";
@@ -30,10 +34,17 @@ export default function SubscriptionCard({
           <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Subscription
           </p>
-          <p className={`text-sm font-semibold capitalize ${text}`}>
-            {status || "unknown"}
-          </p>
-        </div>
+        <p className={`text-sm font-semibold capitalize ${text}`}>
+          {status || "unknown"}
+        </p>
+        <p className="mt-0.5 text-[11px] text-slate-500">
+          {error
+            ? "External check unavailable"
+            : source === "external"
+              ? "Checked from subscription API"
+              : "Local status"}
+        </p>
+      </div>
       </div>
 
       <div className="text-right">
@@ -43,6 +54,11 @@ export default function SubscriptionCard({
         <p className="text-sm font-medium text-slate-700">
           {renewalDate ? new Date(renewalDate).toDateString() : "N/A"}
         </p>
+        {error && (
+          <p className="mt-0.5 max-w-xs truncate text-[11px] text-red-600">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );

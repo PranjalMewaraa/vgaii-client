@@ -3,6 +3,10 @@ import { getUser } from "@/middleware/auth";
 import { withClientFilter } from "@/lib/query";
 import { selfHealBusinessInfo } from "@/lib/business-info";
 import { getErrorMessage } from "@/lib/errors";
+import {
+  checkExternalSubscription,
+  toPrismaSubscriptionStatus,
+} from "@/lib/subscription-check";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -19,6 +23,7 @@ export async function GET(req: Request) {
             googleBusinessInfo: true,
             subscriptionStatus: true,
             renewalDate: true,
+            subscriptionKey: true,
           },
         })
       : null;
@@ -33,6 +38,41 @@ export async function GET(req: Request) {
           | null,
       });
       if (fresh) businessInfo = fresh;
+    }
+
+    let subscription = client?.subscriptionStatus;
+    let renewalDate = client?.renewalDate ?? null;
+    let subscriptionSource: "external" | "local" = "local";
+    let subscriptionError: string | undefined;
+
+    if (client?.subscriptionKey) {
+      const checked = await checkExternalSubscription(client.subscriptionKey);
+      if (checked.ok) {
+        subscription = checked.status;
+        subscriptionSource = "external";
+        if (checked.renewalDate !== undefined) {
+          renewalDate = checked.renewalDate;
+        }
+
+        if (
+          checked.status !== client.subscriptionStatus ||
+          (checked.renewalDate !== undefined &&
+            (checked.renewalDate?.getTime() ?? null) !==
+              (client.renewalDate?.getTime() ?? null))
+        ) {
+          await prisma.client.update({
+            where: { id: client.id },
+            data: {
+              subscriptionStatus: toPrismaSubscriptionStatus(checked.status),
+              ...(checked.renewalDate !== undefined
+                ? { renewalDate: checked.renewalDate }
+                : {}),
+            },
+          });
+        }
+      } else {
+        subscriptionError = checked.error;
+      }
     }
 
     const [
@@ -84,8 +124,10 @@ export async function GET(req: Request) {
       appointments,
       openFeedback,
       internalFeedback,
-      subscription: client?.subscriptionStatus,
-      renewalDate: client?.renewalDate,
+      subscription,
+      renewalDate,
+      subscriptionSource,
+      subscriptionError,
       businessInfo,
     });
   } catch (err: unknown) {

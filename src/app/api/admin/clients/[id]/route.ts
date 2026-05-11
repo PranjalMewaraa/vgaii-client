@@ -50,6 +50,9 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (data.bookingUrl !== undefined) {
       update.bookingUrl = data.bookingUrl ?? null;
     }
+    if (data.subscriptionKey !== undefined) {
+      update.subscriptionKey = data.subscriptionKey ?? null;
+    }
     if (data.profileSlug !== undefined) {
       update.profileSlug = cleanString(data.profileSlug);
     }
@@ -70,6 +73,7 @@ export async function PATCH(req: Request, ctx: RouteContext) {
           renewalDate: true,
           googlePlaceId: true,
           bookingUrl: true,
+          subscriptionKey: true,
           profileSlug: true,
           customDomain: true,
           webhookKey: true,
