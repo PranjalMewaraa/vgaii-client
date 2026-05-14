@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import useSWR from "swr";
+import BookingEmbed from "@/components/BookingEmbed";
 
 type Props = {
   open: boolean;
@@ -12,6 +15,10 @@ type LeadHit = {
   id: string;
   name: string;
   phone: string;
+};
+
+type DashboardData = {
+  bookingUrl?: string | null;
 };
 
 const authHeaders = () => ({
@@ -27,16 +34,176 @@ const authHeader = () => ({
   }`,
 });
 
+type Mode = "calcom" | "manual";
+
 export default function AddAppointmentModal({
   open,
   onClose,
   onCreated,
 }: Props) {
   if (!open) return null;
-  return <Form onClose={onClose} onCreated={onCreated} />;
+  return <Shell onClose={onClose} onCreated={onCreated} />;
 }
 
-function Form({
+function Shell({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  // Pull the Cal.com booking URL from the dashboard endpoint (SWR-cached).
+  // Default to Cal.com when one is configured; otherwise show the manual
+  // form so the user always has a way to record an appointment.
+  const { data, isLoading } = useSWR<DashboardData>("/api/dashboard");
+  const bookingUrl = data?.bookingUrl ?? null;
+  const [mode, setMode] = useState<Mode>("calcom");
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  // If the user hasn't set a Cal.com link, force-render the manual tab
+  // even if the state still says calcom — derived in render to keep the
+  // React 19 "no setState in effects" rule happy.
+  const effectiveMode: Mode =
+    mode === "calcom" && !isLoading && !bookingUrl ? "manual" : mode;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+      >
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">
+              Add appointment
+            </h2>
+            <p className="text-xs text-slate-500">
+              {mode === "calcom"
+                ? "Patient picks a slot via your Cal.com booking page."
+                : "Record an appointment manually — useful for walk-ins and back-dated visits."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex border-b border-slate-200">
+          <ModeTab
+            label="Cal.com booking"
+            active={effectiveMode === "calcom"}
+            disabled={!bookingUrl}
+            onClick={() => setMode("calcom")}
+          />
+          <ModeTab
+            label="Manual entry"
+            active={effectiveMode === "manual"}
+            onClick={() => setMode("manual")}
+          />
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-auto">
+          {effectiveMode === "calcom" ? (
+            <CalcomPane
+              bookingUrl={bookingUrl}
+              isLoading={isLoading}
+              onScheduled={onCreated}
+            />
+          ) : (
+            <ManualForm onClose={onClose} onCreated={onCreated} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModeTab({
+  label,
+  active,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex-1 border-b-2 px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+        active
+          ? "border-indigo-600 text-indigo-700"
+          : "border-transparent text-slate-500 hover:text-slate-700"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function CalcomPane({
+  bookingUrl,
+  isLoading,
+  onScheduled,
+}: {
+  bookingUrl: string | null;
+  isLoading: boolean;
+  onScheduled: () => void;
+}) {
+  if (isLoading) {
+    return <p className="px-4 py-6 text-sm text-slate-500">Loading…</p>;
+  }
+  if (!bookingUrl) {
+    return (
+      <div className="px-4 py-4">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          No Cal.com booking URL is configured for this client. Ask your
+          admin to set it on the{" "}
+          <Link href="/settings" className="font-semibold underline">
+            Settings
+          </Link>{" "}
+          page, or use the <strong>Manual entry</strong> tab.
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="px-2 py-2">
+      <BookingEmbed
+        url={bookingUrl}
+        onScheduled={() => {
+          // Cal.com webhook usually writes the appointment within a second,
+          // so notify the parent to refetch immediately and let the parent
+          // close the modal.
+          onScheduled();
+        }}
+      />
+    </div>
+  );
+}
+
+function ManualForm({
   onClose,
   onCreated,
 }: {
@@ -63,28 +230,14 @@ function Form({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(leadQuery), 250);
     return () => clearTimeout(t);
   }, [leadQuery]);
 
   useEffect(() => {
-    if (linkedLead) {
-      setLeadHits([]);
-      return;
-    }
+    if (linkedLead) return;
     const q = debouncedQuery.trim();
-    if (q.length < 2) {
-      setLeadHits([]);
-      return;
-    }
+    if (q.length < 2) return;
     searchAbortRef.current?.abort();
     const ctrl = new AbortController();
     searchAbortRef.current = ctrl;
@@ -105,6 +258,14 @@ function Form({
     })();
     return () => ctrl.abort();
   }, [debouncedQuery, linkedLead]);
+
+  // The hit list is hidden whenever a lead is already linked or the
+  // user hasn't typed enough to trigger a search — deriving here means
+  // we don't need an effect to reset `leadHits` to an empty array.
+  const displayedHits = useMemo(
+    () => (linkedLead || debouncedQuery.trim().length < 2 ? [] : leadHits),
+    [linkedLead, debouncedQuery, leadHits],
+  );
 
   const pickLead = (lead: LeadHit) => {
     setLinkedLead(lead);
@@ -168,38 +329,13 @@ function Form({
   };
 
   const showHits = useMemo(
-    () => searchOpen && !linkedLead && leadHits.length > 0,
-    [searchOpen, linkedLead, leadHits],
+    () => searchOpen && !linkedLead && displayedHits.length > 0,
+    [searchOpen, linkedLead, displayedHits],
   );
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8"
-      onClick={onClose}
-    >
-      <form
-        onClick={e => e.stopPropagation()}
-        onSubmit={submit}
-        className="w-full max-w-lg max-h-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">Add appointment</h2>
-            <p className="text-xs text-slate-500">
-              Status defaults to <code className="rounded bg-slate-100 px-1">scheduled</code>; source is recorded as <code className="rounded bg-slate-100 px-1">manual</code>.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="mt-4 space-y-3">
+    <form onSubmit={submit} className="px-4 py-4">
+      <div className="space-y-3">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
@@ -312,7 +448,7 @@ function Form({
                 />
                 {showHits && (
                   <ul className="absolute left-0 right-0 z-10 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
-                    {leadHits.map(hit => (
+                    {displayedHits.map(hit => (
                       <li key={hit.id}>
                         <button
                           type="button"
@@ -353,24 +489,23 @@ function Form({
           </p>
         )}
 
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-          >
-            {busy ? "Adding…" : "Add appointment"}
-          </button>
-        </div>
-      </form>
-    </div>
+      <div className="mt-5 flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={busy}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        >
+          {busy ? "Adding…" : "Add appointment"}
+        </button>
+      </div>
+    </form>
   );
 }
 
