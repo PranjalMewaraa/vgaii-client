@@ -11,6 +11,7 @@ import AttachmentsSection from "@/components/AttachmentsSection";
 import VitalsTrendChart, {
   type VitalsPoint,
 } from "@/components/charts/VitalsTrendChart";
+import EditAppointmentModal from "@/components/EditAppointmentModal";
 import { type LeadStatus } from "@/lib/constants";
 
 type DetailTab = "overview" | "appointments" | "medical-history";
@@ -107,27 +108,20 @@ function PatientDetailPageInner({
   const { id } = use(params);
   const [data, setData] = useState<DetailResponse | null>(null);
 
-  // editing per-appointment (Mark visited OR retrospective edit)
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editDate, setEditDate] = useState("");
-  const [editStatus, setEditStatus] = useState<string>("scheduled");
-  const [editDiagnosis, setEditDiagnosis] = useState("");
-  const [editMedicines, setEditMedicines] = useState("");
-  const [editNotes, setEditNotes] = useState("");
-  const [editWeight, setEditWeight] = useState("");
-  const [editSugar, setEditSugar] = useState("");
-  const [editBpSys, setEditBpSys] = useState("");
-  const [editBpDia, setEditBpDia] = useState("");
-  const [savingId, setSavingId] = useState<string | null>(null);
+  // Modal-driven edit/mark-visited. Mirrors the /appointments page so
+  // both surfaces share the same flow.
+  const [editTarget, setEditTarget] = useState<{
+    appointment: Appointment;
+    mode: "edit" | "visit";
+  } | null>(null);
   const [busyApptId, setBusyApptId] = useState<string | null>(null);
 
-  // Per-row collapse for medical-history / upcoming cards. Only one expanded
-  // at a time keeps the list scannable.
+  // Per-card expand/collapse on the Appointments + Medical history tabs.
+  // Editing now lives in EditAppointmentModal; this just toggles the
+  // read-only detail block.
   const [expandedApptId, setExpandedApptId] = useState<string | null>(null);
-  const toggleExpanded = (apptId: string) => {
-    if (editingId === apptId) return; // never collapse while editing
+  const toggleExpanded = (apptId: string) =>
     setExpandedApptId(prev => (prev === apptId ? null : apptId));
-  };
 
   // notes draft
   const [notesDraft, setNotesDraft] = useState("");
@@ -189,35 +183,11 @@ function PatientDetailPageInner({
     }
   };
 
-  const seedEditFromAppointment = (a: Appointment, status: string) => {
-    setEditingId(a.id);
-    setExpandedApptId(a.id);
-    setEditDate(a.date ? new Date(a.date).toISOString().slice(0, 16) : "");
-    setEditStatus(status);
-    setEditDiagnosis(a.diagnosis ?? "");
-    setEditMedicines((a.medicines ?? []).join("\n"));
-    setEditNotes(a.notes ?? "");
-    setEditWeight(a.weightKg != null ? String(a.weightKg) : "");
-    setEditSugar(a.sugarMgDl != null ? String(a.sugarMgDl) : "");
-    setEditBpSys(a.bpSystolic != null ? String(a.bpSystolic) : "");
-    setEditBpDia(a.bpDiastolic != null ? String(a.bpDiastolic) : "");
-  };
-
   const startEdit = (a: Appointment) =>
-    seedEditFromAppointment(a, a.status ?? "scheduled");
+    setEditTarget({ appointment: a, mode: "edit" });
 
-  // Mark a scheduled appointment as visited — same form as edit but pre-set
-  // status to completed and skip the status dropdown.
   const startMarkVisited = (a: Appointment) =>
-    seedEditFromAppointment(a, "completed");
-
-  // Empty strings become explicit nulls so the user can clear a previously
-  // recorded vital.
-  const vitalOrNull = (raw: string): number | null | undefined => {
-    if (raw.trim() === "") return null;
-    const n = Number(raw);
-    return Number.isFinite(n) ? n : undefined;
-  };
+    setEditTarget({ appointment: a, mode: "visit" });
 
   const markNoShow = async (apptId: string) => {
     setBusyApptId(apptId);
@@ -230,42 +200,6 @@ function PatientDetailPageInner({
       if (res.ok) load();
     } finally {
       setBusyApptId(null);
-    }
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-  };
-
-  const saveEdit = async (apptId: string) => {
-    setSavingId(apptId);
-    try {
-      const res = await fetch(`/api/appointments/${apptId}`, {
-        method: "PATCH",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          date: editDate ? new Date(editDate).toISOString() : undefined,
-          status: editStatus,
-          diagnosis: editDiagnosis,
-          notes: editNotes,
-          medicines: editMedicines
-            ? editMedicines
-                .split("\n")
-                .map(s => s.trim())
-                .filter(Boolean)
-            : [],
-          weightKg: vitalOrNull(editWeight),
-          sugarMgDl: vitalOrNull(editSugar),
-          bpSystolic: vitalOrNull(editBpSys),
-          bpDiastolic: vitalOrNull(editBpDia),
-        }),
-      });
-      if (res.ok) {
-        cancelEdit();
-        load();
-      }
-    } finally {
-      setSavingId(null);
     }
   };
 
@@ -312,36 +246,12 @@ function PatientDetailPageInner({
 
   const apptCardProps = (a: Appointment) => ({
     appointment: a,
-    isEditing: editingId === a.id,
-    isExpanded: expandedApptId === a.id || editingId === a.id,
+    isExpanded: expandedApptId === a.id,
     onToggleExpanded: () => toggleExpanded(a.id),
-    saving: savingId === a.id,
     busy: busyApptId === a.id,
-    editState: {
-      editDate,
-      editStatus,
-      editDiagnosis,
-      editMedicines,
-      editNotes,
-      editWeight,
-      editSugar,
-      editBpSys,
-      editBpDia,
-      setEditDate,
-      setEditStatus,
-      setEditDiagnosis,
-      setEditMedicines,
-      setEditNotes,
-      setEditWeight,
-      setEditSugar,
-      setEditBpSys,
-      setEditBpDia,
-    },
     onMarkVisited: () => startMarkVisited(a),
     onNoShow: () => markNoShow(a.id),
     onEdit: () => startEdit(a),
-    onCancelEdit: cancelEdit,
-    onSaveEdit: () => saveEdit(a.id),
     onDelete: () => removeAppt(a.id),
   });
 
@@ -622,6 +532,18 @@ function PatientDetailPageInner({
         </div>
       )}
 
+      {editTarget && (
+        <EditAppointmentModal
+          appointment={editTarget.appointment}
+          mode={editTarget.mode}
+          onClose={() => setEditTarget(null)}
+          onSaved={() => {
+            setEditTarget(null);
+            load();
+          }}
+        />
+      )}
+
       {bookingOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
@@ -765,17 +687,12 @@ function UpcomingAppointmentCard({
   onDelete,
 }: {
   appointment: Appointment;
-  isEditing: boolean;
   isExpanded: boolean;
   onToggleExpanded: () => void;
-  saving: boolean;
   busy: boolean;
-  editState: AppointmentCardEditState;
   onMarkVisited: () => void;
   onNoShow: () => void;
   onEdit: () => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
   onDelete: () => void;
 }) {
   const a = appointment;
@@ -852,54 +769,23 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-type AppointmentCardEditState = {
-  editDate: string;
-  editStatus: string;
-  editDiagnosis: string;
-  editMedicines: string;
-  editNotes: string;
-  editWeight: string;
-  editSugar: string;
-  editBpSys: string;
-  editBpDia: string;
-  setEditDate: (v: string) => void;
-  setEditStatus: (v: string) => void;
-  setEditDiagnosis: (v: string) => void;
-  setEditMedicines: (v: string) => void;
-  setEditNotes: (v: string) => void;
-  setEditWeight: (v: string) => void;
-  setEditSugar: (v: string) => void;
-  setEditBpSys: (v: string) => void;
-  setEditBpDia: (v: string) => void;
-};
-
 function AppointmentCard({
   appointment,
-  isEditing,
   isExpanded,
   onToggleExpanded,
-  saving,
   busy,
-  editState,
   onMarkVisited,
   onNoShow,
   onEdit,
-  onCancelEdit,
-  onSaveEdit,
   onDelete,
 }: {
   appointment: Appointment;
-  isEditing: boolean;
   isExpanded: boolean;
   onToggleExpanded: () => void;
-  saving: boolean;
   busy: boolean;
-  editState: AppointmentCardEditState;
   onMarkVisited: () => void;
   onNoShow: () => void;
   onEdit: () => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
   onDelete: () => void;
 }) {
   const a = appointment;
@@ -956,204 +842,89 @@ function AppointmentCard({
             </span>
           </span>
         </button>
-        {!isEditing && (
-          <div className="flex flex-wrap gap-2">
-            {isScheduled && (
-              <>
-                <button
-                  type="button"
-                  onClick={onMarkVisited}
-                  className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
-                >
-                  Mark visited
-                </button>
-                <button
-                  type="button"
-                  onClick={onNoShow}
-                  disabled={busy}
-                  className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
-                >
-                  No show
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              onClick={onEdit}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={onDelete}
-              disabled={busy}
-              className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
-            >
-              {busy ? "…" : "Delete"}
-            </button>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {isScheduled && (
+            <>
+              <button
+                type="button"
+                onClick={onMarkVisited}
+                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+              >
+                Mark visited
+              </button>
+              <button
+                type="button"
+                onClick={onNoShow}
+                disabled={busy}
+                className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+              >
+                No show
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={onEdit}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={busy}
+            className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+          >
+            {busy ? "…" : "Delete"}
+          </button>
+        </div>
       </div>
 
-      {isEditing ? (
-        <div className="mt-3 space-y-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <label className="block">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Date &amp; time
-              </span>
-              <input
-                type="datetime-local"
-                value={editState.editDate}
-                onChange={e => editState.setEditDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Status
-              </span>
-              <select
-                value={editState.editStatus}
-                onChange={e => editState.setEditStatus(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              >
-                <option value="scheduled">Scheduled</option>
-                <option value="completed">Visited</option>
-                <option value="no_show">No show</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </label>
-          </div>
-          <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Diagnosis
-            </span>
-            <textarea
-              value={editState.editDiagnosis}
-              onChange={e => editState.setEditDiagnosis(e.target.value)}
-              rows={2}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Medicines (one per line)
-            </span>
-            <textarea
-              value={editState.editMedicines}
-              onChange={e => editState.setEditMedicines(e.target.value)}
-              rows={3}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Notes
-            </span>
-            <textarea
-              value={editState.editNotes}
-              onChange={e => editState.setEditNotes(e.target.value)}
-              rows={2}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Vitals (optional)
-            </p>
-            <div className="mt-1 grid grid-cols-2 gap-3 md:grid-cols-4">
-              <VitalInput
-                label="Weight (kg)"
-                value={editState.editWeight}
-                onChange={editState.setEditWeight}
-              />
-              <VitalInput
-                label="Sugar (mg/dL)"
-                value={editState.editSugar}
-                onChange={editState.setEditSugar}
-              />
-              <VitalInput
-                label="BP Systolic"
-                value={editState.editBpSys}
-                onChange={editState.setEditBpSys}
-                placeholder="120"
-              />
-              <VitalInput
-                label="BP Diastolic"
-                value={editState.editBpDia}
-                onChange={editState.setEditBpDia}
-                placeholder="80"
-              />
+      {isExpanded && (
+        <div className="mt-3 pl-7">
+          {hasDetails ? (
+            <div className="space-y-2 text-sm">
+              {a.diagnosis && (
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    Diagnosis
+                  </p>
+                  <p className="text-slate-700 whitespace-pre-line">
+                    {a.diagnosis}
+                  </p>
+                </div>
+              )}
+              {a.medicines && a.medicines.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    Medicines
+                  </p>
+                  <ul className="mt-1 list-disc pl-5 text-slate-700">
+                    {a.medicines.map((m, i) => (
+                      <li key={i}>{m}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {a.notes && (
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                    Notes
+                  </p>
+                  <p className="text-slate-600 whitespace-pre-line">
+                    {a.notes}
+                  </p>
+                </div>
+              )}
+              <VitalsBadges appointment={a} />
             </div>
-          </div>
-          <AttachmentsSection appointmentId={a.id} canEdit />
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onCancelEdit}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={onSaveEdit}
-              disabled={saving}
-              className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
-              {saving ? "Saving…" : "Save"}
-            </button>
-          </div>
+          ) : (
+            <p className="text-xs italic text-slate-400">
+              No diagnosis, medicines, or notes recorded yet.
+            </p>
+          )}
+          <AttachmentsSection appointmentId={a.id} canEdit={false} />
         </div>
-      ) : (
-        isExpanded && (
-          <div className="mt-3 pl-7">
-            {hasDetails ? (
-              <div className="space-y-2 text-sm">
-                {a.diagnosis && (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                      Diagnosis
-                    </p>
-                    <p className="text-slate-700 whitespace-pre-line">
-                      {a.diagnosis}
-                    </p>
-                  </div>
-                )}
-                {a.medicines && a.medicines.length > 0 && (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                      Medicines
-                    </p>
-                    <ul className="mt-1 list-disc pl-5 text-slate-700">
-                      {a.medicines.map((m, i) => (
-                        <li key={i}>{m}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {a.notes && (
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                      Notes
-                    </p>
-                    <p className="text-slate-600 whitespace-pre-line">
-                      {a.notes}
-                    </p>
-                  </div>
-                )}
-                <VitalsBadges appointment={a} />
-              </div>
-            ) : (
-              <p className="text-xs italic text-slate-400">
-                No diagnosis, medicines, or notes recorded yet.
-              </p>
-            )}
-            <AttachmentsSection appointmentId={a.id} canEdit={false} />
-          </div>
-        )
       )}
     </article>
   );
@@ -1276,33 +1047,6 @@ function MedicalHistory({
         </ol>
       </section>
     </div>
-  );
-}
-
-function VitalInput({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <label className="block">
-      <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-        {label}
-      </span>
-      <input
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        inputMode="decimal"
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-      />
-    </label>
   );
 }
 
