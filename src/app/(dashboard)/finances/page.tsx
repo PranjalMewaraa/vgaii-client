@@ -50,7 +50,7 @@ function FinancesPageInner() {
       </header>
 
       <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex flex-wrap border-b border-slate-200">
+        <div className="flex overflow-x-auto border-b border-slate-200">
           {visibleTabs.map(t => {
             const isActive = tab === t.key;
             return (
@@ -58,7 +58,7 @@ function FinancesPageInner() {
                 key={t.key}
                 type="button"
                 onClick={() => setTab(t.key)}
-                className={`flex-1 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition md:flex-1 ${
                   isActive
                     ? "border-indigo-600 text-indigo-700"
                     : "border-transparent text-slate-500 hover:text-slate-700"

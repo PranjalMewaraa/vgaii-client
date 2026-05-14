@@ -76,18 +76,20 @@ export default function Dashboard() {
         </button>
       </header>
 
-      {/* Row 1: GMB · Quick Actions · Overview */}
-      <div className="grid gap-3 lg:grid-cols-4">
-        <div className="lg:col-span-2">
+      {/* Row 1: GMB · Quick Actions · Overview. On tablet (md) the GMB
+          card spans the full row and Quick Actions / Overview share the
+          row below. On lg+ they all sit together. */}
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div className="md:col-span-2">
           <BusinessInfoCard
             businessInfo={data.businessInfo}
             onRefreshed={() => mutate()}
           />
         </div>
-        <div className="lg:col-span-1">
+        <div>
           <QuickActionsCard />
         </div>
-        <div className="lg:col-span-1">
+        <div>
           <OverviewCard
             todayLeads={data.todayLeads}
             todayLeadsDelta={data.todayLeads - data.yesterdayLeads}
@@ -100,14 +102,14 @@ export default function Dashboard() {
       </div>
 
       {/* Row 2: Reputation · Next appointment */}
-      <div className="grid gap-3 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="md:col-span-2">
           <ReputationPanel
             businessInfo={data.businessInfo}
             internal={data.internalFeedback}
           />
         </div>
-        <div className="lg:col-span-1">
+        <div>
           <NextAppointmentCard />
         </div>
       </div>

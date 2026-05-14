@@ -432,7 +432,7 @@ export default function PaymentEntryTab() {
           <h2 className="text-base font-semibold text-slate-900">
             Payment method
           </h2>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
             {METHOD_DEFS.map(m => {
               const Icon = m.icon;
               const active = method === m.key;

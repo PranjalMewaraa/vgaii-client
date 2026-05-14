@@ -65,7 +65,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
   const roleLabel = user?.role ? ROLE_LABELS[user.role] ?? user.role : "";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-slate-200 bg-white px-4 py-2 md:px-6">
+    <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-2 md:gap-4 md:px-6">
       <button
         type="button"
         onClick={onMenuClick}
@@ -75,11 +75,17 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
         <Menu size={18} />
       </button>
 
-      <div className="hidden min-w-0 lg:block">
-        <h1 className="truncate text-lg font-bold text-slate-900">{title}</h1>
+      <div className="min-w-0 flex-1 md:flex-initial">
+        <h1 className="truncate text-base font-bold text-slate-900 lg:text-lg">
+          {title}
+        </h1>
       </div>
 
-      {user && user.role !== "SUPER_ADMIN" && <GlobalSearch />}
+      {user && user.role !== "SUPER_ADMIN" && (
+        <div className="hidden flex-1 md:flex">
+          <GlobalSearch />
+        </div>
+      )}
 
       {user && (
         <div className="ml-auto flex items-center gap-3">

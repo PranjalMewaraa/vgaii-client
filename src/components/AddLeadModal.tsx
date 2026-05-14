@@ -86,13 +86,13 @@ function Form({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6"
       onClick={onClose}
     >
       <form
         onClick={e => e.stopPropagation()}
         onSubmit={submit}
-        className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+        className="w-full max-w-md max-h-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
