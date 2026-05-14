@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { Filter, X } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
@@ -89,7 +89,10 @@ function PatientsPageInner() {
   const [newSourceValue, setNewSourceValue] = useState("");
 
   // create form (modal)
-  const [showCreate, setShowCreate] = useState(false);
+  const searchParams = useSearchParams();
+  const [showCreate, setShowCreate] = useState(
+    () => searchParams.get("add") === "1",
+  );
 
   // import
   const [importing, setImporting] = useState(false);

@@ -83,6 +83,7 @@ export async function GET(req: Request) {
       openFeedback,
       resolvedFeedback,
       ratedFeedbackAgg,
+      sourcesAgg,
     ] = await Promise.all([
       prisma.lead.count({ where: scope }),
       prisma.lead.count({
@@ -107,6 +108,15 @@ export async function GET(req: Request) {
         _avg: { rating: true },
         _count: { rating: true },
       }),
+      // Top sources for the "Where your leads are coming from" widget.
+      // Keep the top 4 buckets; anything else is rolled into "Other" client-side.
+      prisma.lead.groupBy({
+        by: ["source"],
+        where: scope,
+        _count: { _all: true },
+        orderBy: { _count: { source: "desc" } },
+        take: 8,
+      }),
     ]);
 
     const internalFeedback = {
@@ -116,6 +126,11 @@ export async function GET(req: Request) {
       ratedCount: ratedFeedbackAgg._count.rating ?? 0,
       avgRating: ratedFeedbackAgg._avg.rating ?? null,
     };
+
+    const topSources = sourcesAgg.map(s => ({
+      source: s.source ?? "Unknown",
+      count: s._count._all,
+    }));
 
     return NextResponse.json({
       leadsCount,
@@ -129,6 +144,7 @@ export async function GET(req: Request) {
       subscriptionSource,
       subscriptionError,
       businessInfo,
+      topSources,
     });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });

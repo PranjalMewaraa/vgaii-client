@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
@@ -50,7 +50,9 @@ function LeadsPageInner() {
   });
   const leads = useMemo(() => data?.leads ?? [], [data]);
 
-  const [addOpen, setAddOpen] = useState(false);
+  // Honor ?add=1 deep-link from the dashboard's Quick Actions.
+  const searchParams = useSearchParams();
+  const [addOpen, setAddOpen] = useState(() => searchParams.get("add") === "1");
 
   const sources = useMemo(() => {
     const seen = new Set<string>();

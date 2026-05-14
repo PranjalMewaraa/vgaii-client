@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
@@ -174,7 +175,10 @@ export default function AppointmentsPage() {
 
 function AppointmentsPageInner() {
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const [addOpen, setAddOpen] = useState(
+    () => searchParams.get("add") === "1",
+  );
 
   // Mark visited / Edit form (shared)
   const [editingId, setEditingId] = useState<string | null>(null);
