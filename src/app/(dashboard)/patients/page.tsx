@@ -604,17 +604,15 @@ function PatientsPageInner() {
                   </th>
                   <th className="px-4 py-2 text-left">Name</th>
                   <th className="px-4 py-2 text-left">Phone</th>
-                  <th className="px-4 py-2 text-left">Age / Gender</th>
+                  <th className="px-4 py-2 text-left">Age</th>
                   <th className="px-4 py-2 text-left">Source</th>
                   <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Activity</th>
                   <th className="px-4 py-2 text-right">Last appt</th>
                   <th className="px-2 py-2" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
                 {pagedVisible.map(p => {
-                  const inactive = isInactive(p.lastAppointmentDate);
                   const selectable = p.kind === "lead";
                   const checked = selectable && selectedIds.has(p.id);
                   return (
@@ -651,12 +649,7 @@ function PatientsPageInner() {
                       </td>
                       <td className="px-4 py-2.5 text-slate-700">{p.phone}</td>
                       <td className="px-4 py-2.5 text-slate-600">
-                        {[
-                          typeof p.age === "number" ? `${p.age}y` : null,
-                          p.gender,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ") || "—"}
+                        {typeof p.age === "number" ? `${p.age}y` : "—"}
                       </td>
                       <td className="px-4 py-2.5 text-slate-600">
                         {p.source ? (
@@ -671,22 +664,6 @@ function PatientsPageInner() {
                         <StatusPill
                           status={p.kind === "direct" ? "direct" : p.status}
                         />
-                      </td>
-                      <td className="px-4 py-2.5">
-                        {inactive ? (
-                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
-                            inactive
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-emerald-700">
-                            active
-                          </span>
-                        )}
-                        {p.hasFeedback && (
-                          <span className="ml-1 inline-flex items-center text-[11px] text-emerald-600">
-                            ✓ feedback
-                          </span>
-                        )}
                       </td>
                       <td className="px-4 py-2.5 text-right text-xs text-slate-500">
                         {p.lastAppointmentDate
