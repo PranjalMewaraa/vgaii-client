@@ -164,21 +164,31 @@ function PaymentsReport() {
   const [method, setMethod] = useState<"" | PaymentMethod>("");
   const [staff, setStaff] = useState<string>("");
 
-  const { from, to } = rangeFor(preset, { from: customFrom, to: customTo });
+  // Memoize so the SWR key is the same string between renders. Without
+  // this, every render produces fresh Date objects (and the resulting
+  // URLs) which would chain-refetch under SWR's revalidateOnFocus.
+  const swrKey = useMemo(() => {
+    const { from, to } = rangeFor(preset, { from: customFrom, to: customTo });
+    const params = new URLSearchParams();
+    params.set("from", from);
+    params.set("to", to);
+    if (method) params.set("method", method);
+    if (staff) params.set("collectedBy", staff);
+    return `/api/payments?${params.toString()}`;
+  }, [preset, customFrom, customTo, method, staff]);
 
-  const params = new URLSearchParams();
-  params.set("from", from);
-  params.set("to", to);
-  if (method) params.set("method", method);
-  if (staff) params.set("collectedBy", staff);
-  const { data, isLoading } = useSWR<{ payments: Payment[] }>(
-    `/api/payments?${params.toString()}`,
-  );
+  const { data, isLoading } = useSWR<{ payments: Payment[] }>(swrKey, {
+    // DevTools open during testing causes frequent focus toggles which
+    // would otherwise refetch the report on every blur/focus. Reports
+    // don't need that — the filters explicitly drive each load.
+    revalidateOnFocus: false,
+  });
   const payments = useMemo(() => data?.payments ?? [], [data]);
 
   // Staff list only fetched for admins — the endpoint is admin-only.
   const { data: staffData } = useSWR<{ staff: Staff[] }>(
     isAdmin ? "/api/staff" : null,
+    { revalidateOnFocus: false },
   );
   const staffOptions = staffData?.staff ?? [];
 
@@ -374,15 +384,18 @@ function ExpensesReport() {
   const [customTo, setCustomTo] = useState("");
   const [category, setCategory] = useState<"" | ExpenseCategory>("");
 
-  const { from, to } = rangeFor(preset, { from: customFrom, to: customTo });
+  const swrKey = useMemo(() => {
+    const { from, to } = rangeFor(preset, { from: customFrom, to: customTo });
+    const params = new URLSearchParams();
+    params.set("from", from);
+    params.set("to", to);
+    if (category) params.set("category", category);
+    return `/api/expenses?${params.toString()}`;
+  }, [preset, customFrom, customTo, category]);
 
-  const params = new URLSearchParams();
-  params.set("from", from);
-  params.set("to", to);
-  if (category) params.set("category", category);
-  const { data, isLoading } = useSWR<{ expenses: Expense[] }>(
-    `/api/expenses?${params.toString()}`,
-  );
+  const { data, isLoading } = useSWR<{ expenses: Expense[] }>(swrKey, {
+    revalidateOnFocus: false,
+  });
   const expenses = useMemo(() => data?.expenses ?? [], [data]);
 
   const totals = useMemo(() => {

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { Clock, TrendingUp, UserPlus, Users } from "lucide-react";
+import { Clock, Eye, Pencil, TrendingUp, UserPlus, Users } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddLeadModal from "@/components/AddLeadModal";
@@ -261,6 +261,7 @@ function LeadsPageInner() {
                   <th className="px-4 py-2 text-left">Source</th>
                   <th className="px-4 py-2 text-left">Status</th>
                   <th className="px-4 py-2 text-right">Created</th>
+                  <th className="px-2 py-2" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
@@ -289,6 +290,31 @@ function LeadsPageInner() {
                       {lead.createdAt
                         ? new Date(lead.createdAt).toLocaleDateString()
                         : "—"}
+                    </td>
+                    <td
+                      className="px-2 py-2.5 text-right"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/leads/${lead.id}`)}
+                          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                          aria-label={`View ${lead.name}`}
+                          title="View"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/leads/${lead.id}?edit=1`)}
+                          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                          aria-label={`Edit ${lead.name}`}
+                          title="Edit"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

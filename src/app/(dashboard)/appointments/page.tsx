@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { CalendarDays, History, CalendarRange, MoreVertical } from "lucide-react";
+import { CalendarDays, History, CalendarRange, Eye, Pencil } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AttachmentsSection from "@/components/AttachmentsSection";
@@ -646,11 +646,25 @@ function AppointmentsPageInner() {
                             )}
                             <button
                               type="button"
-                              onClick={() => (isEditing ? cancelEdit() : startEdit(a))}
-                              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                              aria-label="More"
+                              onClick={() =>
+                                setExpandedId(prev =>
+                                  prev === a.id ? null : a.id,
+                                )
+                              }
+                              className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                              aria-label={`View ${a.name ?? "appointment"}`}
+                              title={isExpanded ? "Hide" : "View"}
                             >
-                              <MoreVertical size={14} />
+                              <Eye size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => (isEditing ? cancelEdit() : startEdit(a))}
+                              className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                              aria-label={`Edit ${a.name ?? "appointment"}`}
+                              title={isEditing ? "Cancel edit" : "Edit"}
+                            >
+                              <Pencil size={14} />
                             </button>
                           </div>
                         </td>
