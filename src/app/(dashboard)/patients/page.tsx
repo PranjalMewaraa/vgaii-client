@@ -137,10 +137,15 @@ function PatientsPageInner() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Reset to page 1 whenever the filter inputs change — otherwise the user
-  // can land on an empty page after narrowing the result set.
-  useEffect(() => {
+  // can land on an empty page after narrowing the result set. Using React's
+  // "store previous value and compare during render" pattern instead of an
+  // effect, which lint flags as a cascading-render anti-pattern.
+  const filterSig = `${debouncedSearch}|${sourceFilter}|${activeFilter}|${genderFilter}|${feedbackFilter}|${rowsPerPage}`;
+  const [prevFilterSig, setPrevFilterSig] = useState(filterSig);
+  if (prevFilterSig !== filterSig) {
+    setPrevFilterSig(filterSig);
     setPage(1);
-  }, [debouncedSearch, sourceFilter, activeFilter, genderFilter, feedbackFilter, rowsPerPage]);
+  }
 
   const visible = useMemo(() => {
     return rows.filter(r => {

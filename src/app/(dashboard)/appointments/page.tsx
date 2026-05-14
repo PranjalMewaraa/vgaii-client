@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
+import { CalendarDays, History, CalendarRange, MoreVertical } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AttachmentsSection from "@/components/AttachmentsSection";
@@ -22,6 +23,29 @@ type Appointment = {
 };
 
 type Tab = "upcoming" | "history" | "calendar";
+
+const TAB_DEFS: Array<{ key: Tab; label: string; icon: typeof CalendarDays }> = [
+  { key: "upcoming", label: "Upcoming", icon: CalendarDays },
+  { key: "history", label: "History", icon: History },
+  { key: "calendar", label: "Calendar", icon: CalendarRange },
+];
+
+// Stable avatar tints keyed off the first letter of the patient name —
+// gives each row a hint of identity without storing a real avatar.
+const AVATAR_TONES = [
+  "bg-rose-100 text-rose-700",
+  "bg-amber-100 text-amber-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-sky-100 text-sky-700",
+  "bg-indigo-100 text-indigo-700",
+  "bg-violet-100 text-violet-700",
+];
+const avatarTone = (name?: string) => {
+  const c = (name?.trim()?.charCodeAt(0) ?? 0) % AVATAR_TONES.length;
+  return AVATAR_TONES[c];
+};
+const initial = (name?: string) =>
+  (name?.trim()?.charAt(0) ?? "?").toUpperCase();
 
 // Calendar week grid spans 7 days × 16 hours. The hour range covers a
 // typical clinic day (7am–10pm); appointments outside this range still
@@ -302,11 +326,6 @@ function AppointmentsPageInner() {
   const markNoShow = (id: string) => patch(id, { status: "no_show" });
   const reopen = (id: string) => patch(id, { status: "scheduled" });
 
-  const toggleExpand = (id: string) => {
-    if (editingId === id) return; // don't collapse while editing
-    setExpandedId(prev => (prev === id ? null : id));
-  };
-
   // Group rows by tab. The API returns appointments inside the date range
   // regardless of status, so we partition here. Upcoming = scheduled only
   // (since "Mark visited" / "No show" both flip the status away). History =
@@ -317,6 +336,28 @@ function AppointmentsPageInner() {
     }
     return data.filter(a => a.status && a.status !== "scheduled");
   }, [data, tab]);
+
+  // Client-side pagination. The API returns the entire date range; this
+  // just controls how many rows we show at once.
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  // Reset to page 1 when filters change via React's "store-and-compare"
+  // pattern — using an effect for this triggers a cascading-render lint
+  // warning.
+  const filterSig = `${tab}|${upcomingPreset}|${historyPreset}|${specificDate}|${debouncedSearch}|${rowsPerPage}`;
+  const [prevFilterSig, setPrevFilterSig] = useState(filterSig);
+  if (prevFilterSig !== filterSig) {
+    setPrevFilterSig(filterSig);
+    setPage(1);
+  }
+  const totalPages = Math.max(1, Math.ceil(visible.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const pagedVisible = useMemo(() => {
+    const start = (safePage - 1) * rowsPerPage;
+    return visible.slice(start, start + rowsPerPage);
+  }, [visible, safePage, rowsPerPage]);
+  const firstShown = visible.length === 0 ? 0 : (safePage - 1) * rowsPerPage + 1;
+  const lastShown = Math.min(safePage * rowsPerPage, visible.length);
 
   const presets =
     tab === "upcoming"
@@ -403,67 +444,65 @@ function AppointmentsPageInner() {
 
       <div className="rounded-lg border border-slate-200 bg-white">
         <div className="flex border-b border-slate-200">
-          {(["upcoming", "history", "calendar"] as Tab[]).map(t => {
-            const isActive = tab === t;
+          {TAB_DEFS.map(({ key, label, icon: Icon }) => {
+            const isActive = tab === key;
             return (
               <button
-                key={t}
+                key={key}
                 type="button"
                 onClick={() => {
-                  setTab(t);
+                  setTab(key);
                   setExpandedId(null);
                   setEditingId(null);
                 }}
-                className={`flex-1 px-4 py-2 text-sm font-semibold capitalize transition ${
+                className={`flex flex-1 items-center justify-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
                   isActive
-                    ? "border-b-2 border-indigo-600 text-indigo-700"
-                    : "text-slate-500 hover:text-slate-700"
+                    ? "border-indigo-600 text-indigo-700"
+                    : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
-                {t}
+                <Icon size={16} />
+                {label}
               </button>
             );
           })}
         </div>
 
         {tab !== "calendar" && (
-        <div className="px-4 py-2.5">
+        <div className="px-4 py-3">
           <div className="flex flex-wrap items-center gap-2">
             {presets.map(p => (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPreset(p)}
-                className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
                   !specificDate && activePreset === p
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-indigo-600 text-white shadow-sm"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
                 {presetLabels[p]}
               </button>
             ))}
-            <label className="ml-auto inline-flex items-center gap-2 text-xs text-slate-500">
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <label className="block flex-1 min-w-[200px]">
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="🔍  Search by name, phone or email…"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </label>
+            <label className="inline-flex items-center gap-2 text-xs text-slate-500">
               <span>Specific date</span>
               <input
                 type="date"
                 value={specificDate}
                 onChange={e => setSpecificDate(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              />
-            </label>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-end gap-3">
-            <label className="block flex-1 min-w-[180px]">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                Search
-              </span>
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Name, phone, or email…"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
             {filtersActive && (
@@ -493,8 +532,8 @@ function AppointmentsPageInner() {
       {tab !== "calendar" && (
       <div className="rounded-lg border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900 capitalize">
-            {tab === "upcoming" ? "Upcoming appointments" : "Appointment history"}
+          <h2 className="text-base font-semibold text-slate-900">
+            {tab === "upcoming" ? "Upcoming Appointments" : "Appointment History"}
           </h2>
           <span className="text-xs text-slate-500">
             {visible.length}{" "}
@@ -511,227 +550,297 @@ function AppointmentsPageInner() {
               : "No past appointments in this range."}
           </p>
         ) : (
-          <ul className="divide-y divide-slate-200">
-            {visible.map(a => {
-              const isEditing = editingId === a.id;
-              const isExpanded = expandedId === a.id || isEditing;
-              const isScheduled = !a.status || a.status === "scheduled";
-              const hasDetails =
-                !!a.diagnosis ||
-                (!!a.medicines && a.medicines.length > 0) ||
-                !!a.notes;
-              return (
-                <li key={a.id} className="px-4 py-2.5">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => toggleExpand(a.id)}
-                      className="flex min-w-0 flex-1 items-start gap-3 text-left"
-                      aria-expanded={isExpanded}
-                    >
-                      <span
-                        className={`mt-1 inline-block text-slate-400 transition-transform ${
-                          isExpanded ? "rotate-90" : ""
-                        }`}
-                        aria-hidden
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-2 text-left">Patient</th>
+                  <th className="px-4 py-2 text-left">Schedule</th>
+                  <th className="px-4 py-2 text-left">Source</th>
+                  <th className="px-4 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pagedVisible.map(a => {
+                  const isEditing = editingId === a.id;
+                  const isExpanded = expandedId === a.id || isEditing;
+                  const isScheduled = !a.status || a.status === "scheduled";
+                  const hasDetails =
+                    !!a.diagnosis ||
+                    (!!a.medicines && a.medicines.length > 0) ||
+                    !!a.notes;
+                  const dt = new Date(a.date);
+                  return (
+                    <Fragment key={a.id}>
+                      <tr
+                        className="border-t border-slate-200 hover:bg-slate-50"
                       >
-                        ▶
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium text-slate-900">
-                            {a.name || "Unnamed"}
-                          </span>
-                          <StatusPill status={a.status ?? "scheduled"} />
-                        </span>
-                        <span className="block text-sm text-slate-600">
-                          {[a.phone, a.email].filter(Boolean).join(" · ") || "—"}
-                        </span>
-                        <span className="block text-xs text-slate-500">
-                          {new Date(a.date).toLocaleString()}
-                          {a.source ? ` · ${a.source}` : ""}
-                        </span>
-                      </span>
-                    </button>
-
-                    {!isEditing && (
-                      <div className="flex flex-wrap gap-2">
-                        {isScheduled && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => startEdit(a, true)}
-                              disabled={busyId === a.id}
-                              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${avatarTone(a.name)}`}
                             >
-                              Mark visited
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => markNoShow(a.id)}
-                              disabled={busyId === a.id}
-                              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
-                            >
-                              No show
-                            </button>
-                          </>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => startEdit(a)}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                        >
-                          Edit
-                        </button>
-                        {a.status === "completed" && (
-                          <button
-                            type="button"
-                            onClick={() => reopen(a.id)}
-                            disabled={busyId === a.id}
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
-                          >
-                            Reopen
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {isEditing ? (
-                    <div className="mt-3 space-y-3">
-                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                        <label className="block">
-                          <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                            Date &amp; time
-                          </span>
-                          <input
-                            type="datetime-local"
-                            value={editDate}
-                            onChange={e => setEditDate(e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                          />
-                        </label>
-                        <label className="block">
-                          <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                            Status
-                          </span>
-                          <select
-                            value={editStatus}
-                            onChange={e => setEditStatus(e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                          >
-                            <option value="scheduled">Scheduled</option>
-                            <option value="completed">Visited</option>
-                            <option value="no_show">No show</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                        </label>
-                      </div>
-                      <label className="block">
-                        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                          Diagnosis
-                        </span>
-                        <textarea
-                          value={editDiagnosis}
-                          onChange={e => setEditDiagnosis(e.target.value)}
-                          rows={2}
-                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                          placeholder="What was diagnosed during this visit"
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                          Medicines (one per line)
-                        </span>
-                        <textarea
-                          value={editMedicines}
-                          onChange={e => setEditMedicines(e.target.value)}
-                          rows={3}
-                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                          placeholder={
-                            "Amoxicillin 500mg — 3 times a day for 5 days\nIbuprofen 400mg — as needed"
-                          }
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                          Notes
-                        </span>
-                        <textarea
-                          value={editNotes}
-                          onChange={e => setEditNotes(e.target.value)}
-                          rows={2}
-                          className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                        />
-                      </label>
-                      <AttachmentsSection appointmentId={a.id} canEdit />
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => saveEdit(a.id)}
-                          disabled={busyId === a.id}
-                          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    isExpanded && (
-                      <div className="mt-3 pl-6">
-                        {hasDetails ? (
-                          <div className="space-y-2 text-sm">
-                            {a.diagnosis && (
-                              <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                  Diagnosis
-                                </p>
-                                <p className="text-slate-700 whitespace-pre-line">
-                                  {a.diagnosis}
-                                </p>
-                              </div>
-                            )}
-                            {a.medicines && a.medicines.length > 0 && (
-                              <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                  Medicines
-                                </p>
-                                <ul className="mt-1 list-disc pl-5 text-slate-700">
-                                  {a.medicines.map((m, i) => (
-                                    <li key={i}>{m}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            {a.notes && (
-                              <p className="text-sm text-slate-600">
-                                {a.notes}
+                              {initial(a.name)}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold text-slate-900">
+                                {a.name || "Unnamed"}
                               </p>
-                            )}
+                              <p className="truncate text-xs text-slate-500">
+                                {[a.phone, a.email].filter(Boolean).join(" · ") || "—"}
+                              </p>
+                            </div>
                           </div>
-                        ) : (
-                          <p className="text-xs italic text-slate-400">
-                            No diagnosis, medicines, or notes recorded yet.
-                          </p>
-                        )}
-                        <AttachmentsSection
-                          appointmentId={a.id}
-                          canEdit={false}
-                        />
-                      </div>
-                    )
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col items-start gap-1">
+                            <StatusPill status={a.status ?? "scheduled"} />
+                            <span className="text-xs text-slate-500">
+                              {dt.toLocaleString(undefined, {
+                                month: "numeric",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                              {", "}
+                              {dt.toLocaleString(undefined, {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">
+                          {a.source || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {isScheduled && !isEditing && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => startEdit(a, true)}
+                                  disabled={busyId === a.id}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+                                >
+                                  ✓ Mark visited
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => markNoShow(a.id)}
+                                  disabled={busyId === a.id}
+                                  className="rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                                >
+                                  No show
+                                </button>
+                              </>
+                            )}
+                            {!isScheduled && a.status === "completed" && (
+                              <button
+                                type="button"
+                                onClick={() => reopen(a.id)}
+                                disabled={busyId === a.id}
+                                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                              >
+                                Reopen
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => (isEditing ? cancelEdit() : startEdit(a))}
+                              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                              aria-label="More"
+                            >
+                              <MoreVertical size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {isExpanded && (
+                        <tr className="border-t border-slate-200 bg-slate-50">
+                          <td colSpan={4} className="px-4 py-3">
+                            {isEditing ? (
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                  <label className="block">
+                                    <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                                      Date &amp; time
+                                    </span>
+                                    <input
+                                      type="datetime-local"
+                                      value={editDate}
+                                      onChange={e => setEditDate(e.target.value)}
+                                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    />
+                                  </label>
+                                  <label className="block">
+                                    <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                                      Status
+                                    </span>
+                                    <select
+                                      value={editStatus}
+                                      onChange={e => setEditStatus(e.target.value)}
+                                      className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    >
+                                      <option value="scheduled">Scheduled</option>
+                                      <option value="completed">Visited</option>
+                                      <option value="no_show">No show</option>
+                                      <option value="cancelled">Cancelled</option>
+                                    </select>
+                                  </label>
+                                </div>
+                                <label className="block">
+                                  <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                                    Diagnosis
+                                  </span>
+                                  <textarea
+                                    value={editDiagnosis}
+                                    onChange={e => setEditDiagnosis(e.target.value)}
+                                    rows={2}
+                                    className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    placeholder="What was diagnosed during this visit"
+                                  />
+                                </label>
+                                <label className="block">
+                                  <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                                    Medicines (one per line)
+                                  </span>
+                                  <textarea
+                                    value={editMedicines}
+                                    onChange={e => setEditMedicines(e.target.value)}
+                                    rows={3}
+                                    className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                    placeholder={
+                                      "Amoxicillin 500mg — 3 times a day for 5 days\nIbuprofen 400mg — as needed"
+                                    }
+                                  />
+                                </label>
+                                <label className="block">
+                                  <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                                    Notes
+                                  </span>
+                                  <textarea
+                                    value={editNotes}
+                                    onChange={e => setEditNotes(e.target.value)}
+                                    rows={2}
+                                    className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                                  />
+                                </label>
+                                <AttachmentsSection appointmentId={a.id} canEdit />
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={cancelEdit}
+                                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => saveEdit(a.id)}
+                                    disabled={busyId === a.id}
+                                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {hasDetails ? (
+                                  <div className="space-y-2 text-sm">
+                                    {a.diagnosis && (
+                                      <div>
+                                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                          Diagnosis
+                                        </p>
+                                        <p className="whitespace-pre-line text-slate-700">
+                                          {a.diagnosis}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {a.medicines && a.medicines.length > 0 && (
+                                      <div>
+                                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                          Medicines
+                                        </p>
+                                        <ul className="mt-1 list-disc pl-5 text-slate-700">
+                                          {a.medicines.map((m, i) => (
+                                            <li key={i}>{m}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {a.notes && (
+                                      <p className="text-sm text-slate-600">
+                                        {a.notes}
+                                      </p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs italic text-slate-400">
+                                    No diagnosis, medicines, or notes recorded yet.
+                                  </p>
+                                )}
+                                <AttachmentsSection
+                                  appointmentId={a.id}
+                                  canEdit={false}
+                                />
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {visible.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-2.5 text-xs text-slate-600">
+            <label className="inline-flex items-center gap-2">
+              <span>Rows per page:</span>
+              <select
+                value={rowsPerPage}
+                onChange={e => setRowsPerPage(Number(e.target.value))}
+                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              >
+                {[10, 25, 50, 100].map(n => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span>
+              Showing {firstShown} to {lastShown} of {visible.length} appointment
+              {visible.length === 1 ? "" : "s"}
+            </span>
+            <div className="inline-flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                ‹ Previous
+              </button>
+              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-indigo-600 px-2 text-xs font-semibold text-white">
+                {safePage}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next ›
+              </button>
+            </div>
+          </div>
         )}
       </div>
       )}
