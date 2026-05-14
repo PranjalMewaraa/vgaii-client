@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CreditCard, Globe, Mail, MapPin, Phone } from "lucide-react";
@@ -12,9 +13,14 @@ import VitalsTrendChart, {
   type VitalsPoint,
 } from "@/components/charts/VitalsTrendChart";
 import EditAppointmentModal from "@/components/EditAppointmentModal";
+import { formatRupees } from "@/lib/currency";
 import { type LeadStatus } from "@/lib/constants";
 
-type DetailTab = "overview" | "appointments" | "medical-history";
+type DetailTab =
+  | "overview"
+  | "appointments"
+  | "medical-history"
+  | "payments";
 
 type Lead = {
   id: string;
@@ -259,6 +265,7 @@ function PatientDetailPageInner({
     { key: "overview", label: "Overview" },
     { key: "appointments", label: "Appointments" },
     { key: "medical-history", label: "Medical History" },
+    { key: "payments", label: "Payments" },
   ];
 
   return (
@@ -531,6 +538,10 @@ function PatientDetailPageInner({
             </section>
           )}
         </div>
+      )}
+
+      {tab === "payments" && (
+        <PaymentsHistory lead={lead} />
       )}
 
       {editTarget && (
@@ -845,6 +856,158 @@ function AppointmentCard({
         </div>
       )}
     </article>
+  );
+}
+
+type PaymentRow = {
+  id: string;
+  amount: number;
+  discount: number;
+  finalAmount: number;
+  paymentMethod: "cash" | "upi" | "card" | "mixed" | "pending";
+  notes: string;
+  createdAt: string;
+  items: Array<{ title: string; amount: number }>;
+  collectedBy?: { name?: string | null; email?: string | null } | null;
+};
+
+function PaymentsHistory({ lead }: { lead: Lead }) {
+  const { data, isLoading } = useSWR<{ payments: PaymentRow[] }>(
+    `/api/payments?leadId=${encodeURIComponent(lead.id)}`,
+  );
+  const payments = useMemo(() => data?.payments ?? [], [data]);
+
+  const totals = useMemo(() => {
+    let collected = 0;
+    let pending = 0;
+    for (const p of payments) {
+      if (p.paymentMethod === "pending") pending += p.finalAmount;
+      else collected += p.finalAmount;
+    }
+    return { collected, pending };
+  }, [payments]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          Payment history ({payments.length})
+        </h2>
+        <Link
+          href={`/finances?tab=payment&leadId=${encodeURIComponent(lead.id)}&name=${encodeURIComponent(lead.name)}&phone=${encodeURIComponent(lead.phone)}`}
+          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+        >
+          + Record payment
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <SummaryTile
+          label="Collected"
+          value={formatRupees(totals.collected)}
+          hint={`${payments.filter(p => p.paymentMethod !== "pending").length} payments`}
+          tone="emerald"
+        />
+        <SummaryTile
+          label="Pending"
+          value={formatRupees(totals.pending)}
+          hint={`${payments.filter(p => p.paymentMethod === "pending").length} entries`}
+          tone="amber"
+        />
+        <SummaryTile
+          label="Total entries"
+          value={String(payments.length)}
+          tone="slate"
+        />
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white">
+        {isLoading ? (
+          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+        ) : payments.length === 0 ? (
+          <p className="px-4 py-3 text-sm text-slate-500">
+            No payments recorded for this patient yet.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-2 text-left">Date</th>
+                  <th className="px-4 py-2 text-left">Items</th>
+                  <th className="px-4 py-2 text-left">Method</th>
+                  <th className="px-4 py-2 text-left">Collected by</th>
+                  <th className="px-4 py-2 text-right">Final</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map(p => (
+                  <tr key={p.id} className="border-t border-slate-200">
+                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                      {new Date(p.createdAt).toLocaleString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                    <td className="px-4 py-2.5 text-slate-700">
+                      <span>{p.items.map(i => i.title).join(" + ")}</span>
+                      {p.discount > 0 && (
+                        <span className="ml-1 text-[11px] text-slate-500">
+                          (−{formatRupees(p.discount)})
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600">
+                        {p.paymentMethod}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                      {p.collectedBy?.name ?? p.collectedBy?.email ?? "—"}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-medium text-slate-900">
+                      {formatRupees(p.finalAmount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SummaryTile({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone: "emerald" | "amber" | "slate";
+}) {
+  const toneClass: Record<typeof tone, string> = {
+    emerald: "text-emerald-700",
+    amber: "text-amber-700",
+    slate: "text-slate-900",
+  };
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        {label}
+      </p>
+      <p className={`mt-0.5 text-xl font-bold leading-tight ${toneClass[tone]}`}>
+        {value}
+      </p>
+      {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
+    </div>
   );
 }
 
