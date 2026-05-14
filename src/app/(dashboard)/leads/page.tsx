@@ -3,10 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
+import { Clock, TrendingUp, UserPlus, Users } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddLeadModal from "@/components/AddLeadModal";
+import StatCard from "@/components/StatCard";
+import TopSourcesCard from "@/components/TopSourcesCard";
 import { LEAD_STATUSES } from "@/lib/constants";
+
+type DashboardData = {
+  topSources?: Array<{ source: string; count: number }>;
+};
 
 type Lead = {
   id: string;
@@ -60,6 +67,35 @@ function LeadsPageInner() {
     return Array.from(seen).sort();
   }, [leads]);
 
+  // Re-use the dashboard endpoint so top-sources aggregation is computed
+  // once across the whole client scope (qualified+ included). SWR caches
+  // by URL so this is free when the user came from /dashboard.
+  const { data: dashData } = useSWR<DashboardData>("/api/dashboard");
+  const topSources = dashData?.topSources ?? [];
+
+  // Stats over the leads currently in scope (default view excludes
+  // qualified+ since those live under /patients).
+  const stats = useMemo(() => {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    let todayCount = 0;
+    let newCount = 0;
+    let contactedCount = 0;
+    for (const l of leads) {
+      if (l.createdAt && new Date(l.createdAt).getTime() >= startOfToday.getTime()) {
+        todayCount++;
+      }
+      if (l.status === "new") newCount++;
+      else if (l.status === "contacted") contactedCount++;
+    }
+    return {
+      total: leads.length,
+      today: todayCount,
+      newLeads: newCount,
+      contacted: contactedCount,
+    };
+  }, [leads]);
+
   const visible = useMemo(() => {
     return leads.filter(l => {
       if (statusFilter && l.status !== statusFilter) return false;
@@ -102,6 +138,38 @@ function LeadsPageInner() {
           mutate();
         }}
       />
+
+      <div className="grid gap-3 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 lg:col-span-2">
+          <StatCard
+            title="Total Leads"
+            value={stats.total}
+            icon={Users}
+            color="indigo"
+          />
+          <StatCard
+            title="Today"
+            value={stats.today}
+            icon={TrendingUp}
+            color="green"
+          />
+          <StatCard
+            title="New"
+            value={stats.newLeads}
+            icon={UserPlus}
+            color="sky"
+          />
+          <StatCard
+            title="Contacted"
+            value={stats.contacted}
+            icon={Clock}
+            color="amber"
+          />
+        </div>
+        <div className="lg:col-span-1">
+          <TopSourcesCard sources={topSources} />
+        </div>
+      </div>
 
       <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
         <div className="flex flex-wrap items-end gap-3">

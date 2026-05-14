@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, RefreshCw, Stethoscope, TrendingUp, Users } from "lucide-react";
+import { Calendar, RefreshCw, TrendingUp } from "lucide-react";
 import useSWR from "swr";
 import StatCard from "@/components/StatCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
@@ -9,8 +9,7 @@ import ReputationPanel, {
   type InternalFeedbackSummary,
 } from "@/components/ReputationPanel";
 import QuickActionsCard from "@/components/QuickActionsCard";
-import RecentActivityCard from "@/components/RecentActivityCard";
-import TopSourcesCard from "@/components/TopSourcesCard";
+import NextAppointmentCard from "@/components/NextAppointmentCard";
 import AdminDashboard from "@/components/AdminDashboard";
 import { useStoredUser } from "@/lib/client-auth";
 
@@ -75,57 +74,46 @@ export default function Dashboard() {
         </button>
       </header>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <BusinessInfoCard
-          businessInfo={data.businessInfo}
-          onRefreshed={() => mutate()}
-        />
-        <ReputationPanel
-          businessInfo={data.businessInfo}
-          internal={data.internalFeedback}
-        />
-      </div>
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+        {/* Left column: GMB · Reputation · Subscription */}
+        <div className="space-y-3 lg:col-span-2">
+          <BusinessInfoCard
+            businessInfo={data.businessInfo}
+            onRefreshed={() => mutate()}
+          />
+          <ReputationPanel
+            businessInfo={data.businessInfo}
+            internal={data.internalFeedback}
+          />
+          <SubscriptionCard
+            status={data.subscription}
+            renewalDate={data.renewalDate}
+            source={data.subscriptionSource}
+            error={data.subscriptionError}
+          />
+        </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard
-          title="Total Leads"
-          value={data.leadsCount}
-          icon={Users}
-          color="indigo"
-        />
-        <StatCard
-          title="Today Leads"
-          value={data.todayLeads}
-          icon={TrendingUp}
-          color="green"
-        />
-        <StatCard
-          title="Patients"
-          value={data.patientsCount}
-          icon={Stethoscope}
-          color="sky"
-        />
-        <StatCard
-          title="Upcoming Appts"
-          value={data.appointments}
-          icon={Calendar}
-          color="amber"
-        />
-      </div>
+        {/* Right column: Quick Actions · today/upcoming metrics · next appt */}
+        <div className="space-y-3 lg:col-span-1">
+          <QuickActionsCard />
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <SubscriptionCard
-          status={data.subscription}
-          renewalDate={data.renewalDate}
-          source={data.subscriptionSource}
-          error={data.subscriptionError}
-        />
-        <QuickActionsCard />
-      </div>
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard
+              title="Today Leads"
+              value={data.todayLeads}
+              icon={TrendingUp}
+              color="green"
+            />
+            <StatCard
+              title="Upcoming Appts"
+              value={data.appointments}
+              icon={Calendar}
+              color="amber"
+            />
+          </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <RecentActivityCard />
-        <TopSourcesCard sources={data.topSources ?? []} />
+          <NextAppointmentCard />
+        </div>
       </div>
     </div>
   );
