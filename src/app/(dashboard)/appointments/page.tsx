@@ -5,6 +5,7 @@ import useSWR from "swr";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AttachmentsSection from "@/components/AttachmentsSection";
+import AddAppointmentModal from "@/components/AddAppointmentModal";
 
 type Appointment = {
   id: string;
@@ -173,6 +174,7 @@ export default function AppointmentsPage() {
 
 function AppointmentsPageInner() {
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
   // Mark visited / Edit form (shared)
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -342,13 +344,32 @@ function AppointmentsPageInner() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
-        <p className="text-sm text-slate-500">
-          Booked via Cal.com. After each visit, click <strong>Mark
-          visited</strong> to record diagnosis and medicines.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
+          <p className="text-sm text-slate-500">
+            Booked via Cal.com. After each visit, click <strong>Mark
+            visited</strong> to record diagnosis and medicines.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAddOpen(true)}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+        >
+          + Add appointment
+        </button>
       </header>
+
+      <AddAppointmentModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreated={() => {
+          setAddOpen(false);
+          refreshTable();
+          refreshNow();
+        }}
+      />
 
       {(active || next) && (
         <div

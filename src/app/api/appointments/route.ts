@@ -3,8 +3,74 @@ import type { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
 import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
+import { appointmentCreateSchema } from "@/lib/validators/appointment";
+import { logAudit } from "@/lib/audit";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+  try {
+    const user = getUser(req);
+    checkRole(user, ["CLIENT_ADMIN", "STAFF"]);
+    checkModule(user, "appointments");
+
+    if (!user.clientId) {
+      return NextResponse.json({ error: "No client context" }, { status: 400 });
+    }
+
+    const body = await req.json();
+    const parsed = appointmentCreateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+
+    // If the caller passed a leadId, make sure it belongs to the same client
+    // before we attach. Cross-tenant linkage would leak data.
+    if (parsed.data.leadId) {
+      const lead = await prisma.lead.findFirst({
+        where: { id: parsed.data.leadId, clientId: user.clientId },
+        select: { id: true },
+      });
+      if (!lead) {
+        return NextResponse.json({ error: "Lead not found" }, { status: 400 });
+      }
+    }
+
+    const appointment = await prisma.appointment.create({
+      data: {
+        clientId: user.clientId,
+        leadId: parsed.data.leadId ?? null,
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        email: parsed.data.email || null,
+        age: parsed.data.age ?? null,
+        gender: parsed.data.gender ?? null,
+        date: new Date(parsed.data.date),
+        notes: parsed.data.notes ?? "",
+        diagnosis: "",
+        medicines: [],
+        source: "manual",
+      },
+    });
+
+    await logAudit(req, { actorType: "user", user }, {
+      action: "appointment.created",
+      entityType: "Appointment",
+      entityId: appointment.id,
+      entityLabel: appointment.name ?? appointment.phone ?? appointment.id,
+      summary: `Appointment scheduled for ${new Date(appointment.date!).toLocaleString()}`,
+      metadata: {
+        phone: appointment.phone,
+        leadId: appointment.leadId,
+        source: appointment.source,
+      },
+    });
+
+    return NextResponse.json({ appointment });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
+  }
+}
 
 export async function GET(req: Request) {
   try {

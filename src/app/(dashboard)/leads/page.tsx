@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
+import AddLeadModal from "@/components/AddLeadModal";
 import { LEAD_STATUSES } from "@/lib/constants";
 
 type Lead = {
@@ -44,10 +45,12 @@ function LeadsPageInner() {
   const swrKey = debouncedSearch
     ? `/api/leads?search=${encodeURIComponent(debouncedSearch)}`
     : "/api/leads";
-  const { data, isLoading } = useSWR<{ leads: Lead[] }>(swrKey, {
+  const { data, isLoading, mutate } = useSWR<{ leads: Lead[] }>(swrKey, {
     keepPreviousData: true,
   });
   const leads = useMemo(() => data?.leads ?? [], [data]);
+
+  const [addOpen, setAddOpen] = useState(false);
 
   const sources = useMemo(() => {
     const seen = new Set<string>();
@@ -71,14 +74,32 @@ function LeadsPageInner() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
-        <p className="text-sm text-slate-500">
-          Early-funnel and dropped contacts. Once a lead is{" "}
-          <code className="rounded bg-slate-100 px-1">qualified</code>, they
-          move to the Patients tab.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
+          <p className="text-sm text-slate-500">
+            Early-funnel and dropped contacts. Once a lead is{" "}
+            <code className="rounded bg-slate-100 px-1">qualified</code>, they
+            move to the Patients tab.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setAddOpen(true)}
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+        >
+          + Add lead
+        </button>
       </header>
+
+      <AddLeadModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreated={() => {
+          setAddOpen(false);
+          mutate();
+        }}
+      />
 
       <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
         <div className="flex flex-wrap items-end gap-3">

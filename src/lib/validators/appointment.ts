@@ -6,6 +6,17 @@ const optionalDate = z
   .refine(s => !Number.isNaN(Date.parse(s)), "Invalid date")
   .optional();
 
+export const appointmentCreateSchema = z.object({
+  name: z.string().min(1).max(120),
+  phone: z.string().min(10).max(40),
+  email: z.string().email().max(120).optional().or(z.literal("")),
+  date: z.string().refine(s => !Number.isNaN(Date.parse(s)), "Invalid date"),
+  age: z.number().int().min(0).max(150).optional(),
+  gender: z.string().max(40).optional(),
+  notes: z.string().max(5000).optional(),
+  leadId: z.string().min(1).max(60).optional(),
+});
+
 export const appointmentUpdateSchema = z
   .object({
     status: z.enum(APPOINTMENT_STATUSES).optional(),
