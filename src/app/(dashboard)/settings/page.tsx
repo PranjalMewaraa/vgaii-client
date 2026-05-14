@@ -80,16 +80,16 @@ function SettingsPageInner() {
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
   if (!settings) {
     return (
-      <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         Settings unavailable.
       </p>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+        <h1 className="text-lg font-bold text-slate-900">Settings</h1>
         <p className="text-sm text-slate-500">
           Branding for {settings.name}. Integrations and webhooks are
           managed by the platform team — contact them if you need changes
@@ -99,16 +99,16 @@ function SettingsPageInner() {
 
       <form
         onSubmit={submit}
-        className="rounded-xl border border-slate-200 bg-white"
+        className="rounded-lg border border-slate-200 bg-white"
       >
-        <div className="border-b border-slate-200 px-6 py-4">
+        <div className="border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-base font-semibold text-slate-900">Branding</h2>
           <p className="text-xs text-slate-500">
             Where patients land when they search for you online.
           </p>
         </div>
 
-        <div className="space-y-5 px-6 py-5">
+        <div className="space-y-3 px-4 py-3">
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Profile slug
@@ -146,7 +146,7 @@ function SettingsPageInner() {
           </label>
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-3">
+        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-2">
           <span className="text-xs text-slate-500">
             {error
               ? null
@@ -163,13 +163,13 @@ function SettingsPageInner() {
           </button>
         </div>
         {error && (
-          <p className="border-t border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
+          <p className="border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
             {error}
           </p>
         )}
       </form>
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 px-6 py-4 text-sm text-slate-600">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-600">
         <p className="font-semibold text-slate-900">Managed by the platform</p>
         <p className="mt-1">
           Google Place ID, Cal.com booking link, and webhook credentials are

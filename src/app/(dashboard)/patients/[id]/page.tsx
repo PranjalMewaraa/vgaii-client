@@ -147,7 +147,7 @@ function PatientDetailPageInner({
   if (!data) return <p className="text-sm text-slate-500">Loading…</p>;
   if ("error" in data) {
     return (
-      <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         {data.error}
       </p>
     );
@@ -317,7 +317,7 @@ function PatientDetailPageInner({
     .join(" · ");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Link
         href="/patients"
         className="text-sm text-indigo-600 hover:underline"
@@ -326,7 +326,7 @@ function PatientDetailPageInner({
       </Link>
 
       {/* HEADER: identity + primary CTA */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3">
         <div className="flex min-w-0 items-center gap-4">
           <div
             className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white ${avatarBg}`}
@@ -335,7 +335,7 @@ function PatientDetailPageInner({
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate text-2xl font-bold text-slate-900">
+              <h1 className="truncate text-lg font-bold text-slate-900">
                 {lead.name}
               </h1>
               <StatusPill status={status} />
@@ -361,10 +361,10 @@ function PatientDetailPageInner({
         </button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* LEFT COLUMN — patient context */}
-        <aside className="space-y-4 lg:col-span-1">
-          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+        <aside className="space-y-3 lg:col-span-1">
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Contact
             </p>
@@ -419,7 +419,7 @@ function PatientDetailPageInner({
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Patient notes
@@ -447,7 +447,7 @@ function PatientDetailPageInner({
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Funnel status
             </p>
@@ -482,7 +482,7 @@ function PatientDetailPageInner({
         </aside>
 
         {/* RIGHT COLUMN — clinical work */}
-        <div className="space-y-4 lg:col-span-2">
+        <div className="space-y-3 lg:col-span-2">
           {upcoming.length > 0 && (
             <section>
               <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -529,7 +529,7 @@ function PatientDetailPageInner({
               </h2>
             </div>
             {past.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-6 py-5 text-center text-sm text-slate-500">
                 No past visits yet. After the first appointment is completed,
                 its diagnosis and medicines will appear here.
               </div>
@@ -573,10 +573,10 @@ function PatientDetailPageInner({
               <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Feedback ({feedbacks.length})
               </h2>
-              <div className="rounded-xl border border-slate-200 bg-white">
+              <div className="rounded-lg border border-slate-200 bg-white">
                 <ul className="divide-y divide-slate-200">
                   {feedbacks.map(f => (
-                    <li key={f.id} className="px-5 py-3">
+                    <li key={f.id} className="px-4 py-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-slate-800">
@@ -620,7 +620,7 @@ function PatientDetailPageInner({
             onClick={e => e.stopPropagation()}
             className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
-            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
+            <div className="flex items-start justify-between border-b border-slate-200 px-4 py-2.5">
               <div>
                 <p className="text-base font-semibold text-slate-900">
                   Schedule appointment
@@ -645,7 +645,7 @@ function PatientDetailPageInner({
                 ✕
               </button>
             </div>
-            <div className="flex-1 overflow-auto px-6 py-5">
+            <div className="flex-1 overflow-auto px-4 py-3">
               {!bookingUrl ? (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                   No Cal.com booking URL is configured for this client.
@@ -805,7 +805,7 @@ function AppointmentCard({
 
   return (
     <article
-      className={`rounded-xl border border-slate-200 border-l-4 bg-white px-5 py-4 ${stripe}`}
+      className={`rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-2.5 ${stripe}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <button
@@ -1070,14 +1070,14 @@ function DirectAppointmentView({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Link href="/patients" className="text-sm text-indigo-600 hover:underline">
         ← Back to patients
       </Link>
 
-      <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
+      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
         <div className="mb-3 flex items-center gap-2">
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-base font-bold text-slate-900">
             {a.name || "Unnamed"}
           </h1>
           <StatusPill status="direct" />
@@ -1095,8 +1095,8 @@ function DirectAppointmentView({
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-base font-semibold text-slate-900">
             Link to existing patient
           </h2>
@@ -1109,7 +1109,7 @@ function DirectAppointmentView({
             if it isn&apos;t already.
           </p>
         </div>
-        <div className="px-6 py-5">
+        <div className="px-4 py-3">
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}

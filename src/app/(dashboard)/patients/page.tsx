@@ -256,10 +256,10 @@ function PatientsPageInner() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Patients</h1>
+          <h1 className="text-lg font-bold text-slate-900">Patients</h1>
           <p className="text-sm text-slate-500">
             Qualified leads and walk-ins. Inactive = no completed visit in the
             last 12 months.
@@ -312,7 +312,7 @@ function PatientsPageInner() {
         </p>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block flex-1 min-w-[220px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -405,7 +405,7 @@ function PatientsPageInner() {
       )}
 
       {someSelected && (
-        <div className="sticky top-2 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3">
+        <div className="sticky top-2 z-20 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2">
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-indigo-900">
               {effectiveSelected.size} selected
@@ -440,7 +440,7 @@ function PatientsPageInner() {
       )}
 
       {showSetSource && someSelected && (
-        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
+        <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
           <label className="block flex-1 min-w-[200px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               New source value
@@ -479,8 +479,8 @@ function PatientsPageInner() {
         </p>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-base font-semibold text-slate-900">
             All Patients
           </h2>
@@ -490,9 +490,9 @@ function PatientsPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
+          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-slate-500">
+          <p className="px-4 py-3 text-sm text-slate-500">
             No patients match these filters.
           </p>
         ) : (
@@ -509,13 +509,13 @@ function PatientsPageInner() {
                       className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                   </th>
-                  <th className="px-6 py-3 text-left">Name</th>
-                  <th className="px-6 py-3 text-left">Phone</th>
-                  <th className="px-6 py-3 text-left">Age / Gender</th>
-                  <th className="px-6 py-3 text-left">Source</th>
-                  <th className="px-6 py-3 text-left">Status</th>
-                  <th className="px-6 py-3 text-left">Activity</th>
-                  <th className="px-6 py-3 text-right">Last appt</th>
+                  <th className="px-4 py-2 text-left">Name</th>
+                  <th className="px-4 py-2 text-left">Phone</th>
+                  <th className="px-4 py-2 text-left">Age / Gender</th>
+                  <th className="px-4 py-2 text-left">Source</th>
+                  <th className="px-4 py-2 text-left">Status</th>
+                  <th className="px-4 py-2 text-left">Activity</th>
+                  <th className="px-4 py-2 text-right">Last appt</th>
                 </tr>
               </thead>
               <tbody>
@@ -552,11 +552,11 @@ function PatientsPageInner() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 font-medium text-slate-900">
+                      <td className="px-4 py-2.5 font-medium text-slate-900">
                         {p.name}
                       </td>
-                      <td className="px-6 py-4 text-slate-700">{p.phone}</td>
-                      <td className="px-6 py-4 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-700">{p.phone}</td>
+                      <td className="px-4 py-2.5 text-slate-600">
                         {[
                           typeof p.age === "number" ? `${p.age}y` : null,
                           p.gender,
@@ -564,7 +564,7 @@ function PatientsPageInner() {
                           .filter(Boolean)
                           .join(" · ") || "—"}
                       </td>
-                      <td className="px-6 py-4 text-slate-600">
+                      <td className="px-4 py-2.5 text-slate-600">
                         {p.source ? (
                           <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600">
                             {p.source}
@@ -573,12 +573,12 @@ function PatientsPageInner() {
                           <span className="text-xs text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2.5">
                         <StatusPill
                           status={p.kind === "direct" ? "direct" : p.status}
                         />
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2.5">
                         {inactive ? (
                           <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
                             inactive
@@ -594,7 +594,7 @@ function PatientsPageInner() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right text-xs text-slate-500">
+                      <td className="px-4 py-2.5 text-right text-xs text-slate-500">
                         {p.lastAppointmentDate
                           ? new Date(p.lastAppointmentDate).toLocaleDateString()
                           : "—"}
@@ -675,10 +675,10 @@ function PatientsFilterModal({
       aria-modal="true"
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
+        className="w-full max-w-md overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-2.5">
           <div>
             <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
               <Filter size={14} className="text-indigo-600" />
@@ -698,7 +698,7 @@ function PatientsFilterModal({
           </button>
         </div>
 
-        <div className="space-y-4 px-5 py-4">
+        <div className="space-y-3 px-4 py-2.5">
           <FilterGroup
             title="Status"
             description="Active = had a completed visit in the last 12 months."
@@ -758,7 +758,7 @@ function PatientsFilterModal({
           </FilterGroup>
         </div>
 
-        <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3">
+        <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-2">
           <button
             type="button"
             onClick={onClearAll}

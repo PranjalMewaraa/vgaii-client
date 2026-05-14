@@ -180,7 +180,7 @@ function LeadDetailPageInner({
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
   if (!lead) {
     return (
-      <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         Lead not found.
       </p>
     );
@@ -192,7 +192,7 @@ function LeadDetailPageInner({
   const showBookingAction = status === "qualified";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <button
         type="button"
         onClick={() => router.push("/leads")}
@@ -201,12 +201,12 @@ function LeadDetailPageInner({
         ← Back to leads
       </button>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900">{lead.name}</h1>
+                <h1 className="text-base font-bold text-slate-900">{lead.name}</h1>
                 <StatusPill status={status} />
               </div>
               <p className="text-sm text-slate-600">{lead.phone}</p>
@@ -225,7 +225,7 @@ function LeadDetailPageInner({
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Next step
           </p>
@@ -287,7 +287,7 @@ function LeadDetailPageInner({
       </div>
 
       {showBookingAction && bookingOpen && (
-        <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Book via Cal.com
@@ -324,7 +324,7 @@ function LeadDetailPageInner({
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white px-6 py-5">
+      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           Internal notes
         </p>

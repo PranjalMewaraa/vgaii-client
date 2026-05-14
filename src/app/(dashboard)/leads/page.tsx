@@ -73,10 +73,10 @@ function LeadsPageInner() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
+          <h1 className="text-lg font-bold text-slate-900">Leads</h1>
           <p className="text-sm text-slate-500">
             Early-funnel and dropped contacts. Once a lead is{" "}
             <code className="rounded bg-slate-100 px-1">qualified</code>, they
@@ -101,7 +101,7 @@ function LeadsPageInner() {
         }}
       />
 
-      <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block flex-1 min-w-[180px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -167,8 +167,8 @@ function LeadsPageInner() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-base font-semibold text-slate-900">All Leads</h2>
           <span className="text-xs text-slate-500">
             {visible.length} of {leads.length}
@@ -176,9 +176,9 @@ function LeadsPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
+          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-slate-500">
+          <p className="px-4 py-3 text-sm text-slate-500">
             No leads match these filters.
           </p>
         ) : (
@@ -186,11 +186,11 @@ function LeadsPageInner() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-6 py-3 text-left">Name</th>
-                  <th className="px-6 py-3 text-left">Phone</th>
-                  <th className="px-6 py-3 text-left">Source</th>
-                  <th className="px-6 py-3 text-left">Status</th>
-                  <th className="px-6 py-3 text-right">Created</th>
+                  <th className="px-4 py-2 text-left">Name</th>
+                  <th className="px-4 py-2 text-left">Phone</th>
+                  <th className="px-4 py-2 text-left">Source</th>
+                  <th className="px-4 py-2 text-left">Status</th>
+                  <th className="px-4 py-2 text-right">Created</th>
                 </tr>
               </thead>
               <tbody>
@@ -200,7 +200,7 @@ function LeadsPageInner() {
                     onClick={() => router.push(`/leads/${lead.id}`)}
                     className="cursor-pointer border-t border-slate-200 hover:bg-slate-50"
                   >
-                    <td className="px-6 py-4 font-medium text-slate-900">
+                    <td className="px-4 py-2.5 font-medium text-slate-900">
                       {lead.name}
                       {typeof lead.outcomeRating === "number" && (
                         <span className="ml-2 text-xs text-amber-600">
@@ -208,14 +208,14 @@ function LeadsPageInner() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-slate-700">{lead.phone}</td>
-                    <td className="px-6 py-4 text-slate-600">
+                    <td className="px-4 py-2.5 text-slate-700">{lead.phone}</td>
+                    <td className="px-4 py-2.5 text-slate-600">
                       {lead.source || "—"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5">
                       <StatusPill status={lead.status} />
                     </td>
-                    <td className="px-6 py-4 text-right text-xs text-slate-500">
+                    <td className="px-4 py-2.5 text-right text-xs text-slate-500">
                       {lead.createdAt
                         ? new Date(lead.createdAt).toLocaleDateString()
                         : "—"}

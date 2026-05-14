@@ -217,7 +217,7 @@ export default function GlobalSearch() {
       </div>
 
       {open && q.trim().length >= 2 && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[60vh] overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
           {loading && totalResults === 0 ? (
             <p className="px-4 py-3 text-sm text-slate-500">Searching…</p>
           ) : totalResults === 0 ? (

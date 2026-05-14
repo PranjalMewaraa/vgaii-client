@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         Failed to load dashboard: {error}
       </p>
     );
@@ -64,9 +64,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <h1 className="text-lg font-bold text-slate-900">Dashboard</h1>
         <p className="text-sm text-slate-500">
           Overview of your leads, patients, and reputation.
         </p>

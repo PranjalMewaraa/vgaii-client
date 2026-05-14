@@ -343,10 +343,10 @@ function AppointmentsPageInner() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Appointments</h1>
+          <h1 className="text-lg font-bold text-slate-900">Appointments</h1>
           <p className="text-sm text-slate-500">
             Booked via Cal.com. After each visit, click <strong>Mark
             visited</strong> to record diagnosis and medicines.
@@ -397,7 +397,7 @@ function AppointmentsPageInner() {
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white">
+      <div className="rounded-lg border border-slate-200 bg-white">
         <div className="flex border-b border-slate-200">
           {(["upcoming", "history", "calendar"] as Tab[]).map(t => {
             const isActive = tab === t;
@@ -410,7 +410,7 @@ function AppointmentsPageInner() {
                   setExpandedId(null);
                   setEditingId(null);
                 }}
-                className={`flex-1 px-6 py-3 text-sm font-semibold capitalize transition ${
+                className={`flex-1 px-4 py-2 text-sm font-semibold capitalize transition ${
                   isActive
                     ? "border-b-2 border-indigo-600 text-indigo-700"
                     : "text-slate-500 hover:text-slate-700"
@@ -423,7 +423,7 @@ function AppointmentsPageInner() {
         </div>
 
         {tab !== "calendar" && (
-        <div className="px-6 py-4">
+        <div className="px-4 py-2.5">
           <div className="flex flex-wrap items-center gap-2">
             {presets.map(p => (
               <button
@@ -487,8 +487,8 @@ function AppointmentsPageInner() {
       )}
 
       {tab !== "calendar" && (
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-base font-semibold text-slate-900 capitalize">
             {tab === "upcoming" ? "Upcoming appointments" : "Appointment history"}
           </h2>
@@ -499,9 +499,9 @@ function AppointmentsPageInner() {
         </div>
 
         {loading ? (
-          <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
+          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-slate-500">
+          <p className="px-4 py-3 text-sm text-slate-500">
             {tab === "upcoming"
               ? "No upcoming appointments in this range."
               : "No past appointments in this range."}
@@ -517,7 +517,7 @@ function AppointmentsPageInner() {
                 (!!a.medicines && a.medicines.length > 0) ||
                 !!a.notes;
               return (
-                <li key={a.id} className="px-6 py-4">
+                <li key={a.id} className="px-4 py-2.5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <button
                       type="button"
@@ -752,8 +752,8 @@ function SpotlightCard({
 }) {
   const isActive = tone === "active";
   const containerCls = isActive
-    ? "rounded-xl border border-emerald-200 bg-emerald-50 px-6 py-5"
-    : "rounded-xl border border-slate-200 bg-white px-6 py-5";
+    ? "rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3"
+    : "rounded-lg border border-slate-200 bg-white px-4 py-3";
   const labelCls = isActive ? "text-emerald-700" : "text-slate-500";
   const date = new Date(appointment.date);
 
@@ -856,8 +856,8 @@ function CalendarWeekGrid({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-6 py-4">
+    <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-2.5">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -997,7 +997,7 @@ function CalendarWeekGrid({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 px-6 py-3 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 px-4 py-2 text-[11px] text-slate-500">
         <LegendChip className="bg-sky-100 border-sky-300" label="Scheduled" />
         <LegendChip
           className="bg-emerald-100 border-emerald-300"

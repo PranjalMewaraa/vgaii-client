@@ -70,9 +70,9 @@ function FeedbacksPageInner() {
   const [tab, setTab] = useState<Tab>("internal");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Feedbacks</h1>
+        <h1 className="text-lg font-bold text-slate-900">Feedbacks</h1>
         <p className="text-sm text-slate-500">
           Internal post-visit feedback alongside public reviews from your
           Google Business listing.
@@ -162,8 +162,8 @@ function InternalFeedbacks() {
   const openCount = rows.filter(r => r.status === "open").length;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4">
+    <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-2.5">
         <div>
           <h2 className="text-base font-semibold text-slate-900">
             All Feedbacks
@@ -192,9 +192,9 @@ function InternalFeedbacks() {
       </div>
 
       {loading ? (
-        <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
+        <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
       ) : visible.length === 0 ? (
-        <p className="px-6 py-6 text-sm text-slate-500">No feedback yet.</p>
+        <p className="px-4 py-3 text-sm text-slate-500">No feedback yet.</p>
       ) : (
         <ul className="divide-y divide-slate-200">
           {visible.map(f => {
@@ -203,7 +203,7 @@ function InternalFeedbacks() {
               f.rating === 1 ? "text-red-600" : "text-amber-600";
 
             return (
-              <li key={f.id} className="px-6 py-5">
+              <li key={f.id} className="px-4 py-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -368,7 +368,7 @@ function GoogleReviews() {
 
   if (!data.placeIdSet) {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5">
         <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-900">
           <AlertCircle size={14} />
           Google Place ID not set
@@ -397,8 +397,8 @@ function GoogleReviews() {
         data.reviews.filter(r => typeof r.rating === "number").length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
         <div>
           <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
@@ -479,7 +479,7 @@ function GoogleReviews() {
       )}
 
       {data.reviews.length === 0 ? null : visible.length === 0 ? (
-        <p className="rounded-xl border border-slate-200 bg-white px-5 py-6 text-sm text-slate-500">
+        <p className="rounded-lg border border-slate-200 bg-white px-5 py-6 text-sm text-slate-500">
           No reviews match this filter.
         </p>
       ) : (
@@ -496,7 +496,7 @@ function GoogleReviews() {
 function ReviewCard({ review }: { review: GoogleReview }) {
   const initial = (review.reviewerName ?? "?").charAt(0).toUpperCase();
   return (
-    <li className="rounded-xl border border-slate-200 bg-white p-4">
+    <li className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="flex flex-wrap items-start gap-3">
         {review.reviewerPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element

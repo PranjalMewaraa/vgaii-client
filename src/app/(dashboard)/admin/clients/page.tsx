@@ -190,10 +190,10 @@ function AdminClientsPageInner() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
+          <h1 className="text-lg font-bold text-slate-900">Clients</h1>
           <p className="text-sm text-slate-500">
             Every client on the platform with their team, integrations, and
             webhooks. Click a row to expand. Use Impersonate to view the
@@ -228,9 +228,9 @@ function AdminClientsPageInner() {
       {showCreate && (
         <form
           onSubmit={submitCreate}
-          className="rounded-xl border border-slate-200 bg-white"
+          className="rounded-lg border border-slate-200 bg-white"
         >
-          <div className="border-b border-slate-200 px-6 py-4">
+          <div className="border-b border-slate-200 px-4 py-2.5">
             <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
                 <Building2 size={14} />
@@ -244,7 +244,7 @@ function AdminClientsPageInner() {
             </p>
           </div>
 
-          <div className="space-y-5 px-6 py-5">
+          <div className="space-y-3 px-4 py-3">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field
                 label="Client name"
@@ -338,12 +338,12 @@ function AdminClientsPageInner() {
           </div>
 
           {createError && (
-            <p className="border-t border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
+            <p className="border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
               {createError}
             </p>
           )}
 
-          <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-6 py-3">
+          <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-2">
             <button
               type="button"
               onClick={() => setShowCreate(false)}
@@ -363,8 +363,8 @@ function AdminClientsPageInner() {
         </form>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
           <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
               <Building2 size={14} />
@@ -377,9 +377,9 @@ function AdminClientsPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
+          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
         ) : clients.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-slate-500">No clients yet.</p>
+          <p className="px-4 py-3 text-sm text-slate-500">No clients yet.</p>
         ) : (
           <ul className="divide-y divide-slate-200">
             {clients.map(c => {
@@ -392,7 +392,7 @@ function AdminClientsPageInner() {
                   <button
                     type="button"
                     onClick={() => toggle(c.id)}
-                    className="flex w-full items-center justify-between gap-4 px-6 py-4 text-left transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition hover:bg-slate-50"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -471,7 +471,7 @@ function AdminClientsPageInner() {
                   </button>
 
                   {isOpen && (
-                    <div className="space-y-4 bg-slate-50/60 px-6 pb-5 pt-1">
+                    <div className="space-y-3 bg-slate-50/60 px-6 pb-5 pt-1">
                       <ClientAdminBlock
                         client={c}
                         busyId={busyId}
@@ -962,7 +962,7 @@ function CustomDomainSetupGuide({ domain }: { domain?: string }) {
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-indigo-100 px-4 py-4">
+        <div className="space-y-3 border-t border-indigo-100 px-4 py-4">
           <p className="text-xs leading-relaxed text-slate-600">
             A custom domain lets your client&apos;s public profile live at
             their own URL, like{" "}

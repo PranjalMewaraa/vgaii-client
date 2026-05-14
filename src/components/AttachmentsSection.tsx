@@ -70,7 +70,7 @@ const isImage = (mime: string) => mime.startsWith("image/");
 
 const FileGlyph = ({ mime }: { mime: string }) => (
   <span
-    className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
       isImage(mime) ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"
     }`}
     aria-hidden

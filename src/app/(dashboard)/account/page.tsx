@@ -64,20 +64,20 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header>
-        <h1 className="text-2xl font-bold text-slate-900">Account</h1>
+        <h1 className="text-lg font-bold text-slate-900">Account</h1>
         <p className="text-sm text-slate-500">
           Manage your sign-in details. For role or module access, ask your
           admin.
         </p>
       </header>
 
-      <section className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
+      <section className="rounded-lg border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-base font-semibold text-slate-900">Profile</h2>
         </div>
-        <dl className="grid grid-cols-1 gap-4 px-6 py-5 sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-4 px-4 py-3 sm:grid-cols-2">
           <Row label="Name" value={user?.name ?? "—"} />
           <Row label="Email" value={user?.email ?? "—"} />
           <Row label="Role" value={user?.role ?? "—"} />
@@ -92,14 +92,14 @@ export default function AccountPage() {
         </dl>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
+      <section className="rounded-lg border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-2.5">
           <h2 className="text-base font-semibold text-slate-900">
             Change password
           </h2>
           <p className="text-xs text-slate-500">{passwordPolicyDescription}</p>
         </div>
-        <form onSubmit={submit} className="space-y-4 px-6 py-5">
+        <form onSubmit={submit} className="space-y-3 px-4 py-3">
           <Field
             label="Current password"
             type="password"

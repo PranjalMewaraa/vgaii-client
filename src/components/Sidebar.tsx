@@ -79,8 +79,8 @@ export default function Sidebar({
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
+        <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
             V
           </div>
           <span className="text-sm font-bold tracking-wide text-slate-900">

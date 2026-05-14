@@ -116,7 +116,7 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
         {error.message || "Could not load analytics"}
       </p>
     );
@@ -126,10 +126,10 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-lg font-bold text-slate-900">
             Platform overview
           </h1>
           <p className="text-sm text-slate-500">
@@ -290,7 +290,7 @@ function SubscriptionAttention({ rows }: { rows: AttentionRow[] }) {
   const expiredCount = rows.filter(r => r.severity === "expired").length;
   const weekCount = rows.filter(r => r.severity === "this_week").length;
   return (
-    <section className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+    <section className="rounded-lg border border-amber-200 bg-amber-50/60 p-4">
       <div className="mb-3 flex items-center gap-2">
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
           <AlertCircle size={14} />
@@ -333,7 +333,7 @@ function SubscriptionAttention({ rows }: { rows: AttentionRow[] }) {
 
 function TopClients({ rows }: { rows: TopClientRow[] }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="mb-3 flex items-center gap-2">
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
           <TrendingUp size={14} />
@@ -382,7 +382,7 @@ function TopClients({ rows }: { rows: TopClientRow[] }) {
 
 function RecentActivity({ entries }: { entries: ActivityEntry[] | null }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 text-violet-600">

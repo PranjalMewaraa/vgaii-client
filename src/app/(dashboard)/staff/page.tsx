@@ -163,10 +163,10 @@ function StaffPageInner() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="inline-flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <h1 className="inline-flex items-center gap-2 text-lg font-bold text-slate-900">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
               <Users size={16} />
             </span>
@@ -196,8 +196,8 @@ function StaffPageInner() {
       </header>
 
       {showCreate && (
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-2.5">
           <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
               <UserPlus size={14} />
@@ -210,7 +210,7 @@ function StaffPageInner() {
           </p>
         </div>
 
-        <form onSubmit={submitCreate} className="px-6 py-5">
+        <form onSubmit={submitCreate} className="px-4 py-3">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <label className="block">
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
@@ -330,8 +330,8 @@ function StaffPageInner() {
       </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
           <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
               <Users size={14} />
@@ -344,9 +344,9 @@ function StaffPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-6 py-6 text-sm text-slate-500">Loading…</p>
+          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
         ) : staff.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-slate-500">
+          <p className="px-4 py-3 text-sm text-slate-500">
             No staff yet — add one above.
           </p>
         ) : (
@@ -354,11 +354,11 @@ function StaffPageInner() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-6 py-3 text-left">Name</th>
-                  <th className="px-6 py-3 text-left">Email</th>
-                  <th className="px-6 py-3 text-left">Modules</th>
-                  <th className="px-6 py-3 text-left">Created</th>
-                  <th className="px-6 py-3 text-right">Actions</th>
+                  <th className="px-4 py-2 text-left">Name</th>
+                  <th className="px-4 py-2 text-left">Email</th>
+                  <th className="px-4 py-2 text-left">Modules</th>
+                  <th className="px-4 py-2 text-left">Created</th>
+                  <th className="px-4 py-2 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -369,7 +369,7 @@ function StaffPageInner() {
                       key={member.id}
                       className="border-t border-slate-200 align-top"
                     >
-                      <td className="px-6 py-4 font-medium text-slate-900">
+                      <td className="px-4 py-2.5 font-medium text-slate-900">
                         <span className="inline-flex items-center gap-2">
                           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
                             {(member.name || member.email || "?")
@@ -379,10 +379,10 @@ function StaffPageInner() {
                           {member.name || "—"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-700">
+                      <td className="px-4 py-2.5 text-slate-700">
                         {member.email}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2.5">
                         {editing ? (
                           <div className="flex flex-wrap gap-2">
                             {ASSIGNABLE_MODULES.map(m => {
@@ -423,12 +423,12 @@ function StaffPageInner() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-xs text-slate-500">
+                      <td className="px-4 py-2.5 text-xs text-slate-500">
                         {member.createdAt
                           ? new Date(member.createdAt).toLocaleDateString()
                           : "—"}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-4 py-2.5 text-right">
                         {editing ? (
                           <div className="inline-flex gap-2">
                             <button

@@ -53,7 +53,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
   const roleLabel = user?.role ? ROLE_LABELS[user.role] ?? user.role : "";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-slate-200 bg-white px-6 py-4 md:px-8">
+    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-slate-200 bg-white px-4 py-2 md:px-6">
       <button
         type="button"
         onClick={onMenuClick}
@@ -79,7 +79,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             title="Account & password"
             className="flex items-center gap-2 rounded-full p-0.5 transition hover:bg-slate-100"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
               {initial}
             </span>
             <span className="hidden pr-2 text-sm font-medium text-slate-700 sm:block">

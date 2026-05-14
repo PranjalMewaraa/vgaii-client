@@ -136,10 +136,10 @@ function ProfilePageInner() {
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
 
   return (
-    <form onSubmit={submit} className="space-y-6">
+    <form onSubmit={submit} className="space-y-3">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Profile</h1>
+          <h1 className="text-lg font-bold text-slate-900">Profile</h1>
           <p className="text-sm text-slate-500">
             Edit your public landing page. Toggle <em>Enabled</em> to publish.
           </p>
@@ -365,14 +365,14 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-6 py-4">
+    <section className="rounded-lg border border-slate-200 bg-white">
+      <div className="border-b border-slate-200 px-4 py-2.5">
         <h2 className="text-base font-semibold text-slate-900">{title}</h2>
         {description && (
           <p className="text-xs text-slate-500">{description}</p>
         )}
       </div>
-      <div className="space-y-4 px-6 py-5">{children}</div>
+      <div className="space-y-3 px-4 py-3">{children}</div>
     </section>
   );
 }
