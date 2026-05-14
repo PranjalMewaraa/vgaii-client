@@ -103,7 +103,7 @@ export default function Dashboard() {
           title="Patients"
           value={data.patientsCount}
           icon={Stethoscope}
-          color="indigo"
+          color="sky"
         />
         <StatCard
           title="Upcoming Appts"
