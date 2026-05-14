@@ -7,6 +7,7 @@ import PaymentEntryTab from "@/components/finances/PaymentEntryTab";
 import PresetChargesTab from "@/components/finances/PresetChargesTab";
 import ExpenseEntryTab from "@/components/finances/ExpenseEntryTab";
 import DailySummaryTab from "@/components/finances/DailySummaryTab";
+import ReportsTab from "@/components/finances/ReportsTab";
 
 type Tab = "payment" | "expense" | "summary" | "reports" | "presets";
 
@@ -73,12 +74,8 @@ function FinancesPageInner() {
       {tab === "payment" && <PaymentEntryTab />}
       {tab === "expense" && <ExpenseEntryTab />}
       {tab === "summary" && <DailySummaryTab />}
+      {tab === "reports" && <ReportsTab />}
       {tab === "presets" && isAdmin && <PresetChargesTab />}
-      {tab === "reports" && (
-        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-          Reports ship in the next update.
-        </div>
-      )}
     </div>
   );
 }

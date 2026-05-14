@@ -19,6 +19,7 @@ export async function GET(req: Request) {
     const to = url.searchParams.get("to");
     const method = url.searchParams.get("method");
     const leadId = url.searchParams.get("leadId");
+    const collectedBy = url.searchParams.get("collectedBy");
 
     const where: Prisma.PaymentWhereInput = withClientFilter(
       user,
@@ -33,6 +34,7 @@ export async function GET(req: Request) {
       where.paymentMethod = method as Prisma.PaymentWhereInput["paymentMethod"];
     }
     if (leadId) where.leadId = leadId;
+    if (collectedBy) where.collectedById = collectedBy;
 
     const payments = await prisma.payment.findMany({
       where,
