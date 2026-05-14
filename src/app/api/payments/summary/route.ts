@@ -33,9 +33,16 @@ export async function GET(req: Request) {
     const scope = withClientFilter(user) as { clientId?: string };
     const range = { gte: start, lt: end };
 
+    // Seven-day window for the trend chart: includes the requested day
+    // back six days. We bucket in JS rather than asking MySQL for date
+    // truncation — the dataset for a single tenant's last week is small
+    // enough that it's not worth a $queryRaw.
+    const trendStart = new Date(start);
+    trendStart.setDate(trendStart.getDate() - 6);
+
     // groupBy returns one row per (paymentMethod) bucket. We sum finalAmount
     // (post-discount) so the totals reflect what actually changed hands.
-    const [paymentBuckets, expenseTotal, expenseBuckets, pendingTotal] =
+    const [paymentBuckets, expenseTotal, expenseBuckets, pendingTotal, trendPayments, trendExpenses] =
       await Promise.all([
         prisma.payment.groupBy({
           by: ["paymentMethod"],
@@ -65,6 +72,16 @@ export async function GET(req: Request) {
           _sum: { finalAmount: true },
           _count: { _all: true },
         }),
+        // Trend rows for the 7-day window. We pull the bare minimum
+        // columns and bucket in memory.
+        prisma.payment.findMany({
+          where: { ...scope, createdAt: { gte: trendStart, lt: end } },
+          select: { createdAt: true, finalAmount: true, paymentMethod: true },
+        }),
+        prisma.expense.findMany({
+          where: { ...scope, createdAt: { gte: trendStart, lt: end } },
+          select: { createdAt: true, amount: true },
+        }),
       ]);
 
     const byMethod: Record<string, Bucket> = {};
@@ -90,6 +107,42 @@ export async function GET(req: Request) {
       })),
     };
 
+    // Stitch the 7-day trend. Iterate days first so empty days still
+    // appear in the chart with zero totals.
+    const dayKey = (d: Date) => {
+      const x = new Date(d);
+      x.setHours(0, 0, 0, 0);
+      return x.toISOString().slice(0, 10);
+    };
+    const collectedByDay = new Map<string, number>();
+    const expensesByDay = new Map<string, number>();
+    for (const p of trendPayments) {
+      // Pending payments don't represent cash in hand — skip them in the
+      // trend for consistency with the headline "collected" tile.
+      if (p.paymentMethod === "pending") continue;
+      const k = dayKey(p.createdAt);
+      collectedByDay.set(k, (collectedByDay.get(k) ?? 0) + p.finalAmount);
+    }
+    for (const e of trendExpenses) {
+      const k = dayKey(e.createdAt);
+      expensesByDay.set(k, (expensesByDay.get(k) ?? 0) + e.amount);
+    }
+    const weeklyTrend: Array<{
+      date: string;
+      collected: number;
+      expenses: number;
+    }> = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(trendStart);
+      d.setDate(d.getDate() + i);
+      const k = dayKey(d);
+      weeklyTrend.push({
+        date: k,
+        collected: collectedByDay.get(k) ?? 0,
+        expenses: expensesByDay.get(k) ?? 0,
+      });
+    }
+
     return NextResponse.json({
       date: start.toISOString(),
       collectedTotal,
@@ -100,6 +153,7 @@ export async function GET(req: Request) {
       },
       expenses,
       net: collectedTotal - expenses.total,
+      weeklyTrend,
     });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });

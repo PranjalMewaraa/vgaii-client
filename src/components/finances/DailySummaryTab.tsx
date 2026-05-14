@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 import {
   Banknote,
@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { formatRupees } from "@/lib/currency";
+import MethodBarChart from "@/components/charts/MethodBarChart";
+import DailyTrendChart from "@/components/charts/DailyTrendChart";
+import CategoryBarChart from "@/components/charts/CategoryBarChart";
 
 type Bucket = { method: string; total: number; count: number };
 
@@ -28,6 +31,11 @@ type SummaryResponse = {
     byCategory: Array<{ category: string; total: number; count: number }>;
   };
   net: number;
+  weeklyTrend?: Array<{
+    date: string;
+    collected: number;
+    expenses: number;
+  }>;
 };
 
 // Local date helpers — the date input gives us YYYY-MM-DD already in
@@ -38,9 +46,6 @@ const todayISO = () => {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
-
-const formatCategory = (c: string) =>
-  c.replace(/_/g, " ").replace(/\b\w/g, x => x.toUpperCase());
 
 export default function DailySummaryTab() {
   const [date, setDate] = useState<string>(todayISO);
@@ -57,6 +62,23 @@ export default function DailySummaryTab() {
   const pending = data?.pending?.total ?? 0;
   const expenses = data?.expenses?.total ?? 0;
   const net = data?.net ?? 0;
+
+  // Stable bucket order for the by-method chart — keeps the bars in the
+  // same position regardless of which methods were used today.
+  const methodChartData = useMemo(() => {
+    const order: Array<"cash" | "upi" | "card" | "mixed" | "pending"> = [
+      "cash",
+      "upi",
+      "card",
+      "mixed",
+      "pending",
+    ];
+    return order.map(m => ({
+      method: m,
+      total: data?.byMethod?.[m]?.total ?? 0,
+      count: data?.byMethod?.[m]?.count ?? 0,
+    }));
+  }, [data]);
 
   return (
     <div className="space-y-3">
@@ -150,29 +172,18 @@ export default function DailySummaryTab() {
               value={formatRupees(net)}
               hint="Collected − Expenses (excludes pending)"
             />
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                Expenses by category
-              </p>
-              {data?.expenses?.byCategory.length === 0 ? (
-                <p className="mt-2 text-xs text-slate-500">No expenses today.</p>
-              ) : (
-                <ul className="mt-2 space-y-1 text-sm">
-                  {data?.expenses?.byCategory.map(b => (
-                    <li
-                      key={b.category}
-                      className="flex items-center justify-between gap-2 text-slate-700"
-                    >
-                      <span className="truncate">{formatCategory(b.category)}</span>
-                      <span className="text-xs font-medium text-slate-500">
-                        {formatRupees(b.total)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
           </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <MethodBarChart data={methodChartData} />
+            <CategoryBarChart
+              data={data?.expenses?.byCategory ?? []}
+              title="Expenses by category"
+              subtitle="Today's spend, grouped by category"
+            />
+          </div>
+
+          <DailyTrendChart data={data?.weeklyTrend ?? []} />
         </>
       )}
     </div>

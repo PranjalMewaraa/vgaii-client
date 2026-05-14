@@ -11,6 +11,7 @@ import QuickActionsCard from "@/components/QuickActionsCard";
 import NextAppointmentCard from "@/components/NextAppointmentCard";
 import OverviewCard from "@/components/OverviewCard";
 import AdminDashboard from "@/components/AdminDashboard";
+import LeadsTrendChart from "@/components/charts/LeadsTrendChart";
 import { useStoredUser } from "@/lib/client-auth";
 
 type DashboardData = {
@@ -28,6 +29,7 @@ type DashboardData = {
   subscriptionError?: string;
   businessInfo: BusinessInfo | null;
   topSources?: Array<{ source: string; count: number }>;
+  weeklyLeads?: Array<{ date: string; count: number }>;
 };
 
 export default function Dashboard() {
@@ -114,13 +116,20 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Row 3: Subscription full-width */}
-      <SubscriptionCard
-        status={data.subscription}
-        renewalDate={data.renewalDate}
-        source={data.subscriptionSource}
-        error={data.subscriptionError}
-      />
+      {/* Row 3: leads trend + subscription */}
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <LeadsTrendChart data={data.weeklyLeads ?? []} />
+        </div>
+        <div>
+          <SubscriptionCard
+            status={data.subscription}
+            renewalDate={data.renewalDate}
+            source={data.subscriptionSource}
+            error={data.subscriptionError}
+          />
+        </div>
+      </div>
     </div>
   );
 }

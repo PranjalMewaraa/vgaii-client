@@ -80,6 +80,11 @@ export async function GET(req: Request) {
     startOfToday.setHours(0, 0, 0, 0);
     const startOfYesterday = new Date(startOfToday);
     startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    // 7-day window for the leads trend chart: includes today back six.
+    const weekStart = new Date(startOfToday);
+    weekStart.setDate(weekStart.getDate() - 6);
+    const tomorrow = new Date(startOfToday);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     const [
       leadsCount,
@@ -92,6 +97,7 @@ export async function GET(req: Request) {
       resolvedFeedback,
       ratedFeedbackAgg,
       sourcesAgg,
+      weekLeadRows,
     ] = await Promise.all([
       prisma.lead.count({ where: scope }),
       prisma.lead.count({
@@ -142,6 +148,12 @@ export async function GET(req: Request) {
         orderBy: { _count: { source: "desc" } },
         take: 8,
       }),
+      // Last seven days of lead createdAt timestamps for the trend chart.
+      // Bucketed in JS below since MySQL has no native date_trunc.
+      prisma.lead.findMany({
+        where: { ...scope, createdAt: { gte: weekStart, lt: tomorrow } },
+        select: { createdAt: true },
+      }),
     ]);
 
     const internalFeedback = {
@@ -156,6 +168,26 @@ export async function GET(req: Request) {
       source: s.source ?? "Unknown",
       count: s._count._all,
     }));
+
+    // Bucket the week's lead createdAt rows into a fixed 7-element trend
+    // so empty days still render with zero on the chart.
+    const dayKey = (d: Date) => {
+      const x = new Date(d);
+      x.setHours(0, 0, 0, 0);
+      return x.toISOString().slice(0, 10);
+    };
+    const leadsByDay = new Map<string, number>();
+    for (const r of weekLeadRows) {
+      const k = dayKey(r.createdAt);
+      leadsByDay.set(k, (leadsByDay.get(k) ?? 0) + 1);
+    }
+    const weeklyLeads: Array<{ date: string; count: number }> = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(d.getDate() + i);
+      const k = dayKey(d);
+      weeklyLeads.push({ date: k, count: leadsByDay.get(k) ?? 0 });
+    }
 
     return NextResponse.json({
       leadsCount,
@@ -172,6 +204,7 @@ export async function GET(req: Request) {
       subscriptionError,
       businessInfo,
       topSources,
+      weeklyLeads,
       bookingUrl: client?.bookingUrl ?? null,
     });
   } catch (err: unknown) {

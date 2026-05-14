@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { Download } from "lucide-react";
 import { formatRupees } from "@/lib/currency";
+import PaymentsTrendChart from "@/components/charts/PaymentsTrendChart";
+import CategoryBarChart from "@/components/charts/CategoryBarChart";
 import {
   PAYMENT_METHODS,
   EXPENSE_CATEGORIES,
@@ -202,6 +204,24 @@ function PaymentsReport() {
     return { collected, pending };
   }, [payments]);
 
+  // Daily totals over the filtered range for the trend chart. Pending
+  // payments are excluded — they don't represent cash in hand.
+  const dailyTrend = useMemo(() => {
+    if (payments.length === 0) return [];
+    const byDay = new Map<string, { collected: number; count: number }>();
+    for (const p of payments) {
+      if (p.paymentMethod === "pending") continue;
+      const k = new Date(p.createdAt).toISOString().slice(0, 10);
+      const bucket = byDay.get(k) ?? { collected: 0, count: 0 };
+      bucket.collected += p.finalAmount;
+      bucket.count += 1;
+      byDay.set(k, bucket);
+    }
+    return Array.from(byDay.entries())
+      .map(([date, v]) => ({ date, collected: v.collected, count: v.count }))
+      .sort((a, b) => (a.date < b.date ? -1 : 1));
+  }, [payments]);
+
   const exportCsv = () => {
     const rows: string[][] = [
       [
@@ -306,6 +326,8 @@ function PaymentsReport() {
           tone="slate"
         />
       </div>
+
+      <PaymentsTrendChart data={dailyTrend} empty={dailyTrend.length === 0} />
 
       <div className="rounded-lg border border-slate-200 bg-white">
         {isLoading ? (
@@ -476,6 +498,14 @@ function ExpensesReport() {
           tone="indigo"
         />
       </div>
+
+      <CategoryBarChart
+        data={Array.from(totals.byCategory.entries())
+          .map(([category, total]) => ({ category, total }))
+          .sort((a, b) => b.total - a.total)}
+        title="Spend by category"
+        subtitle="Totals across the filtered range"
+      />
 
       <div className="rounded-lg border border-slate-200 bg-white">
         {isLoading ? (
