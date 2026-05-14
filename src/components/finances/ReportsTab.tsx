@@ -51,33 +51,33 @@ const PRESET_LABELS: Record<Preset, string> = {
 const formatCategory = (c: string) =>
   c.replace(/_/g, " ").replace(/\b\w/g, x => x.toUpperCase());
 
-// Build [from, to] for the given preset. Returns ISO strings ready to drop
-// into a URL.
+// Build [from, to] for the given preset. The upper bound snaps to
+// end-of-day so the value is stable across re-renders within the same
+// calendar day — otherwise SWR's key (which is the URL string) would
+// change on every render and the request would loop.
 const rangeFor = (preset: Preset, custom: { from: string; to: string }) => {
-  const now = new Date();
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
   if (preset === "today") {
-    const start = new Date(now);
-    start.setHours(0, 0, 0, 0);
-    return { from: start.toISOString(), to: now.toISOString() };
+    return { from: start.toISOString(), to: end.toISOString() };
   }
   if (preset === "week") {
-    const start = new Date(now);
     start.setDate(start.getDate() - 6);
-    start.setHours(0, 0, 0, 0);
-    return { from: start.toISOString(), to: now.toISOString() };
+    return { from: start.toISOString(), to: end.toISOString() };
   }
   if (preset === "month") {
-    const start = new Date(now);
     start.setDate(1);
-    start.setHours(0, 0, 0, 0);
-    return { from: start.toISOString(), to: now.toISOString() };
+    return { from: start.toISOString(), to: end.toISOString() };
   }
   // custom — fall back to "today" if either date is missing.
   if (!custom.from || !custom.to) {
-    return rangeFor("today", custom);
+    return { from: start.toISOString(), to: end.toISOString() };
   }
   return {
-    from: new Date(custom.from).toISOString(),
+    from: new Date(`${custom.from}T00:00:00`).toISOString(),
     to: new Date(`${custom.to}T23:59:59`).toISOString(),
   };
 };
