@@ -29,10 +29,19 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname();
   const user = useStoredUser();
 
-  const title =
-    PAGE_TITLES[pathname || "/"] ??
-    (pathname?.split("/").pop()?.replace(/^\w/, c => c.toUpperCase()) ||
-      "Dashboard");
+  // Match dynamic detail routes before falling back to the path-segment
+  // heuristic — otherwise we'd render the cuid as the page title.
+  const resolveTitle = (): string => {
+    if (!pathname) return "Dashboard";
+    if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+    if (/^\/patients\/[^/]+$/.test(pathname)) return "Patient Details";
+    if (/^\/leads\/[^/]+$/.test(pathname)) return "Lead Details";
+    return (
+      pathname.split("/").pop()?.replace(/^\w/, c => c.toUpperCase()) ||
+      "Dashboard"
+    );
+  };
+  const title = resolveTitle();
 
   const logout = () => {
     // Fire-and-forget audit ping; don't block UI on it.

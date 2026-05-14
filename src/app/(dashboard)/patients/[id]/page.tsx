@@ -8,10 +8,7 @@ import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import BookingEmbed from "@/components/BookingEmbed";
 import AttachmentsSection from "@/components/AttachmentsSection";
-import {
-  LEAD_TRANSITIONS,
-  type LeadStatus,
-} from "@/lib/constants";
+import { type LeadStatus } from "@/lib/constants";
 
 type DetailTab = "overview" | "appointments" | "medical-history";
 
@@ -121,9 +118,7 @@ function PatientDetailPageInner({
     setExpandedApptId(prev => (prev === apptId ? null : apptId));
   };
 
-  // status transition + notes
-  const [busy, setBusy] = useState(false);
-  const [transitionError, setTransitionError] = useState<string | null>(null);
+  // notes draft
   const [notesDraft, setNotesDraft] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
@@ -165,37 +160,9 @@ function PatientDetailPageInner({
 
   const { lead, appointments, feedbacks } = data;
   const status = (lead.status ?? "qualified") as LeadStatus;
-  const allowed = LEAD_TRANSITIONS[status];
   const dirtyNotes = notesDraft !== (lead.notes ?? "");
   const lastVisit = appointments.find(a => a.status === "completed")?.date;
   const inactive = isInactive(lastVisit);
-
-  const setStatus = async (next: LeadStatus) => {
-    setBusy(true);
-    setTransitionError(null);
-    try {
-      const res = await fetch(`/api/leads/${id}`, {
-        method: "PATCH",
-        headers: authHeaders(),
-        body: JSON.stringify({ status: next }),
-      });
-      const j = await res.json();
-      if (!res.ok) {
-        setTransitionError(
-          typeof j.error === "string" ? j.error : "Status change failed",
-        );
-        return;
-      }
-      // If the patient is no longer qualified+, redirect to leads.
-      if (next === "lost" || next === "new" || next === "contacted") {
-        router.push(`/leads/${id}`);
-        return;
-      }
-      load();
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const saveNotes = async () => {
     setSavingNotes(true);
@@ -539,38 +506,6 @@ function PatientDetailPageInner({
               )}
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                Funnel status
-              </p>
-              <p className="mt-2 inline-flex items-center gap-2 text-sm text-slate-700">
-                Currently <StatusPill status={status} />
-              </p>
-              {allowed.length === 0 ? (
-                <p className="mt-2 text-xs text-slate-500">
-                  Terminal state — no further status changes.
-                </p>
-              ) : (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {allowed.map(next => (
-                    <button
-                      key={next}
-                      type="button"
-                      onClick={() => setStatus(next)}
-                      disabled={busy}
-                      className="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-white disabled:opacity-60"
-                    >
-                      {next.replace(/_/g, " ")}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {transitionError && (
-                <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  {transitionError}
-                </p>
-              )}
-            </div>
           </div>
         </div>
       )}
