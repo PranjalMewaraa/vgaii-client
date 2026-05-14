@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Filter, X } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
+import AddPatientModal from "@/components/AddPatientModal";
 
 type PatientRow = {
   kind: "lead" | "direct";
@@ -87,16 +88,8 @@ function PatientsPageInner() {
   const [showSetSource, setShowSetSource] = useState(false);
   const [newSourceValue, setNewSourceValue] = useState("");
 
-  // create form
+  // create form (modal)
   const [showCreate, setShowCreate] = useState(false);
-  const [cName, setCName] = useState("");
-  const [cPhone, setCPhone] = useState("");
-  const [cAge, setCAge] = useState("");
-  const [cGender, setCGender] = useState("");
-  const [cEmail, setCEmail] = useState("");
-  const [cArea, setCArea] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
 
   // import
   const [importing, setImporting] = useState(false);
@@ -221,45 +214,6 @@ function PatientsPageInner() {
     URL.revokeObjectURL(dl);
   };
 
-  const submitCreate = async (e: FormEvent) => {
-    e.preventDefault();
-    setCreating(true);
-    setCreateError(null);
-    try {
-      const res = await fetch("/api/patients", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          name: cName,
-          phone: cPhone,
-          age: Number(cAge),
-          gender: cGender,
-          email: cEmail || undefined,
-          area: cArea || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setCreateError(
-          typeof data.error === "string" ? data.error : "Failed to add patient",
-        );
-        return;
-      }
-      setShowCreate(false);
-      setCName("");
-      setCPhone("");
-      setCAge("");
-      setCGender("");
-      setCEmail("");
-      setCArea("");
-      load();
-    } catch {
-      setCreateError("Network error");
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const exportCsv = async () => {
     const res = await fetch("/api/patients/export", { headers: authHeaders() });
     if (!res.ok) return;
@@ -335,79 +289,27 @@ function PatientsPageInner() {
           </button>
           <button
             type="button"
-            onClick={() => setShowCreate(o => !o)}
+            onClick={() => setShowCreate(true)}
             className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
           >
-            {showCreate ? "Cancel" : "+ New patient"}
+            + New patient
           </button>
         </div>
       </header>
+
+      <AddPatientModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreated={() => {
+          setShowCreate(false);
+          load();
+        }}
+      />
 
       {importMsg && (
         <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
           {importMsg}
         </p>
-      )}
-
-      {showCreate && (
-        <form
-          onSubmit={submitCreate}
-          className="rounded-xl border border-slate-200 bg-white"
-        >
-          <div className="border-b border-slate-200 px-6 py-4">
-            <h2 className="text-base font-semibold text-slate-900">
-              New patient
-            </h2>
-            <p className="text-xs text-slate-500">
-              Name, phone, age, and gender are required. Patient is created at
-              status <code className="rounded bg-slate-100 px-1">qualified</code>.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 px-6 py-5 md:grid-cols-3">
-            <Field label="Name" value={cName} onChange={setCName} required minLength={2} />
-            <Field label="Phone" value={cPhone} onChange={setCPhone} required minLength={10} placeholder="+91…" />
-            <Field label="Age" type="number" value={cAge} onChange={setCAge} required />
-            <label className="block">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Gender
-              </span>
-              <select
-                value={cGender}
-                onChange={e => setCGender(e.target.value)}
-                required
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              >
-                <option value="">Select…</option>
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-            <Field label="Email (optional)" type="email" value={cEmail} onChange={setCEmail} />
-            <Field label="Area (optional)" value={cArea} onChange={setCArea} />
-          </div>
-          {createError && (
-            <p className="border-t border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">
-              {createError}
-            </p>
-          )}
-          <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-6 py-3">
-            <button
-              type="button"
-              onClick={() => setShowCreate(false)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={creating}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
-              {creating ? "Saving…" : "Add patient"}
-            </button>
-          </div>
-        </form>
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white px-6 py-4">
@@ -928,37 +830,3 @@ function Pills<T extends string>({
   );
 }
 
-function Field({
-  label,
-  value,
-  onChange,
-  type = "text",
-  required,
-  minLength,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-  required?: boolean;
-  minLength?: number;
-  placeholder?: string;
-}) {
-  return (
-    <label className="block">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-        {label}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        required={required}
-        minLength={minLength}
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-      />
-    </label>
-  );
-}
