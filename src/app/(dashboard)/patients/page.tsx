@@ -3,10 +3,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { Filter, X } from "lucide-react";
+import {
+  CalendarCheck,
+  CheckCircle2,
+  Filter,
+  MoreVertical,
+  Stethoscope,
+  UserCheck,
+  Users,
+  X,
+} from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddPatientModal from "@/components/AddPatientModal";
+import StatCard from "@/components/StatCard";
 
 type PatientRow = {
   kind: "lead" | "direct";
@@ -104,6 +114,34 @@ function PatientsPageInner() {
     return Array.from(set).sort();
   }, [rows]);
 
+  // Top-of-page metric tiles. Computed over the full result set (not the
+  // currently-filtered view) so the numbers stay stable while the user
+  // tweaks filters below.
+  const stats = useMemo(() => {
+    let active = 0;
+    let visited = 0;
+    let booked = 0;
+    let qualified = 0;
+    for (const r of rows) {
+      if (!isInactive(r.lastAppointmentDate)) active++;
+      if (r.status === "visited") visited++;
+      else if (r.status === "appointment_booked") booked++;
+      else if (r.status === "qualified") qualified++;
+    }
+    return { total: rows.length, active, visited, booked, qualified };
+  }, [rows]);
+
+  // Client-side pagination. The API already caps at 100 rows, so paging
+  // here is purely a presentation concern.
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Reset to page 1 whenever the filter inputs change — otherwise the user
+  // can land on an empty page after narrowing the result set.
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, sourceFilter, activeFilter, genderFilter, feedbackFilter, rowsPerPage]);
+
   const visible = useMemo(() => {
     return rows.filter(r => {
       if (sourceFilter && r.source !== sourceFilter) return false;
@@ -117,6 +155,15 @@ function PatientsPageInner() {
       return true;
     });
   }, [rows, sourceFilter, activeFilter, genderFilter, feedbackFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(visible.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const pagedVisible = useMemo(() => {
+    const start = (safePage - 1) * rowsPerPage;
+    return visible.slice(start, start + rowsPerPage);
+  }, [visible, safePage, rowsPerPage]);
+  const firstShown = visible.length === 0 ? 0 : (safePage - 1) * rowsPerPage + 1;
+  const lastShown = Math.min(safePage * rowsPerPage, visible.length);
 
   const activeFilterCount =
     (activeFilter !== "all" ? 1 : 0) +
@@ -314,6 +361,44 @@ function PatientsPageInner() {
           {importMsg}
         </p>
       )}
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        <StatCard
+          title="Total Patients"
+          value={stats.total}
+          icon={Users}
+          color="indigo"
+          hint="All time"
+        />
+        <StatCard
+          title="Active Patients"
+          value={stats.active}
+          icon={UserCheck}
+          color="green"
+          hint="Currently active"
+        />
+        <StatCard
+          title="Visited"
+          value={stats.visited}
+          icon={CheckCircle2}
+          color="sky"
+          hint="Completed visit"
+        />
+        <StatCard
+          title="Booked"
+          value={stats.booked}
+          icon={CalendarCheck}
+          color="amber"
+          hint="Appointment booked"
+        />
+        <StatCard
+          title="Qualified"
+          value={stats.qualified}
+          icon={Stethoscope}
+          color="indigo"
+          hint="Qualified leads"
+        />
+      </div>
 
       <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
         <div className="flex flex-wrap items-end gap-3">
@@ -519,10 +604,11 @@ function PatientsPageInner() {
                   <th className="px-4 py-2 text-left">Status</th>
                   <th className="px-4 py-2 text-left">Activity</th>
                   <th className="px-4 py-2 text-right">Last appt</th>
+                  <th className="px-2 py-2" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
-                {visible.map(p => {
+                {pagedVisible.map(p => {
                   const inactive = isInactive(p.lastAppointmentDate);
                   const selectable = p.kind === "lead";
                   const checked = selectable && selectedIds.has(p.id);
@@ -602,11 +688,68 @@ function PatientsPageInner() {
                           ? new Date(p.lastAppointmentDate).toLocaleDateString()
                           : "—"}
                       </td>
+                      <td
+                        className="px-2 py-2.5 text-right"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/patients/${p.id}`)}
+                          className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                          aria-label={`Open ${p.name}`}
+                        >
+                          <MoreVertical size={14} />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {visible.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-2.5 text-xs text-slate-600">
+            <label className="inline-flex items-center gap-2">
+              <span>Rows per page:</span>
+              <select
+                value={rowsPerPage}
+                onChange={e => setRowsPerPage(Number(e.target.value))}
+                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              >
+                {[10, 25, 50, 100].map(n => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span>
+              Showing {firstShown} to {lastShown} of {visible.length} patient
+              {visible.length === 1 ? "" : "s"}
+            </span>
+            <div className="inline-flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                ‹ Previous
+              </button>
+              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-indigo-600 px-2 text-xs font-semibold text-white">
+                {safePage}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next ›
+              </button>
+            </div>
           </div>
         )}
       </div>
