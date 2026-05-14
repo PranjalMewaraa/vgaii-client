@@ -76,11 +76,18 @@ export async function GET(req: Request) {
       }
     }
 
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const startOfYesterday = new Date(startOfToday);
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
     const [
       leadsCount,
       todayLeads,
+      yesterdayLeads,
       patientsCount,
       appointments,
+      yesterdayUpcomingAppointments,
       openFeedback,
       resolvedFeedback,
       ratedFeedbackAgg,
@@ -90,7 +97,13 @@ export async function GET(req: Request) {
       prisma.lead.count({
         where: {
           ...scope,
-          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+          createdAt: { gte: startOfToday },
+        },
+      }),
+      prisma.lead.count({
+        where: {
+          ...scope,
+          createdAt: { gte: startOfYesterday, lt: startOfToday },
         },
       }),
       prisma.lead.count({
@@ -98,6 +111,17 @@ export async function GET(req: Request) {
       }),
       prisma.appointment.count({
         where: { ...scope, date: { gte: new Date() } },
+      }),
+      // Snapshot of "upcoming as of yesterday morning": appointments that
+      // were already recorded before today began and still have a future
+      // date. Subtracted from `appointments` to surface the day's delta on
+      // the dashboard.
+      prisma.appointment.count({
+        where: {
+          ...scope,
+          date: { gte: startOfYesterday },
+          createdAt: { lt: startOfToday },
+        },
       }),
       prisma.feedback.count({ where: { ...scope, status: "open" } }),
       prisma.feedback.count({ where: { ...scope, status: "resolved" } }),
@@ -136,8 +160,10 @@ export async function GET(req: Request) {
     return NextResponse.json({
       leadsCount,
       todayLeads,
+      yesterdayLeads,
       patientsCount,
       appointments,
+      yesterdayUpcomingAppointments,
       openFeedback,
       internalFeedback,
       subscription,

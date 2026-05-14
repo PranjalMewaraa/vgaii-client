@@ -56,12 +56,12 @@ export default function QuickActionsCard() {
             <Link
               key={a.href}
               href={a.href}
-              className={`inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition ${a.hoverClass}`}
+              className={`flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-4 text-sm font-medium text-slate-700 transition ${a.hoverClass}`}
             >
               <span
-                className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${a.iconClass}`}
+                className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${a.iconClass}`}
               >
-                <Icon size={12} />
+                <Icon size={16} />
               </span>
               <span>{a.label}</span>
             </Link>

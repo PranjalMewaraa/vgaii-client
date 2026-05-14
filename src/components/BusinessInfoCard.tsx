@@ -1,5 +1,6 @@
 "use client";
 
+import { Clock, Globe, MapPin, Pencil, Phone, Star } from "lucide-react";
 import { useState } from "react";
 
 type BusinessHour = {
@@ -144,23 +145,35 @@ export default function BusinessInfoCard({
               type="button"
               onClick={refresh}
               disabled={refreshing}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+              title="Refresh listing from Google"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
             >
-              {refreshing ? "…" : "↻ Refresh"}
+              <Pencil size={12} />
+              {refreshing ? "…" : "Edit"}
             </button>
           </div>
 
-          <div className="mt-3 space-y-1 text-sm text-slate-700">
-            {businessInfo.address && <p>📍 {businessInfo.address}</p>}
-            {businessInfo.phone && <p>📞 {businessInfo.phone}</p>}
+          <div className="mt-3 space-y-1.5 text-sm text-slate-700">
+            {businessInfo.address && (
+              <p className="flex items-start gap-2">
+                <MapPin size={14} className="mt-0.5 shrink-0 text-rose-500" />
+                <span>{businessInfo.address}</span>
+              </p>
+            )}
+            {businessInfo.phone && (
+              <p className="flex items-center gap-2">
+                <Phone size={14} className="shrink-0 text-rose-500" />
+                <span>{businessInfo.phone}</span>
+              </p>
+            )}
             {businessInfo.website && (
-              <p className="truncate">
-                🌐{" "}
+              <p className="flex items-center gap-2 truncate">
+                <Globe size={14} className="shrink-0 text-sky-500" />
                 <a
                   href={businessInfo.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-indigo-600 hover:underline"
+                  className="truncate text-indigo-600 hover:underline"
                 >
                   {businessInfo.website}
                 </a>
@@ -170,8 +183,9 @@ export default function BusinessInfoCard({
 
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
             {typeof businessInfo.rating === "number" && (
-              <span className="font-semibold text-slate-900">
-                ⭐ {businessInfo.rating.toFixed(1)}
+              <span className="inline-flex items-center gap-1 font-semibold text-slate-900">
+                <Star size={14} className="fill-amber-400 text-amber-400" />
+                {businessInfo.rating.toFixed(1)}
                 {typeof businessInfo.totalReviews === "number" && (
                   <span className="ml-1 font-normal text-slate-500">
                     ({businessInfo.totalReviews} reviews)
@@ -180,7 +194,10 @@ export default function BusinessInfoCard({
               </span>
             )}
             {hoursToday && (
-              <span className="text-slate-600">🕐 Today: {hoursToday}</span>
+              <span className="inline-flex items-center gap-1 text-slate-600">
+                <Clock size={14} className="text-slate-400" />
+                Today: {hoursToday}
+              </span>
             )}
           </div>
 

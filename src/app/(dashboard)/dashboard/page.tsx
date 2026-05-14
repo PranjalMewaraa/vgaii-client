@@ -1,8 +1,7 @@
 "use client";
 
-import { Calendar, RefreshCw, TrendingUp } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import useSWR from "swr";
-import StatCard from "@/components/StatCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import BusinessInfoCard, { BusinessInfo } from "@/components/BusinessInfoCard";
 import ReputationPanel, {
@@ -10,14 +9,17 @@ import ReputationPanel, {
 } from "@/components/ReputationPanel";
 import QuickActionsCard from "@/components/QuickActionsCard";
 import NextAppointmentCard from "@/components/NextAppointmentCard";
+import OverviewCard from "@/components/OverviewCard";
 import AdminDashboard from "@/components/AdminDashboard";
 import { useStoredUser } from "@/lib/client-auth";
 
 type DashboardData = {
   leadsCount: number;
   todayLeads: number;
+  yesterdayLeads: number;
   patientsCount: number;
   appointments: number;
+  yesterdayUpcomingAppointments: number;
   openFeedback: number;
   internalFeedback: InternalFeedbackSummary;
   subscription?: string;
@@ -74,47 +76,49 @@ export default function Dashboard() {
         </button>
       </header>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-        {/* Left column: GMB · Reputation · Subscription */}
-        <div className="space-y-3 lg:col-span-2">
+      {/* Row 1: GMB · Quick Actions · Overview */}
+      <div className="grid gap-3 lg:grid-cols-4">
+        <div className="lg:col-span-2">
           <BusinessInfoCard
             businessInfo={data.businessInfo}
             onRefreshed={() => mutate()}
           />
+        </div>
+        <div className="lg:col-span-1">
+          <QuickActionsCard />
+        </div>
+        <div className="lg:col-span-1">
+          <OverviewCard
+            todayLeads={data.todayLeads}
+            todayLeadsDelta={data.todayLeads - data.yesterdayLeads}
+            upcomingAppts={data.appointments}
+            upcomingApptsDelta={
+              data.appointments - data.yesterdayUpcomingAppointments
+            }
+          />
+        </div>
+      </div>
+
+      {/* Row 2: Reputation · Next appointment */}
+      <div className="grid gap-3 lg:grid-cols-3">
+        <div className="lg:col-span-2">
           <ReputationPanel
             businessInfo={data.businessInfo}
             internal={data.internalFeedback}
           />
-          <SubscriptionCard
-            status={data.subscription}
-            renewalDate={data.renewalDate}
-            source={data.subscriptionSource}
-            error={data.subscriptionError}
-          />
         </div>
-
-        {/* Right column: Quick Actions · today/upcoming metrics · next appt */}
-        <div className="space-y-3 lg:col-span-1">
-          <QuickActionsCard />
-
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard
-              title="Today Leads"
-              value={data.todayLeads}
-              icon={TrendingUp}
-              color="green"
-            />
-            <StatCard
-              title="Upcoming Appts"
-              value={data.appointments}
-              icon={Calendar}
-              color="amber"
-            />
-          </div>
-
+        <div className="lg:col-span-1">
           <NextAppointmentCard />
         </div>
       </div>
+
+      {/* Row 3: Subscription full-width */}
+      <SubscriptionCard
+        status={data.subscription}
+        renewalDate={data.renewalDate}
+        source={data.subscriptionSource}
+        error={data.subscriptionError}
+      />
     </div>
   );
 }
