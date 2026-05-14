@@ -1,5 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+
 type SourceEntry = {
   source: string;
   count: number;
@@ -24,31 +27,29 @@ const bucket = (entries: SourceEntry[]): SourceEntry[] => {
   return otherCount > 0 ? [...top, { source: "Other", count: otherCount }] : top;
 };
 
-// Build cumulative arc offsets for the donut. We render each slice as a
-// circle with stroke-dasharray + stroke-dashoffset so we don't need a
-// charting library.
-const buildArcs = (
-  buckets: SourceEntry[],
-  circumference: number,
-): Array<{ source: string; count: number; pct: number; offset: number; color: string }> => {
-  const total = buckets.reduce((sum, b) => sum + b.count, 0);
-  if (total === 0) return [];
-  let cumulative = 0;
-  return buckets.map((b, i) => {
-    const pct = b.count / total;
-    const arc = {
-      source: b.source,
-      count: b.count,
-      pct,
-      // Offset positions the stroke start where the previous slice ended.
-      // Browsers draw stroke clockwise from 3 o'clock; we rotate the SVG
-      // -90deg to start at the top.
-      offset: cumulative * circumference,
-      color: PALETTE[i % PALETTE.length],
-    };
-    cumulative += pct;
-    return arc;
-  });
+type TooltipPayload = {
+  payload?: { label: string; value: number; pct: number };
+};
+
+const PieTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: TooltipPayload[];
+}) => {
+  if (!active || !payload?.length) return null;
+  const slice = payload[0]?.payload;
+  if (!slice) return null;
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-md">
+      <p className="font-medium text-slate-900">{slice.label}</p>
+      <p className="text-slate-500">
+        {slice.value} {slice.value === 1 ? "lead" : "leads"} ·{" "}
+        {Math.round(slice.pct * 100)}%
+      </p>
+    </div>
+  );
 };
 
 export default function TopSourcesCard({
@@ -56,68 +57,64 @@ export default function TopSourcesCard({
 }: {
   sources: SourceEntry[];
 }) {
-  const buckets = bucket(sources);
-  const total = buckets.reduce((sum, b) => sum + b.count, 0);
-
-  const R = 28;
-  const C = 2 * Math.PI * R;
-  const arcs = buildArcs(buckets, C);
+  const data = useMemo(() => {
+    const buckets = bucket(sources);
+    const total = buckets.reduce((sum, b) => sum + b.count, 0);
+    if (total === 0) return [];
+    return buckets.map((b, i) => ({
+      label: TITLE_CASE(b.source),
+      value: b.count,
+      pct: b.count / total,
+      color: PALETTE[i % PALETTE.length],
+    }));
+  }, [sources]);
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
       <h2 className="text-base font-semibold text-slate-900">Top Sources</h2>
       <p className="text-xs text-slate-500">Where your leads are coming from</p>
 
-      {total === 0 ? (
+      {data.length === 0 ? (
         <p className="mt-4 text-xs text-slate-500">
           No leads recorded yet.
         </p>
       ) : (
         <div className="mt-3 flex items-center gap-4">
-          <svg
-            viewBox="0 0 80 80"
-            className="h-24 w-24 -rotate-90"
-            aria-hidden
-          >
-            <circle
-              cx="40"
-              cy="40"
-              r={R}
-              fill="none"
-              stroke="#f1f5f9"
-              strokeWidth="12"
-            />
-            {arcs.map(arc => (
-              <circle
-                key={arc.source}
-                cx="40"
-                cy="40"
-                r={R}
-                fill="none"
-                stroke={arc.color}
-                strokeWidth="12"
-                strokeDasharray={`${arc.pct * C} ${C}`}
-                strokeDashoffset={-arc.offset}
-              />
-            ))}
-          </svg>
+          <div className="h-24 w-24 shrink-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="value"
+                  nameKey="label"
+                  innerRadius={26}
+                  outerRadius={44}
+                  stroke="none"
+                  isAnimationActive={false}
+                >
+                  {data.map(d => (
+                    <Cell key={d.label} fill={d.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<PieTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
           <ul className="min-w-0 flex-1 space-y-1.5 text-sm">
-            {arcs.map(arc => (
+            {data.map(d => (
               <li
-                key={arc.source}
+                key={d.label}
                 className="flex items-center justify-between gap-3"
               >
                 <span className="inline-flex min-w-0 items-center gap-2">
                   <span
                     className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: arc.color }}
+                    style={{ backgroundColor: d.color }}
                   />
-                  <span className="truncate text-slate-700">
-                    {TITLE_CASE(arc.source)}
-                  </span>
+                  <span className="truncate text-slate-700">{d.label}</span>
                 </span>
                 <span className="shrink-0 text-xs font-medium text-slate-500">
-                  {Math.round(arc.pct * 100)}%
+                  {Math.round(d.pct * 100)}%
                 </span>
               </li>
             ))}
