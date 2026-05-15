@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import RoleGuard from "@/components/RoleGuard";
 import { useStoredUser } from "@/lib/client-auth";
-import PaymentEntryTab from "@/components/finances/PaymentEntryTab";
+import PaymentsListTab from "@/components/finances/PaymentsListTab";
 import PresetChargesTab from "@/components/finances/PresetChargesTab";
 import ExpenseEntryTab from "@/components/finances/ExpenseEntryTab";
 import DailySummaryTab from "@/components/finances/DailySummaryTab";
@@ -19,7 +19,7 @@ type TabDef = {
 };
 
 const TABS: TabDef[] = [
-  { key: "payment", label: "Payment Entry" },
+  { key: "payment", label: "Payments" },
   { key: "expense", label: "Expenses" },
   { key: "presets", label: "Preset Charges", adminOnly: true },
   { key: "summary", label: "Daily Summary" },
@@ -95,7 +95,7 @@ function FinancesPageInner() {
         </div>
       </div>
 
-      {tab === "payment" && <PaymentEntryTab prefillLead={prefillLead} />}
+      {tab === "payment" && <PaymentsListTab prefillLead={prefillLead} />}
       {tab === "expense" && <ExpenseEntryTab />}
       {tab === "summary" && <DailySummaryTab />}
       {tab === "reports" && <ReportsTab />}

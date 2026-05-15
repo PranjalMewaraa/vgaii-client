@@ -24,6 +24,9 @@ type Props = {
   // Optional seed from a deep link (e.g. /finances?leadId=… opened from
   // the patient detail page). Auto-links the patient on mount.
   prefillLead?: LeadHit;
+  // Fires after a successful save so a parent (e.g. RecordPaymentModal)
+  // can dismiss itself or refresh a list view.
+  onSaved?: () => void;
 };
 
 type PresetsResponse = { charges: Preset[] };
@@ -91,7 +94,7 @@ const METHOD_DEFS: Array<{
 // Generate a per-line stable key without pulling in nanoid.
 const newKey = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-export default function PaymentEntryTab({ prefillLead }: Props = {}) {
+export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
   // Patient picker — phone-first lookup. Type a phone number; if it
   // matches an existing patient we offer one-click link, otherwise the
   // receptionist types a name and we record a walk-in payment with the
@@ -232,6 +235,7 @@ export default function PaymentEntryTab({ prefillLead }: Props = {}) {
       }
       setSavedMsg(`Saved ${formatRupees(finalPaise)} payment`);
       reset();
+      onSaved?.();
     } finally {
       setBusy(false);
     }
