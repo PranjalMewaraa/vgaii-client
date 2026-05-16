@@ -124,6 +124,7 @@ function LeadsPageInner() {
         <button
           type="button"
           onClick={() => setAddOpen(true)}
+          data-tour="leads-add-btn"
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
         >
           + Add lead

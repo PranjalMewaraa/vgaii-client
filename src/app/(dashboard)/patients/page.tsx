@@ -590,7 +590,7 @@ function PatientsPageInner() {
             No patients match these filters.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" data-tour="patients-list">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">

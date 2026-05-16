@@ -82,6 +82,7 @@ function FinancesPageInner() {
                 key={t.key}
                 type="button"
                 onClick={() => setTab(t.key)}
+                data-tour={t.key === "payment" ? "payments-tab" : undefined}
                 className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition md:flex-1 ${
                   isActive
                     ? "border-indigo-600 text-indigo-700"

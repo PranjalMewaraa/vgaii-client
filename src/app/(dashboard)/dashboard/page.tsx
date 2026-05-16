@@ -88,10 +88,10 @@ export default function Dashboard() {
             onRefreshed={() => mutate()}
           />
         </div>
-        <div>
+        <div data-tour="quick-actions">
           <QuickActionsCard />
         </div>
-        <div>
+        <div data-tour="dashboard-overview">
           <OverviewCard
             todayLeads={data.todayLeads}
             todayLeadsDelta={data.todayLeads - data.yesterdayLeads}
