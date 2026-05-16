@@ -108,6 +108,12 @@ enum ExpenseCategory {
   miscellaneous
 }
 
+enum OnboardingState {
+  pending
+  in_progress
+  done
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Tenant: Client
 // ─────────────────────────────────────────────────────────────────────
@@ -131,6 +137,9 @@ model Client {
   // Cached Google Business listing (was an embedded subdoc). Same reason.
   googleBusinessInfo Json?
   reviewsTaskId      String?
+  // Set the first time the tenant runs the onboarding tour; cleared when
+  // the demo data is torn down (Finish / Skip-during-tour / Clear demo).
+  demoDataSeededAt   DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
@@ -170,6 +179,14 @@ model User {
   createdUsers    User[]    @relation("UserCreatedBy")
   lastLoginIP     String?
   lastLoginAt     DateTime?
+  // First-login product tour state. Tri-state: `pending` lets the
+  // welcome modal show on next mount; `in_progress` shows the resume
+  // banner instead; `done` permanently suppresses both. Only
+  // CLIENT_ADMIN sees the tour today, but the column is on every user
+  // so future role rollouts don't need another migration.
+  onboardingState     OnboardingState @default(pending)
+  onboardingStartedAt DateTime?
+  onboardingDoneAt    DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
