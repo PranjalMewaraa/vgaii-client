@@ -60,7 +60,10 @@ export const TOUR_STEPS: TourStep[] = [
     placement: "bottom",
   },
   {
+    // Land directly on Medical History so the next step (vitals-trend)
+    // doesn't have to swap tabs mid-spotlight — that flicker felt jarring.
     route: "/patients/{leadId}",
+    routeQuery: "?tab=medical-history",
     target: '[data-tour="patient-tabs"]',
     title: "Overview · Appointments · History · Payments",
     content:

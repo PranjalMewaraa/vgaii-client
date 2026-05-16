@@ -207,14 +207,19 @@ function AppointmentsPageInner() {
   const [addOpen, setAddOpen] = useState(
     () => searchParams.get("add") === "1",
   );
-  // Re-sync when the URL flips ?add=1 on (tour deep-link, dashboard
-  // Quick Action). store-and-compare during render so eslint's
+  // Re-sync when the URL flips ?add=1 on/off. The on-flip handles
+  // tour deep-links and the dashboard Quick Action. The off-flip
+  // matters for the tour's Back button: when it pushes from the
+  // appt-modal-form step back to appointments-add-btn, the URL drops
+  // ?add=1 and we need the modal to actually close — without this,
+  // the modal stays open and the tour spotlight is stuck behind it.
+  // store-and-compare during render so eslint's
   // react-hooks/set-state-in-effect rule stays happy.
   const wantAddFromUrl = searchParams.get("add") === "1";
   const [lastWantAdd, setLastWantAdd] = useState(wantAddFromUrl);
   if (wantAddFromUrl !== lastWantAdd) {
     setLastWantAdd(wantAddFromUrl);
-    if (wantAddFromUrl) setAddOpen(true);
+    setAddOpen(wantAddFromUrl);
   }
 
   // Modal-driven edit/mark-visited. The page no longer owns the form

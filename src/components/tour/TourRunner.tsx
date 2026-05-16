@@ -19,7 +19,7 @@ const authHeaders = () => ({
 });
 
 export default function TourRunner() {
-  const { active, stepIndex, next, stop } = useTour();
+  const { active, stepIndex, next, prev, stop } = useTour();
   const [Joyride, setJoyride] = useState<JoyrideComponent | null>(null);
 
   useEffect(() => {
@@ -44,6 +44,10 @@ export default function TourRunner() {
         next();
         return;
       }
+      if (type === "step:after" && action === "prev") {
+        prev();
+        return;
+      }
       if (type === "error:target_not_found") {
         console.warn(
           `[TourRunner] target_not_found at step ${data.index} — advancing`,
@@ -59,7 +63,7 @@ export default function TourRunner() {
         stop();
       }
     },
-    [next, stop],
+    [next, prev, stop],
   );
 
   if (!active || !Joyride) return null;
