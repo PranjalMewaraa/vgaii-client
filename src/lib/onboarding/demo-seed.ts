@@ -56,6 +56,13 @@ export const seedDemoData = async (
   const payment1Id = id(clientId, "payment_1");
   const payment2Id = id(clientId, "payment_2");
 
+  // Verify the userId is actually present in the User table before we
+  // use it as a FK target. Stale JWTs (e.g. after a `prisma migrate
+  // reset`) would otherwise blow up the upserts with a FK violation
+  // on `createdById`. Fall back to null — demo rows don't strictly
+  // need a "created by" attribution.
+  const safeUserId = await resolveValidUserId(userId);
+
   const leadCommon = (phone: string) => ({
     clientId,
     phone,
@@ -72,7 +79,7 @@ export const seedDemoData = async (
         ...leadCommon("9000000001"),
         name: "Demo · Anita Sharma",
         status: "new",
-        createdById: userId,
+        createdById: safeUserId,
       },
       update: {},
     }),
@@ -83,7 +90,7 @@ export const seedDemoData = async (
         ...leadCommon("9000000002"),
         name: "Demo · Rohan Verma",
         status: "contacted",
-        createdById: userId,
+        createdById: safeUserId,
       },
       update: {},
     }),
@@ -98,7 +105,7 @@ export const seedDemoData = async (
         status: "qualified",
         age: 34,
         gender: "female",
-        createdById: userId,
+        createdById: safeUserId,
       },
       update: {},
     }),
@@ -205,7 +212,7 @@ export const seedDemoData = async (
         // The "[demo]" prefix is the cleanup discriminator — see
         // clearDemoData(). Don't translate or strip it.
         notes: `${DEMO_NOTES_TAG} Consultation`,
-        collectedById: userId,
+        collectedById: safeUserId,
         items: {
           create: [{ title: "Consultation", amount: 50000 }],
         },
@@ -226,7 +233,7 @@ export const seedDemoData = async (
         finalAmount: 70000,
         paymentMethod: "upi",
         notes: `${DEMO_NOTES_TAG} Consultation + Lab fee`,
-        collectedById: userId,
+        collectedById: safeUserId,
         items: {
           create: [
             { title: "Consultation", amount: 50000 },
@@ -243,6 +250,22 @@ export const seedDemoData = async (
     appointments: [appt1Id, appt2Id, appt3Id, appt4Id],
     payments: [payment1Id, payment2Id],
   };
+};
+
+// Belt-and-braces FK guard: confirms the JWT-supplied user id is still
+// a live row before we pass it to Prisma. Returns null if the row is
+// missing (stale token, post-migrate-reset, super-admin impersonating
+// from a different tenant) — null is FK-safe because Lead.createdById
+// and Payment.collectedById are both nullable.
+const resolveValidUserId = async (
+  userId: string | null,
+): Promise<string | null> => {
+  if (!userId) return null;
+  const row = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+  return row?.id ?? null;
 };
 
 // Deletes only demo-tagged rows in this client. Defensive: every WHERE
