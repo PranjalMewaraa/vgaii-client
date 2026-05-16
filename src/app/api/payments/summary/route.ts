@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
+import { excludeDemoPayments } from "@/lib/onboarding/demo-filter";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
@@ -46,7 +47,7 @@ export async function GET(req: Request) {
       await Promise.all([
         prisma.payment.groupBy({
           by: ["paymentMethod"],
-          where: { ...scope, createdAt: range },
+          where: { ...scope, ...excludeDemoPayments, createdAt: range },
           _sum: { finalAmount: true },
           _count: { _all: true },
         }),
@@ -66,6 +67,7 @@ export async function GET(req: Request) {
         prisma.payment.aggregate({
           where: {
             ...scope,
+            ...excludeDemoPayments,
             createdAt: range,
             paymentMethod: "pending",
           },
@@ -75,7 +77,11 @@ export async function GET(req: Request) {
         // Trend rows for the 7-day window. We pull the bare minimum
         // columns and bucket in memory.
         prisma.payment.findMany({
-          where: { ...scope, createdAt: { gte: trendStart, lt: end } },
+          where: {
+            ...scope,
+            ...excludeDemoPayments,
+            createdAt: { gte: trendStart, lt: end },
+          },
           select: { createdAt: true, finalAmount: true, paymentMethod: true },
         }),
         prisma.expense.findMany({

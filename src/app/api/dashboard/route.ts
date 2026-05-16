@@ -7,6 +7,10 @@ import {
   checkExternalSubscription,
   toPrismaSubscriptionStatus,
 } from "@/lib/subscription-check";
+import {
+  excludeDemoAppts,
+  excludeDemoLeads,
+} from "@/lib/onboarding/demo-filter";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -99,24 +103,30 @@ export async function GET(req: Request) {
       sourcesAgg,
       weekLeadRows,
     ] = await Promise.all([
-      prisma.lead.count({ where: scope }),
+      prisma.lead.count({ where: { ...scope, ...excludeDemoLeads } }),
       prisma.lead.count({
         where: {
           ...scope,
+          ...excludeDemoLeads,
           createdAt: { gte: startOfToday },
         },
       }),
       prisma.lead.count({
         where: {
           ...scope,
+          ...excludeDemoLeads,
           createdAt: { gte: startOfYesterday, lt: startOfToday },
         },
       }),
       prisma.lead.count({
-        where: { ...scope, status: { in: ["appointment_booked", "visited"] } },
+        where: {
+          ...scope,
+          ...excludeDemoLeads,
+          status: { in: ["appointment_booked", "visited"] },
+        },
       }),
       prisma.appointment.count({
-        where: { ...scope, date: { gte: new Date() } },
+        where: { ...scope, ...excludeDemoAppts, date: { gte: new Date() } },
       }),
       // Snapshot of "upcoming as of yesterday morning": appointments that
       // were already recorded before today began and still have a future
@@ -125,6 +135,7 @@ export async function GET(req: Request) {
       prisma.appointment.count({
         where: {
           ...scope,
+          ...excludeDemoAppts,
           date: { gte: startOfYesterday },
           createdAt: { lt: startOfToday },
         },
@@ -143,7 +154,7 @@ export async function GET(req: Request) {
       // Keep the top 4 buckets; anything else is rolled into "Other" client-side.
       prisma.lead.groupBy({
         by: ["source"],
-        where: scope,
+        where: { ...scope, ...excludeDemoLeads },
         _count: { _all: true },
         orderBy: { _count: { source: "desc" } },
         take: 8,
@@ -151,7 +162,11 @@ export async function GET(req: Request) {
       // Last seven days of lead createdAt timestamps for the trend chart.
       // Bucketed in JS below since MySQL has no native date_trunc.
       prisma.lead.findMany({
-        where: { ...scope, createdAt: { gte: weekStart, lt: tomorrow } },
+        where: {
+          ...scope,
+          ...excludeDemoLeads,
+          createdAt: { gte: weekStart, lt: tomorrow },
+        },
         select: { createdAt: true },
       }),
     ]);

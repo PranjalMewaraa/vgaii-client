@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { getUser } from "@/middleware/auth";
+import {
+  excludeDemoAppts,
+  excludeDemoLeads,
+} from "@/lib/onboarding/demo-filter";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
@@ -84,9 +88,14 @@ export async function GET(req: Request) {
           }
         : {};
 
-    const leadWhere: Prisma.LeadWhereInput = { ...tenantClause, ...leadDateRange };
+    const leadWhere: Prisma.LeadWhereInput = {
+      ...tenantClause,
+      ...excludeDemoLeads,
+      ...leadDateRange,
+    };
     const apptWhere: Prisma.AppointmentWhereInput = {
       ...(tenantClause as Prisma.AppointmentWhereInput),
+      ...excludeDemoAppts,
       ...apptDateRange,
     };
 
@@ -106,6 +115,11 @@ export async function GET(req: Request) {
         ? Prisma.sql`1=1`
         : Prisma.sql`\`clientId\` = ${user.clientId ?? ""}`;
     const apptTenantSql = leadTenantSql; // same column name
+
+    // Demo-row exclusion mirrors src/lib/onboarding/demo-filter.ts —
+    // keep the funnel + per-source rollups honest while a tour is mid-flight.
+    const leadDemoSql = Prisma.sql`\`source\` <> 'demo' OR \`source\` IS NULL`;
+    const apptDemoSql = Prisma.sql`\`source\` <> 'demo' OR \`source\` IS NULL`;
 
     const leadDateSql =
       from && to
@@ -191,7 +205,7 @@ export async function GET(req: Request) {
                SUM(CASE WHEN \`status\` IN ('appointment_booked','visited') THEN 1 ELSE 0 END) AS booked,
                SUM(CASE WHEN \`status\`='lost' THEN 1 ELSE 0 END) AS lost
         FROM \`Lead\`
-        WHERE ${leadTenantSql} AND ${leadDateSql}
+        WHERE ${leadTenantSql} AND ${leadDateSql} AND (${leadDemoSql})
         GROUP BY \`source\`
         ORDER BY total DESC
       `,
@@ -209,7 +223,7 @@ export async function GET(req: Request) {
         SELECT DATE_FORMAT(\`createdAt\`, '%Y-%m-%d') AS day,
                COUNT(*) AS count
         FROM \`Lead\`
-        WHERE ${leadTenantSql} AND ${leadDateSql}
+        WHERE ${leadTenantSql} AND ${leadDateSql} AND (${leadDemoSql})
         GROUP BY day
         ORDER BY day
       `,
@@ -217,7 +231,7 @@ export async function GET(req: Request) {
         SELECT DATE_FORMAT(\`date\`, '%Y-%m-%d') AS day,
                COUNT(*) AS count
         FROM \`Appointment\`
-        WHERE ${apptTenantSql} AND ${apptDateSql}
+        WHERE ${apptTenantSql} AND ${apptDateSql} AND (${apptDemoSql})
         GROUP BY day
         ORDER BY day
       `,
