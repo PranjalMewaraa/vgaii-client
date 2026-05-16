@@ -4,7 +4,15 @@ import { use, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CreditCard, Globe, Mail, MapPin, Phone } from "lucide-react";
+import {
+  ArrowLeft,
+  CreditCard,
+  Globe,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+} from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import BookingEmbed from "@/components/BookingEmbed";
@@ -13,6 +21,7 @@ import VitalsTrendChart, {
   type VitalsPoint,
 } from "@/components/charts/VitalsTrendChart";
 import EditAppointmentModal from "@/components/EditAppointmentModal";
+import EditPatientModal from "@/components/EditPatientModal";
 import { formatRupees } from "@/lib/currency";
 import { type LeadStatus } from "@/lib/constants";
 
@@ -136,6 +145,9 @@ function PatientDetailPageInner({
   // Cal.com scheduling
   const [bookingUrl, setBookingUrl] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
+
+  // Profile edit (name/email/age/gender/area — phone is locked).
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
 
   // Detail tabs (Overview / Appointments / Medical History / Payments).
   // Seed from ?tab=… so other pages (and the onboarding tour) can deep-
@@ -334,6 +346,16 @@ function PatientDetailPageInner({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEditProfileOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            aria-label="Edit patient profile"
+            title="Edit patient profile"
+          >
+            <Pencil size={14} />
+            Edit
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -582,6 +604,25 @@ function PatientDetailPageInner({
           }}
         />
       )}
+
+      <EditPatientModal
+        open={editProfileOpen}
+        patient={{
+          id: lead.id,
+          name: lead.name,
+          phone: lead.phone,
+          email: lead.email,
+          age: lead.age,
+          gender: lead.gender,
+          area: lead.area,
+        }}
+        onClose={() => setEditProfileOpen(false)}
+        onSaved={() => {
+          setEditProfileOpen(false);
+          load();
+        }}
+      />
+
 
       {bookingOpen && (
         <div

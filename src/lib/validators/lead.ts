@@ -21,17 +21,23 @@ export const publicLeadSchema = z.object({
   source: z.string().optional(),
 });
 
+// Edits made from the patient detail page go through this schema.
+// `phone` is intentionally absent — it's the unique linking key (Lead ↔
+// Appointment ↔ Payment all match on phoneNormalized), so changing it
+// would silently break the patient's history. New numbers should be
+// captured as a fresh lead instead.
 export const leadUpdateSchema = z
   .object({
+    name: z.string().trim().min(2).max(120).optional(),
+    email: z.string().trim().max(200).optional().or(z.literal("")),
+    age: z.number().int().min(0).max(150).nullable().optional(),
+    gender: z.string().trim().max(20).optional().or(z.literal("")),
+    area: z.string().trim().max(200).optional().or(z.literal("")),
     status: z.enum(LEAD_STATUSES).optional(),
     notes: z.string().max(5000).optional(),
     outcomeRating: z.number().int().min(1).max(5).optional(),
   })
-  .refine(
-    d =>
-      d.status !== undefined ||
-      d.notes !== undefined ||
-      d.outcomeRating !== undefined,
-    { message: "At least one field is required" },
-  );
+  .refine(d => Object.keys(d).length > 0, {
+    message: "At least one field is required",
+  });
 

@@ -78,6 +78,7 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     const prevStatus = lead.status as LeadStatus;
     const prevNotes = lead.notes ?? "";
     const prevRating = lead.outcomeRating;
+    const prevName = lead.name;
 
     const data: Record<string, unknown> = {};
     if (parsed.data.status !== undefined) {
@@ -96,6 +97,20 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (parsed.data.notes !== undefined) data.notes = parsed.data.notes;
     if (parsed.data.outcomeRating !== undefined) {
       data.outcomeRating = parsed.data.outcomeRating;
+    }
+    // Profile edits from the patient detail page. Empty strings on
+    // optional columns become null so the DB stays consistent with the
+    // "absent" semantics the rest of the app uses (e.g. age=null vs 0).
+    if (parsed.data.name !== undefined) data.name = parsed.data.name;
+    if (parsed.data.email !== undefined) {
+      data.email = parsed.data.email === "" ? null : parsed.data.email;
+    }
+    if (parsed.data.age !== undefined) data.age = parsed.data.age;
+    if (parsed.data.gender !== undefined) {
+      data.gender = parsed.data.gender === "" ? null : parsed.data.gender;
+    }
+    if (parsed.data.area !== undefined) {
+      data.area = parsed.data.area === "" ? null : parsed.data.area;
     }
 
     // updateLead pre-computes phoneNormalized when phone is in `data` —
@@ -132,6 +147,28 @@ export async function PATCH(req: Request, ctx: RouteContext) {
         entityId: updated.id,
         entityLabel: updated.name,
         summary: `Outcome rating: ${prevRating ?? "—"} → ${parsed.data.outcomeRating}`,
+      });
+    }
+
+    // One audit entry covers all profile edits — the receptionist usually
+    // touches a couple of fields at once, and a row per field would clutter
+    // the activity feed.
+    const profileFieldsTouched =
+      parsed.data.name !== undefined ||
+      parsed.data.email !== undefined ||
+      parsed.data.age !== undefined ||
+      parsed.data.gender !== undefined ||
+      parsed.data.area !== undefined;
+    if (profileFieldsTouched) {
+      const summary = parsed.data.name && parsed.data.name !== prevName
+        ? `Profile updated (renamed: ${prevName} → ${parsed.data.name})`
+        : "Profile updated";
+      await logAudit(req, { actorType: "user", user }, {
+        action: "lead.profile.updated",
+        entityType: "Lead",
+        entityId: updated.id,
+        entityLabel: updated.name,
+        summary,
       });
     }
 
