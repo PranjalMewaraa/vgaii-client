@@ -88,7 +88,7 @@ export default function PresetChargesTab() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-tour="presets-section">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs text-slate-500">
           Buttons your receptionists tap during payment entry. Disabling a

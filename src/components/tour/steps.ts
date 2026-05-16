@@ -150,11 +150,14 @@ export const TOUR_STEPS: TourStep[] = [
   {
     route: "/finances",
     routeQuery: "?tab=presets",
-    target: '[data-tour="presets-add-starter"]',
+    // Target the section wrapper so it's there even when the tenant
+    // already has presets — the empty-state "Add starter charges"
+    // button only renders on a fresh tenant.
+    target: '[data-tour="presets-section"]',
     title: "Set your default charges",
     content:
-      "Preset charges become the one-tap buttons on Payments. Tap “Add starter charges” to populate the common ones for you.",
-    placement: "bottom",
+      "Preset charges become the one-tap buttons on Payments. If you're starting fresh, the “Add starter charges” button seeds the common ones for you; otherwise use “Add preset” to define your own.",
+    placement: "top",
   },
   {
     route: "/dashboard",
