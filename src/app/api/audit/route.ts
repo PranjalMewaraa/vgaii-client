@@ -45,12 +45,20 @@ export async function GET(req: Request) {
     if (entityId) where.entityId = entityId;
     if (action) where.action = action;
 
-    // CLIENT_ADMIN sees only actions taken by users (admin + their staff).
-    // Webhook / public-form / system entries belong on the platform-admin
-    // view, not the client-facing activity log. Server-side enforcement so
-    // a hand-crafted query param can't widen the scope.
+    // CLIENT_ADMIN sees only actions taken by users that belong to this
+    // client (admin + their staff). Webhook / public-form / system entries
+    // and SUPER_ADMIN actions on this tenant are filtered out server-side
+    // so a hand-crafted query param can't widen the scope.
     if (user.role === "CLIENT_ADMIN") {
       where.actorType = "user";
+      // The audit log doesn't store the actor's clientId, so resolve the
+      // tenant's user IDs and constrain actorId IN (...). Cheap because
+      // a single client rarely has more than a handful of users.
+      const tenantUsers = await prisma.user.findMany({
+        where: { clientId: user.clientId },
+        select: { id: true },
+      });
+      where.actorId = { in: tenantUsers.map(u => u.id) };
     } else if (actorType) {
       where.actorType =
         actorType as "user" | "webhook" | "public" | "system";
