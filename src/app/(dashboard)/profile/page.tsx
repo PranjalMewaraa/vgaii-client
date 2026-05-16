@@ -1,9 +1,12 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import RoleGuard from "@/components/RoleGuard";
 import { useStoredUser } from "@/lib/client-auth";
-import type { Profile, ProfileTemplate } from "@/lib/validators/profile";
+import ProfileSubNav from "@/components/profile/ProfileSubNav";
+import { labelFor } from "@/components/profile/templateOptions";
+import type { Profile } from "@/lib/validators/profile";
 
 const EMPTY: Profile = {
   enabled: false,
@@ -26,85 +29,6 @@ const EMPTY: Profile = {
   phone: "",
   hours: "",
 };
-
-// One row in the template picker. `swatches` are just visual cues for
-// the colour palette — kept inline so the picker can render entirely
-// from this list without importing the template components themselves.
-type TemplateOption = {
-  id: ProfileTemplate;
-  label: string;
-  description: string;
-  // Tailwind classes for the three small colour chips shown in the card.
-  swatches: [string, string, string];
-  // Card frame styling so the picker hints at the template's vibe.
-  frame: string;
-  // Mini preview of hero typography.
-  preview: React.ReactNode;
-};
-
-const TEMPLATE_OPTIONS: TemplateOption[] = [
-  {
-    id: "classic",
-    label: "Classic",
-    description:
-      "High-contrast sky-blue. Bold extra-bold headlines, square-rounded buttons. Trusted, familiar.",
-    swatches: ["bg-sky-700", "bg-sky-500", "bg-slate-900"],
-    frame: "bg-slate-50 border-slate-200",
-    preview: (
-      <div className="text-left">
-        <p className="text-lg font-extrabold leading-tight text-slate-900">
-          Compassionate
-          <br />
-          <span className="text-sky-700">for your heart.</span>
-        </p>
-        <div className="mt-2 inline-block rounded-md bg-sky-700 px-3 py-1 text-[10px] font-semibold text-white">
-          Book Appointment
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "premium",
-    label: "Premium",
-    description:
-      "Slate-900 with sky-blue accents. Light hero type, pill buttons, frosted nav. Upscale and minimal.",
-    swatches: ["bg-slate-900", "bg-sky-600", "bg-slate-50"],
-    frame: "bg-white border-slate-100",
-    preview: (
-      <div className="text-left">
-        <p className="text-lg font-light leading-tight text-slate-900">
-          Compassionate
-          <br />
-          <span className="font-semibold text-sky-600">for your heart.</span>
-        </p>
-        <div className="mt-2 inline-block rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
-          Book Appointment
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "clinical",
-    label: "Clinical",
-    description:
-      "Deep teal with mint accents. Italic hero accent, sharp corners, bordered chips. Calm and authoritative.",
-    swatches: ["bg-teal-700", "bg-teal-400", "bg-emerald-950"],
-    frame: "bg-teal-50/40 border-teal-100",
-    preview: (
-      <div className="text-left">
-        <p className="text-lg font-extrabold leading-tight text-emerald-950">
-          Compassionate{" "}
-          <span className="font-normal italic text-teal-700">
-            for your heart.
-          </span>
-        </p>
-        <div className="mt-2 inline-block rounded bg-teal-700 px-3 py-1 text-[10px] font-bold text-white">
-          Book Appointment
-        </div>
-      </div>
-    ),
-  },
-];
 
 const authHeaders = () => ({
   "Content-Type": "application/json",
@@ -245,6 +169,8 @@ function ProfilePageInner() {
         </div>
       </header>
 
+      <ProfileSubNav />
+
       {error && (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
@@ -256,61 +182,17 @@ function ProfilePageInner() {
         </p>
       )}
 
-      {/* Template */}
-      <Section
-        title="Template"
-        description="The visual style of your public landing page. Switch any time — your content (text, images, services) stays the same."
-      >
-        <div
-          data-tour="profile-templates"
-          className="grid grid-cols-1 gap-3 md:grid-cols-3"
+      {/* Inline "where to change the template" hint — the picker lives
+          on its own page now, but the user might still expect it here. */}
+      <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+        Current template: <strong>{labelFor(profile.template)}</strong>.{" "}
+        <Link
+          href="/profile/template"
+          className="font-medium text-indigo-600 hover:underline"
         >
-          {TEMPLATE_OPTIONS.map(opt => {
-            const isActive = profile.template === opt.id;
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => set("template", opt.id)}
-                aria-pressed={isActive}
-                className={`group flex flex-col gap-3 rounded-xl border-2 p-4 text-left transition ${
-                  isActive
-                    ? "border-indigo-600 ring-2 ring-indigo-100"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-slate-900">
-                    {opt.label}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {opt.swatches.map((s, i) => (
-                      <span
-                        key={i}
-                        className={`h-3 w-3 rounded-full border border-white ring-1 ring-slate-200 ${s}`}
-                        aria-hidden
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div
-                  className={`flex-1 rounded-lg border p-3 ${opt.frame}`}
-                >
-                  {opt.preview}
-                </div>
-                <p className="text-xs text-slate-500">{opt.description}</p>
-                <span
-                  className={`mt-auto inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider ${
-                    isActive ? "text-indigo-600" : "text-slate-400"
-                  }`}
-                >
-                  {isActive ? "✓ Selected" : "Tap to choose"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </Section>
+          Change template →
+        </Link>
+      </p>
 
       {/* General */}
       <Section
