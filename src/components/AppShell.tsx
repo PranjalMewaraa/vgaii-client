@@ -5,6 +5,8 @@ import { SWRConfig } from "swr";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
+import { TourProvider } from "@/components/tour/TourContext";
+import WelcomeOnboardingModal from "@/components/tour/WelcomeOnboardingModal";
 import { fetcher } from "@/lib/fetcher";
 
 const APP_VERSION = "1.0.0";
@@ -61,23 +63,26 @@ export default function AppShell({ children }: { children: ReactNode }) {
         shouldRetryOnError: false,
       }}
     >
-      <div className="min-h-screen bg-slate-50 text-slate-900">
-        <div className="flex">
-          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <TourProvider>
+        <div className="min-h-screen bg-slate-50 text-slate-900">
+          <div className="flex">
+            <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-          <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-            <TopBar onMenuClick={() => setSidebarOpen(true)} />
-            <ImpersonationBanner />
+            <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+              <TopBar onMenuClick={() => setSidebarOpen(true)} />
+              <ImpersonationBanner />
 
-            <main className="min-w-0 flex-1 px-4 py-4 md:px-6">{children}</main>
+              <main className="min-w-0 flex-1 px-4 py-4 md:px-6">{children}</main>
 
-            <footer className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-500 md:px-8">
-              <span>© {YEAR} VGAII. All rights reserved.</span>
-              <span>Version {APP_VERSION}</span>
-            </footer>
+              <footer className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-500 md:px-8">
+                <span>© {YEAR} VGAII. All rights reserved.</span>
+                <span>Version {APP_VERSION}</span>
+              </footer>
+            </div>
           </div>
         </div>
-      </div>
+        <WelcomeOnboardingModal />
+      </TourProvider>
     </SWRConfig>
   );
 }
