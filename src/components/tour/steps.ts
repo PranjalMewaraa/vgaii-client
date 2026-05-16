@@ -163,6 +163,19 @@ export const TOUR_STEPS: TourStep[] = [
     placement: "top",
   },
   {
+    // Last setup-y stop before the wrap-up: the public landing page.
+    // We point at the template picker specifically (not the whole
+    // form) because choosing a look is the highest-leverage decision
+    // here — the rest of the form is content fields they can fill in
+    // at their own pace.
+    route: "/profile",
+    target: '[data-tour="profile-templates"]',
+    title: "Pick a look for your public page",
+    content:
+      "Your clinic's landing page comes in three styles — Classic, Premium, and Clinical. Tap any card to switch; your content (text, images, services) carries over. Don't worry about getting it right now — you can change it any time from this page.",
+    placement: "bottom",
+  },
+  {
     route: "/dashboard",
     target: "body",
     title: "You're all set!",

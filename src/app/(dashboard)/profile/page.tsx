@@ -261,7 +261,10 @@ function ProfilePageInner() {
         title="Template"
         description="The visual style of your public landing page. Switch any time — your content (text, images, services) stays the same."
       >
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div
+          data-tour="profile-templates"
+          className="grid grid-cols-1 gap-3 md:grid-cols-3"
+        >
           {TEMPLATE_OPTIONS.map(opt => {
             const isActive = profile.template === opt.id;
             return (
