@@ -2,8 +2,14 @@ import { z } from "zod";
 
 const trimmedString = (max = 1000) => z.string().trim().max(max);
 
+// Which public-site design the client picked in the dashboard. The standalone
+// hosted-site reads this from the public API and renders the matching template.
+export const PROFILE_TEMPLATES = ["classic", "premium", "teal"] as const;
+
 export const profileSchema = z.object({
   enabled: z.boolean().default(false),
+
+  template: z.enum(PROFILE_TEMPLATES).default("classic"),
 
   doctorName: trimmedString(120).default(""),
   specialty: trimmedString(80).default(""),

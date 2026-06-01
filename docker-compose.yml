@@ -1,0 +1,64 @@
+# Docker Compose for the VGAII CRM (Next.js + MariaDB).
+#
+#   docker compose up --build
+#   → app on http://localhost:3000, database on localhost:3306
+#
+# On first boot of a fresh database, seed demo data with:
+#   SEED_ON_START=true docker compose up --build
+#
+# Values below fall back to dev defaults; override by putting real values in a
+# `.env` file next to this one (Compose loads it automatically) or your shell.
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MYSQL_DATABASE:-crm}
+      MARIADB_USER: ${MYSQL_USER:-crm}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD:-crm_password}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  web:
+    build:
+      context: .
+      args:
+        # Build-time only (inlined into the client bundle by Next).
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      # ─── Core ───────────────────────────────────────────────────────────
+      DATABASE_URL: mysql://${MYSQL_USER:-crm}:${MYSQL_PASSWORD:-crm_password}@db:3306/${MYSQL_DATABASE:-crm}
+      JWT_SECRET: ${JWT_SECRET:-dev-insecure-change-me}
+      # Set to "true" once to seed a fresh DB on startup (see entrypoint).
+      SEED_ON_START: ${SEED_ON_START:-false}
+
+      # ─── Optional integrations (leave blank if unused) ──────────────────
+      DATAFORSEO_LOGIN: ${DATAFORSEO_LOGIN:-}
+      DATAFORSEO_PASSWORD: ${DATAFORSEO_PASSWORD:-}
+      SUBSCRIPTION_CHECK_URL: ${SUBSCRIPTION_CHECK_URL:-}
+      SUBSCRIPTION_X_CRM_KEY: ${SUBSCRIPTION_X_CRM_KEY:-}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME:-}
+      R2_MAX_UPLOAD_BYTES: ${R2_MAX_UPLOAD_BYTES:-}
+      CRON_SECRET: ${CRON_SECRET:-}
+
+volumes:
+  db-data:
