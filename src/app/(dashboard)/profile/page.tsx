@@ -8,16 +8,6 @@ import ProfileSubNav from "@/components/profile/ProfileSubNav";
 import { labelFor } from "@/components/profile/templateOptions";
 import type { Profile } from "@/lib/validators/profile";
 
-const TEMPLATE_OPTIONS: {
-  value: Profile["template"];
-  label: string;
-  blurb: string;
-}[] = [
-  { value: "classic", label: "Classic", blurb: "Sky-blue & slate, clean and conventional." },
-  { value: "premium", label: "Premium", blurb: "Minimal luxury — rounded, airy, slate tones." },
-  { value: "teal", label: "Teal", blurb: "Clinical teal palette, bold and modern." },
-];
-
 const EMPTY: Profile = {
   enabled: false,
   template: "classic",
@@ -224,44 +214,6 @@ function ProfilePageInner() {
           <Field label="Specialty" value={profile.specialty} onChange={v => set("specialty", v)} placeholder="Cardiology" />
           <Field label="Credentials" value={profile.credentials} onChange={v => set("credentials", v)} placeholder="MD, FACC" />
         </Grid>
-      </Section>
-
-      {/* Template */}
-      <Section
-        title="Template"
-        description="The design used for your public website."
-      >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {TEMPLATE_OPTIONS.map(opt => {
-            const selected = profile.template === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => set("template", opt.value)}
-                className={`rounded-lg border p-3 text-left transition ${
-                  selected
-                    ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100"
-                    : "border-slate-200 bg-white hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-900">
-                    {opt.label}
-                  </span>
-                  <span
-                    className={`h-4 w-4 rounded-full border ${
-                      selected
-                        ? "border-indigo-600 bg-indigo-600"
-                        : "border-slate-300"
-                    }`}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-slate-500">{opt.blurb}</p>
-              </button>
-            );
-          })}
-        </div>
       </Section>
 
       {/* Hero */}
