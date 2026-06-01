@@ -13,6 +13,20 @@ const publicProfileLeadSchema = z.object({
   source: z.string().trim().max(120).optional(),
 });
 
+// The standalone single-file site (hosted-site/) posts here cross-origin from
+// the browser, so this endpoint advertises permissive CORS. Same-origin
+// callers (the CRM's own pages) simply ignore these headers.
+const CORS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+};
+
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS });
+}
+
 type RouteContext = { params: Promise<{ clientId: string }> };
 
 export async function POST(req: Request, ctx: RouteContext) {
@@ -23,13 +37,19 @@ export async function POST(req: Request, ctx: RouteContext) {
     // profile is a Json column; cast for the enabled check.
     const profile = client?.profile as { enabled?: boolean } | null | undefined;
     if (!profile?.enabled) {
-      return NextResponse.json({ error: "Page not active" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Page not active" },
+        { status: 404, headers: CORS },
+      );
     }
 
     const body = await req.json();
     const parsed = publicProfileLeadSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error }, { status: 400 });
+      return NextResponse.json(
+        { error: parsed.error },
+        { status: 400, headers: CORS },
+      );
     }
 
     const lead = await createLead({
@@ -65,10 +85,13 @@ export async function POST(req: Request, ctx: RouteContext) {
           ? buildFeedbackUrl(origin, lead.feedbackToken)
           : null,
       },
-      { status: 201 },
+      { status: 201, headers: CORS },
     );
   } catch (err: unknown) {
     console.error("[p/lead] failed:", err);
-    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
+    return NextResponse.json(
+      { error: getErrorMessage(err) },
+      { status: 500, headers: CORS },
+    );
   }
 }
