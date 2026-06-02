@@ -40,7 +40,9 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      # host:container — app listens on 3000 inside; published on 4000 on the
+      # host. Override WEB_PORT in Portainer's env to change the host port.
+      - "${WEB_PORT:-4000}:3000"
     environment:
       # ─── Core ───────────────────────────────────────────────────────────
       DATABASE_URL: mysql://${MYSQL_USER:-crm}:${MYSQL_PASSWORD:-crm_password}@db:3306/${MYSQL_DATABASE:-crm}
