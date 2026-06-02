@@ -1,34 +1,18 @@
-# Docker Compose for the VGAII CRM (Next.js + MariaDB).
+# Docker Compose for the VGAII CRM (Next.js).
 #
-#   docker compose up --build
-#   → app on http://localhost:3000, database on localhost:3306
+# Uses an EXTERNAL MySQL/MariaDB database — no DB container here. Provide the
+# connection string and secrets via the stack's Environment variables in
+# Portainer (NOT committed to this public repo).
 #
-# On first boot of a fresh database, seed demo data with:
-#   SEED_ON_START=true docker compose up --build
+# Required env:
+#   DATABASE_URL   e.g. mysql://user:pass@host:3306/dbname
+#   JWT_SECRET     long random string
 #
-# Values below fall back to dev defaults; override by putting real values in a
-# `.env` file next to this one (Compose loads it automatically) or your shell.
+# On the very first deploy against a fresh database, also set SEED_ON_START=true
+# once to create the demo data + test users (the entrypoint runs migrations
+# regardless).
 
 services:
-  db:
-    image: mariadb:11
-    restart: unless-stopped
-    environment:
-      MARIADB_DATABASE: ${MYSQL_DATABASE:-crm}
-      MARIADB_USER: ${MYSQL_USER:-crm}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD:-crm_password}
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
-    ports:
-      - "3306:3306"
-    volumes:
-      - db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
-
   web:
     build:
       context: .
@@ -36,17 +20,15 @@ services:
         # Build-time only (inlined into the client bundle by Next).
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       # host:container — app listens on 3000 inside; published on 4000 on the
       # host. Override WEB_PORT in Portainer's env to change the host port.
       - "${WEB_PORT:-4000}:3000"
     environment:
-      # ─── Core ───────────────────────────────────────────────────────────
-      DATABASE_URL: mysql://${MYSQL_USER:-crm}:${MYSQL_PASSWORD:-crm_password}@db:3306/${MYSQL_DATABASE:-crm}
-      JWT_SECRET: ${JWT_SECRET:-dev-insecure-change-me}
+      # ─── Core (required — set in Portainer stack env) ───────────────────
+      # Full connection string to your external DB.
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in the stack environment}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in the stack environment}
       # Set to "true" once to seed a fresh DB on startup (see entrypoint).
       SEED_ON_START: ${SEED_ON_START:-false}
 
@@ -61,6 +43,3 @@ services:
       R2_BUCKET_NAME: ${R2_BUCKET_NAME:-}
       R2_MAX_UPLOAD_BYTES: ${R2_MAX_UPLOAD_BYTES:-}
       CRON_SECRET: ${CRON_SECRET:-}
-
-volumes:
-  db-data:
