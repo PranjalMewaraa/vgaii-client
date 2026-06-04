@@ -29,6 +29,12 @@ services:
       # Full connection string to your external DB.
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in the stack environment}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in the stack environment}
+      # Hostname(s) that serve the CRM panel itself (comma-separated). The
+      # middleware treats any OTHER Host header as a client's custom
+      # public-profile domain and rewrites it to /host/<host>. Without this,
+      # the panel domain gets hijacked into that lookup and the app appears
+      # broken. Read at request time — changing it needs no rebuild.
+      APP_HOSTS: ${APP_HOSTS:-panel.clinicessential.com}
       # Set to "true" once to seed a fresh DB on startup (see entrypoint).
       SEED_ON_START: ${SEED_ON_START:-false}
 
