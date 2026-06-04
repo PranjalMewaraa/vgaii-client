@@ -1,36 +1,55 @@
-# Docker Compose for the VGAII CRM (Next.js).
+# Docker Compose for the VGAII CRM (Next.js standalone) against an EXTERNAL DB.
 #
-# Uses an EXTERNAL MySQL/MariaDB database — no DB container here. Provide the
-# connection string and secrets via the stack's Environment variables in
-# Portainer (NOT committed to this public repo).
+# Two services:
+#   migrate  — runs `prisma migrate deploy` (+ optional seed) once, then exits.
+#   web      — the standalone Next.js server (node server.js). Starts only after
+#              migrate completes successfully.
 #
-# Required env:
-#   DATABASE_URL   e.g. mysql://user:pass@host:3306/dbname
-#   JWT_SECRET     long random string
+# The standalone runtime image has no Prisma CLI, so migrations run in `migrate`
+# (built from the `builder` stage, which has the full toolchain).
 #
-# On the very first deploy against a fresh database, also set SEED_ON_START=true
-# once to create the demo data + test users (the entrypoint runs migrations
-# regardless).
+# Provide secrets via the stack's Environment variables in Portainer (NOT this
+# public repo):
+#   DATABASE_URL   e.g. mysql://user:pass@host:3306/dbname   (required)
+#   JWT_SECRET     long random string                        (required)
+#   SEED_ON_START  set "true" once on a fresh DB to seed     (optional)
+#   WEB_PORT       host port (default 4000)                  (optional)
 
 services:
+  migrate:
+    build:
+      context: .
+      target: builder
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             if [ \"$$SEED_ON_START\" = \"true\" ]; then npm run seed; fi"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in the stack environment}
+      SEED_ON_START: ${SEED_ON_START:-false}
+    restart: "no"
+    networks:
+      - appnet
+
   web:
     build:
       context: .
       args:
         # Build-time only (inlined into the client bundle by Next).
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+    container_name: vgaii-web
     restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     ports:
-      # host:container — app listens on 3000 inside; published on 4000 on the
-      # host. Override WEB_PORT in Portainer's env to change the host port.
+      # host:container — app listens on 3000 inside; published on 4000.
+      # Override WEB_PORT in Portainer's env to change the host port.
       - "${WEB_PORT:-4000}:3000"
     environment:
-      # ─── Core (required — set in Portainer stack env) ───────────────────
-      # Full connection string to your external DB.
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in the stack environment}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in the stack environment}
-      # Set to "true" once to seed a fresh DB on startup (see entrypoint).
-      SEED_ON_START: ${SEED_ON_START:-false}
 
       # ─── Optional integrations (leave blank if unused) ──────────────────
       DATAFORSEO_LOGIN: ${DATAFORSEO_LOGIN:-}
@@ -43,3 +62,8 @@ services:
       R2_BUCKET_NAME: ${R2_BUCKET_NAME:-}
       R2_MAX_UPLOAD_BYTES: ${R2_MAX_UPLOAD_BYTES:-}
       CRON_SECRET: ${CRON_SECRET:-}
+    networks:
+      - appnet
+
+networks:
+  appnet:

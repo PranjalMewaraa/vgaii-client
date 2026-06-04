@@ -12,7 +12,9 @@
       "Bash(node -e ' *)",
       "Bash(rm -f /tmp/render-test.js)",
       "Bash(git -C /c/client-vgaii status --short)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(node -e \"const p=require\\('./node_modules/mariadb/package.json'\\); console.log\\('mariadb deps:', JSON.stringify\\(p.dependencies||{}\\)\\)\")",
+      "Bash(git rm *)"
     ]
   }
 }
