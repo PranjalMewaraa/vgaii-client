@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && prisma migrate deploy && next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0 -p 3000",
     "seed": "tsx scripts/seed.ts",
     "seed:reset": "prisma migrate reset --force",
     "lint": "eslint",

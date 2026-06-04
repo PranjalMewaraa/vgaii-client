@@ -11,7 +11,8 @@
       "Bash(echo \"=== install exit: $? ===\")",
       "Bash(node -e ' *)",
       "Bash(rm -f /tmp/render-test.js)",
-      "Bash(git -C /c/client-vgaii status --short)"
+      "Bash(git -C /c/client-vgaii status --short)",
+      "Bash(git stash *)"
     ]
   }
 }
