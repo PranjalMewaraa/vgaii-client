@@ -6,6 +6,8 @@ import RoleGuard from "@/components/RoleGuard";
 type Settings = {
   id?: string;
   name?: string;
+  email?: string;
+  mobile?: string;
   plan?: string;
   subscriptionStatus?: string;
   profileSlug?: string;
@@ -31,8 +33,9 @@ function SettingsPageInner() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [profileSlug, setProfileSlug] = useState("");
-  const [customDomain, setCustomDomain] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,8 +46,9 @@ function SettingsPageInner() {
       .then(data => {
         if (data.client) {
           setSettings(data.client);
-          setProfileSlug(data.client.profileSlug ?? "");
-          setCustomDomain(data.client.customDomain ?? "");
+          setName(data.client.name ?? "");
+          setEmail(data.client.email ?? "");
+          setMobile(data.client.mobile ?? "");
         }
       })
       .finally(() => setLoading(false));
@@ -59,8 +63,9 @@ function SettingsPageInner() {
         method: "PATCH",
         headers: authHeaders(),
         body: JSON.stringify({
-          profileSlug: profileSlug || null,
-          customDomain: customDomain || null,
+          name: name.trim(),
+          email: email || null,
+          mobile: mobile || null,
         }),
       });
       const data = await res.json();
@@ -91,9 +96,9 @@ function SettingsPageInner() {
       <header>
         <h1 className="text-lg font-bold text-slate-900">Settings</h1>
         <p className="text-sm text-slate-500">
-          Branding for {settings.name}. Integrations and webhooks are
-          managed by the platform team — contact them if you need changes
-          to your Google listing or Cal.com link.
+          Contact details for {settings.name}. Your public URL, integrations,
+          and webhooks are managed by the platform team — contact them if you
+          need changes to your slug, domain, Google listing, or Cal.com link.
         </p>
       </header>
 
@@ -102,47 +107,53 @@ function SettingsPageInner() {
         className="rounded-lg border border-slate-200 bg-white"
       >
         <div className="border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">Branding</h2>
+          <h2 className="text-base font-semibold text-slate-900">
+            Business details
+          </h2>
           <p className="text-xs text-slate-500">
-            Where patients land when they search for you online.
+            Your clinic name and contact details.
           </p>
         </div>
 
         <div className="space-y-3 px-4 py-3">
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Profile slug
+              Name
             </span>
             <input
-              value={profileSlug}
-              onChange={e => setProfileSlug(e.target.value)}
-              placeholder="aarogya-dental"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Aarogya Dental Studio"
+              required
+              minLength={2}
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
-            <p className="mt-1 text-xs text-slate-500">
-              Pretty URL for your landing page —{" "}
-              <code className="rounded bg-slate-100 px-1">
-                /p/{profileSlug || "<slug>"}
-              </code>
-              . Lowercase letters, digits, and hyphens only.
-            </p>
           </label>
 
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Custom domain
+              Email
             </span>
             <input
-              value={customDomain}
-              onChange={e => setCustomDomain(e.target.value)}
-              placeholder="aarogyadental.com"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="hello@aarogyadental.com"
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
-            <p className="mt-1 text-xs text-slate-500">
-              Point your domain&apos;s DNS at our host, then enter the bare
-              hostname here (no <code>https://</code>, no path). Visitors of
-              that domain will see your landing page directly.
-            </p>
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              Mobile
+            </span>
+            <input
+              type="tel"
+              value={mobile}
+              onChange={e => setMobile(e.target.value)}
+              placeholder="+91 98765 43210"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
           </label>
         </div>
 

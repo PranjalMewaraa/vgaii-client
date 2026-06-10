@@ -21,17 +21,38 @@ const optionalHostname = z
     message: "Enter a hostname like example.com (no http://, no path).",
   });
 
-// CLIENT_ADMIN-facing settings: branding only (slug + custom domain).
-// Integrations (googlePlaceId, bookingUrl) and security (webhookKey) are
-// platform-managed and live on the super-admin clients page.
-// `null` clears a field; omitting it leaves the existing value untouched.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Loose phone check: 7–20 chars of digits and common separators.
+const MOBILE_RE = /^[+\d][\d\s().-]{6,19}$/;
+
+const optionalEmail = z
+  .string()
+  .trim()
+  .refine(s => s === "" || EMAIL_RE.test(s), {
+    message: "Enter a valid email address.",
+  });
+
+const optionalMobile = z
+  .string()
+  .trim()
+  .refine(s => s === "" || MOBILE_RE.test(s), {
+    message: "Enter a valid phone number.",
+  });
+
+// CLIENT_ADMIN-facing settings: business contact details (name, email,
+// mobile). Slug + custom domain are platform-managed on the super-admin
+// clients page. `null` clears a field; omitting it leaves it untouched.
 export const clientSettingsSchema = z
   .object({
-    profileSlug: optionalSlug.nullable().optional(),
-    customDomain: optionalHostname.nullable().optional(),
+    name: z.string().trim().min(2).max(120).optional(),
+    email: optionalEmail.nullable().optional(),
+    mobile: optionalMobile.nullable().optional(),
   })
   .refine(
-    d => d.profileSlug !== undefined || d.customDomain !== undefined,
+    d =>
+      d.name !== undefined ||
+      d.email !== undefined ||
+      d.mobile !== undefined,
     { message: "At least one field is required" },
   );
 
