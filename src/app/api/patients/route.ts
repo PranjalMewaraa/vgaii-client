@@ -17,6 +17,7 @@ type PatientRow = {
   email?: string | null;
   age?: number | null;
   gender?: string | null;
+  area?: string | null;
   status?: string;
   outcomeRating?: number | null;
   lastAppointmentDate?: Date | null;
@@ -33,39 +34,47 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     const search = url.searchParams.get("search")?.trim();
+    const area = url.searchParams.get("area")?.trim();
+
+    // `search` matches name OR phone (legacy box); `area` is an additional
+    // AND filter. MySQL's default collation is case-insensitive.
+    const leadAnd: Prisma.LeadWhereInput[] = [];
+    if (search) {
+      leadAnd.push({
+        OR: [{ name: { contains: search } }, { phone: { contains: search } }],
+      });
+    }
+    if (area) leadAnd.push({ area: { contains: area } });
 
     const leadWhere: Prisma.LeadWhereInput = {
       ...scope,
       status: { in: ["qualified", "appointment_booked", "visited"] },
+      ...(leadAnd.length ? { AND: leadAnd } : {}),
     };
-    if (search) {
-      leadWhere.OR = [
-        { name: { contains: search } },
-        { phone: { contains: search } },
-      ];
-    }
 
-    const [leads, orphanAppointments, feedbacks] = await Promise.all([
+    const orphanWhere: Prisma.AppointmentWhereInput = {
+      ...scope,
+      leadId: null,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search } },
+              { phone: { contains: search } },
+            ],
+          }
+        : {}),
+    };
+
+    const [leads, feedbacks] = await Promise.all([
       prisma.lead.findMany({ where: leadWhere }),
-      prisma.appointment.findMany({
-        where: {
-          ...scope,
-          leadId: null,
-          ...(search
-            ? {
-                OR: [
-                  { name: { contains: search } },
-                  { phone: { contains: search } },
-                ],
-              }
-            : {}),
-        },
-      }),
-      prisma.feedback.findMany({
-        where: scope,
-        select: { leadId: true },
-      }),
+      prisma.feedback.findMany({ where: scope, select: { leadId: true } }),
     ]);
+
+    // Orphan appointments have no `area` column, so an area filter excludes
+    // them entirely; otherwise they still match on name/phone.
+    const orphanAppointments = area
+      ? []
+      : await prisma.appointment.findMany({ where: orphanWhere });
 
     const feedbackByLead = new Set(
       feedbacks.map(f => f.leadId).filter(Boolean) as string[],
@@ -97,6 +106,7 @@ export async function GET(req: Request) {
         email: l.email,
         age: l.age,
         gender: l.gender,
+        area: l.area,
         status: l.status,
         outcomeRating: l.outcomeRating,
         lastAppointmentDate: appts[0]?.date ?? null,
@@ -115,6 +125,7 @@ export async function GET(req: Request) {
       email: a.email,
       age: a.age,
       gender: a.gender,
+      area: null,
       lastAppointmentDate: a.date ?? null,
       appointmentsCount: 1,
       hasFeedback: false,
