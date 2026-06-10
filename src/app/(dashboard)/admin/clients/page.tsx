@@ -476,12 +476,14 @@ function AdminClientsPageInner() {
                         client={c}
                         busyId={busyId}
                         onImpersonate={impersonate}
+                        onUpdated={refresh}
                       />
 
                       <ClientStaffBlock
                         staff={c.staff}
                         busyId={busyId}
                         onImpersonate={impersonate}
+                        onUpdated={refresh}
                       />
 
                       <ClientIntegrationsBlock client={c} onUpdated={refresh} />
@@ -529,10 +531,12 @@ function ClientAdminBlock({
   client,
   busyId,
   onImpersonate,
+  onUpdated,
 }: {
   client: ClientRow;
   busyId: string | null;
   onImpersonate: (id: string) => void;
+  onUpdated: () => void;
 }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
@@ -567,6 +571,13 @@ function ClientAdminBlock({
           </button>
         )}
       </div>
+      {client.admin && (
+        <UserSecurityActions
+          userId={client.admin.id}
+          email={client.admin.email}
+          onUpdated={onUpdated}
+        />
+      )}
     </div>
   );
 }
@@ -575,10 +586,12 @@ function ClientStaffBlock({
   staff,
   busyId,
   onImpersonate,
+  onUpdated,
 }: {
   staff: StaffRow[];
   busyId: string | null;
   onImpersonate: (id: string) => void;
+  onUpdated: () => void;
 }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
@@ -624,9 +637,184 @@ function ClientStaffBlock({
                 <UserRound size={12} />
                 {busyId === s.id ? "Switching…" : "Impersonate"}
               </button>
+              <div className="w-full">
+                <UserSecurityActions
+                  userId={s.id}
+                  email={s.email}
+                  onUpdated={onUpdated}
+                />
+              </div>
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+// Super-admin reset-password + change-email actions for a single user. Used
+// for the client admin and each staff member.
+function UserSecurityActions({
+  userId,
+  email,
+  onUpdated,
+}: {
+  userId: string;
+  email?: string;
+  onUpdated: () => void;
+}) {
+  const [mode, setMode] = useState<null | "password" | "email">(null);
+  const [password, setPassword] = useState("");
+  const [newEmail, setNewEmail] = useState(email ?? "");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+
+  const open = (m: "password" | "email") => {
+    setMode(prev => (prev === m ? null : m));
+    setErr(null);
+    setDone(null);
+    if (m === "email") setNewEmail(email ?? "");
+    if (m === "password") setPassword("");
+  };
+
+  const errorFrom = (data: { error?: unknown }, fallback: string): string => {
+    const e = data?.error as
+      | { issues?: Array<{ message?: string }> }
+      | string
+      | undefined;
+    if (e && typeof e === "object" && e.issues?.length) {
+      return e.issues[0]?.message ?? fallback;
+    }
+    return typeof e === "string" ? e : fallback;
+  };
+
+  const resetPassword = async () => {
+    setBusy(true);
+    setErr(null);
+    setDone(null);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErr(errorFrom(data, "Reset failed"));
+        return;
+      }
+      setDone("Password reset.");
+      setPassword("");
+      setMode(null);
+    } catch {
+      setErr("Network error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const changeEmail = async () => {
+    setBusy(true);
+    setErr(null);
+    setDone(null);
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ email: newEmail.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErr(errorFrom(data, "Update failed"));
+        return;
+      }
+      setDone("Email updated.");
+      setMode(null);
+      onUpdated();
+    } catch {
+      setErr("Network error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 border-t border-slate-100 pt-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => open("password")}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+        >
+          <KeyRound size={11} />
+          Reset password
+        </button>
+        <button
+          type="button"
+          onClick={() => open("email")}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+        >
+          <Pencil size={11} />
+          Change email
+        </button>
+        {done && <span className="text-[11px] text-emerald-600">{done}</span>}
+      </div>
+
+      {mode === "password" && (
+        <div className="mt-2 flex flex-wrap items-end gap-2">
+          <label className="block min-w-[200px] flex-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              New password
+            </span>
+            <input
+              type="text"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="≥8 chars, letters + a digit"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={resetPassword}
+            disabled={busy || password.length < 8}
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {busy ? "Saving…" : "Set password"}
+          </button>
+        </div>
+      )}
+
+      {mode === "email" && (
+        <div className="mt-2 flex flex-wrap items-end gap-2">
+          <label className="block min-w-[200px] flex-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              New email
+            </span>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              placeholder="user@example.com"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={changeEmail}
+            disabled={busy || !newEmail.trim()}
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {busy ? "Saving…" : "Save email"}
+          </button>
+        </div>
+      )}
+
+      {err && (
+        <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] text-red-700">
+          {err}
+        </p>
       )}
     </div>
   );
