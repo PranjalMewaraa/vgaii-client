@@ -5,6 +5,7 @@ import Link from "next/link";
 import RoleGuard from "@/components/RoleGuard";
 import { useStoredUser } from "@/lib/client-auth";
 import ProfileSubNav from "@/components/profile/ProfileSubNav";
+import ImageUpload from "@/components/profile/ImageUpload";
 import { labelFor } from "@/components/profile/templateOptions";
 import type { Profile } from "@/lib/validators/profile";
 
@@ -222,7 +223,13 @@ function ProfilePageInner() {
           <Field label="Headline (line 1)" value={profile.heroTitleLine1} onChange={v => set("heroTitleLine1", v)} placeholder="Compassionate care" />
           <Field label="Headline (line 2)" value={profile.heroTitleLine2} onChange={v => set("heroTitleLine2", v)} placeholder="for your heart." />
         </Grid>
-        <Field label="Hero image URL" value={profile.heroImageUrl} onChange={v => set("heroImageUrl", v)} placeholder="https://…/photo.jpg" />
+        <ImageUpload
+          label="Hero image"
+          kind="hero"
+          value={profile.heroImageUrl}
+          onChange={v => set("heroImageUrl", v)}
+          hint="Wide banner image. Saved when you click Save profile."
+        />
         <Textarea
           label="Tagline"
           value={profile.heroTagline}
@@ -234,8 +241,20 @@ function ProfilePageInner() {
 
       {/* About */}
       <Section title="About" description="Bio + achievements.">
-        <Field label="About image URL" value={profile.aboutImageUrl} onChange={v => set("aboutImageUrl", v)} placeholder="https://…/portrait.jpg" />
-        <Field label="Favicon URL (browser-tab icon)" value={profile.faviconUrl} onChange={v => set("faviconUrl", v)} placeholder="https://…/favicon.png" />
+        <ImageUpload
+          label="About image"
+          kind="about"
+          value={profile.aboutImageUrl}
+          onChange={v => set("aboutImageUrl", v)}
+          hint="Portrait shown in the About section."
+        />
+        <ImageUpload
+          label="Favicon (browser-tab icon)"
+          kind="favicon"
+          value={profile.faviconUrl}
+          onChange={v => set("faviconUrl", v)}
+          hint="Small square icon, ideally 32×32 or 64×64."
+        />
         <Textarea
           label="Bio"
           value={profile.aboutBio}

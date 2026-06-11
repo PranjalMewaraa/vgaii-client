@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
-import { checkRole, checkModule } from "@/lib/rbac";
+import { checkRole, checkAnyModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
 import { signGetUrl } from "@/lib/r2";
 import { getErrorMessage } from "@/lib/errors";
@@ -14,7 +14,8 @@ export async function GET(req: Request, ctx: RouteContext) {
   try {
     const user = getUser(req);
     checkRole(user, ["CLIENT_ADMIN", "STAFF"]);
-    checkModule(user, "appointments");
+    // Downloadable from the appointments list AND a patient's history.
+    checkAnyModule(user, ["appointments", "patients"]);
 
     const { id, attachmentId } = await ctx.params;
     const scope = withClientFilter(user) as { clientId?: string };
