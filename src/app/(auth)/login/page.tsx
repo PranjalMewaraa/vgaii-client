@@ -3,6 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getStoredToken, isTokenUsable } from "@/lib/client-auth";
+import TurnstileWidget from "@/components/TurnstileWidget";
+
+const TURNSTILE_SITE_KEY =
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 type LoginResponse = {
   token?: string;
@@ -23,6 +27,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
+  const captchaEnabled = !!TURNSTILE_SITE_KEY;
 
   useEffect(() => {
     if (isTokenUsable(getStoredToken())) {
@@ -33,6 +40,12 @@ export default function LoginPage() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+
+    if (captchaEnabled && !captchaToken) {
+      setError("Please complete the captcha.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -41,13 +54,16 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, captchaToken }),
       });
 
       const data = (await res.json()) as LoginResponse;
 
       if (!res.ok || !data.token) {
         setError(data.error || "Invalid email or password");
+        // Turnstile tokens are single-use — get a fresh one for the retry.
+        setCaptchaToken(null);
+        setCaptchaReset(n => n + 1);
         return;
       }
 
@@ -65,6 +81,8 @@ export default function LoginPage() {
       router.replace(next && next !== "/" ? next : "/dashboard");
     } catch {
       setError("Unable to sign in right now");
+      setCaptchaToken(null);
+      setCaptchaReset(n => n + 1);
     } finally {
       setLoading(false);
     }
@@ -114,6 +132,14 @@ export default function LoginPage() {
             />
           </label>
 
+          {captchaEnabled && (
+            <TurnstileWidget
+              siteKey={TURNSTILE_SITE_KEY}
+              onToken={setCaptchaToken}
+              resetSignal={captchaReset}
+            />
+          )}
+
           {error && (
             <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
@@ -123,7 +149,7 @@ export default function LoginPage() {
           <button
             className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             type="submit"
-            disabled={loading}
+            disabled={loading || (captchaEnabled && !captchaToken)}
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

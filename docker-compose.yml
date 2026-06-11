@@ -17,8 +17,10 @@ services:
     build:
       context: .
       args:
-        # Build-time only (inlined into the client bundle by Next).
+        # Build-time only (inlined into the client bundle by Next). Changing
+        # these requires a rebuild, not just a restart.
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
     restart: unless-stopped
     ports:
       # host:container — app listens on 3000 inside; published on 4000 on the
@@ -37,6 +39,10 @@ services:
       APP_HOSTS: ${APP_HOSTS:-panel.clinicessential.com}
       # Set to "true" once to seed a fresh DB on startup (see entrypoint).
       SEED_ON_START: ${SEED_ON_START:-false}
+      # Cloudflare Turnstile captcha on login. Secret is server-side (runtime).
+      # The matching NEXT_PUBLIC_TURNSTILE_SITE_KEY is a build arg above.
+      # Leave both blank to disable the captcha entirely.
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
 
       # ─── Optional integrations (leave blank if unused) ──────────────────
       DATAFORSEO_LOGIN: ${DATAFORSEO_LOGIN:-}
