@@ -121,6 +121,9 @@ enum OnboardingState {
 model Client {
   id                 String             @id @default(cuid())
   name               String
+  // Business contact details, editable by CLIENT_ADMIN on the Settings page.
+  email              String?            @db.VarChar(191)
+  mobile             String?            @db.VarChar(40)
   subscriptionStatus SubscriptionStatus @default(trial)
   renewalDate        DateTime?
   subscriptionKey     String?            @db.VarChar(500)

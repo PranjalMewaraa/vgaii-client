@@ -77,6 +77,17 @@ export const getStoredToken = () => {
   return localStorage.getItem("token");
 };
 
+// Merge a patch into the stored user (e.g. after a self email change) and
+// notify subscribers so the UI updates without a reload.
+export const updateStoredUser = (patch: Partial<StoredUser>) => {
+  if (typeof window === "undefined") return;
+  const current = getUserSnapshot() ?? {};
+  const next = { ...current, ...patch };
+  localStorage.setItem("user", JSON.stringify(next));
+  cachedUserRaw = null;
+  userListeners.forEach(cb => cb());
+};
+
 export const clearStoredAuth = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");

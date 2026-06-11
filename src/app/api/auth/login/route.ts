@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { generateToken } from "@/lib/auth";
 import { rateLimit, clearRateLimit, getClientIp } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
 
@@ -31,6 +32,16 @@ export async function POST(req: Request) {
 
     if (!email || !password) {
       return NextResponse.json({ error: "Invalid creds" }, { status: 400 });
+    }
+
+    // Captcha (no-op unless TURNSTILE_SECRET_KEY is set). Verified before the
+    // bcrypt compare so bots can't even reach the password check.
+    const captcha = await verifyTurnstile(body.captchaToken, ip);
+    if (!captcha.ok) {
+      return NextResponse.json(
+        { error: captcha.error ?? "Captcha failed" },
+        { status: 400 },
+      );
     }
 
     const user = await prisma.user.findUnique({ where: { email } });

@@ -9,7 +9,7 @@ import {
   MapPin,
   X,
 } from "lucide-react";
-import { loadGoogleMaps } from "@/lib/google-maps";
+import { loadGoogleMaps, onGoogleMapsAuthFailure } from "@/lib/google-maps";
 
 type SelectedPlace = {
   id: string;
@@ -68,6 +68,21 @@ function ModalContents({
 
     let cancelled = false;
     let cleanup: (() => void) | null = null;
+
+    // Google reports a rejected key (referrer restriction / API not enabled)
+    // via gm_authFailure, separately from the load promise. Surface it with
+    // the exact origin the admin needs to allow-list.
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "this site";
+    const offAuth = onGoogleMapsAuthFailure(() => {
+      if (cancelled) return;
+      setLoadError(
+        `Google rejected the Maps API key for ${origin}. In the Google Cloud ` +
+          `console, add ${origin}/* to the key's allowed HTTP referrers and ` +
+          `enable "Maps JavaScript API" + "Places API (New)".`,
+      );
+      setLoading(false);
+    });
 
     (async () => {
       try {
@@ -219,6 +234,7 @@ function ModalContents({
 
     return () => {
       cancelled = true;
+      offAuth();
       cleanup?.();
     };
   }, [missingKey]);

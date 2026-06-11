@@ -24,6 +24,8 @@ COPY . .
 # must be available now (not at runtime). Pass via --build-arg / compose args.
 ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""
 ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=""
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
 # Regenerate the client against the copied schema, then build. We call
 # `next build` directly instead of `npm run build` because the npm script also

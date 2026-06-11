@@ -27,6 +27,7 @@ type PatientRow = {
   email?: string;
   age?: number;
   gender?: string;
+  area?: string;
   status?: string;
   outcomeRating?: number;
   lastAppointmentDate?: string | null;
@@ -67,6 +68,8 @@ function PatientsPageInner() {
   // filters
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [area, setArea] = useState("");
+  const [debouncedArea, setDebouncedArea] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [sourceFilter, setSourceFilter] = useState("");
   const [genderFilter, setGenderFilter] =
@@ -76,13 +79,20 @@ function PatientsPageInner() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 250);
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setDebouncedArea(area);
+    }, 250);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [search, area]);
 
-  const swrKey = debouncedSearch
-    ? `/api/patients?search=${encodeURIComponent(debouncedSearch)}`
-    : "/api/patients";
+  const swrKey = useMemo(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (debouncedArea) params.set("area", debouncedArea);
+    const qs = params.toString();
+    return qs ? `/api/patients?${qs}` : "/api/patients";
+  }, [debouncedSearch, debouncedArea]);
   const { data, isLoading, mutate } = useSWR<{ patients: PatientRow[] }>(
     swrKey,
     { keepPreviousData: true },
@@ -141,7 +151,7 @@ function PatientsPageInner() {
   // can land on an empty page after narrowing the result set. Using React's
   // "store previous value and compare during render" pattern instead of an
   // effect, which lint flags as a cascading-render anti-pattern.
-  const filterSig = `${debouncedSearch}|${sourceFilter}|${activeFilter}|${genderFilter}|${feedbackFilter}|${rowsPerPage}`;
+  const filterSig = `${debouncedSearch}|${debouncedArea}|${sourceFilter}|${activeFilter}|${genderFilter}|${feedbackFilter}|${rowsPerPage}`;
   const [prevFilterSig, setPrevFilterSig] = useState(filterSig);
   if (prevFilterSig !== filterSig) {
     setPrevFilterSig(filterSig);
@@ -179,6 +189,7 @@ function PatientsPageInner() {
 
   const clearAllFilters = () => {
     setSearch("");
+    setArea("");
     setSourceFilter("");
     setActiveFilter("all");
     setGenderFilter("");
@@ -419,6 +430,17 @@ function PatientsPageInner() {
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
+          <label className="block w-full min-w-[160px] sm:w-auto sm:flex-1">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Area
+            </span>
+            <input
+              value={area}
+              onChange={e => setArea(e.target.value)}
+              placeholder="e.g. Andheri…"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+          </label>
           <button
             type="button"
             onClick={() => setShowFilters(true)}
@@ -436,7 +458,7 @@ function PatientsPageInner() {
               </span>
             )}
           </button>
-          {(search || activeFilterCount > 0) && (
+          {(search || area || activeFilterCount > 0) && (
             <button
               type="button"
               onClick={clearAllFilters}

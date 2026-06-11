@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Sparkles, Trash2 } from "lucide-react";
-import { useStoredUser } from "@/lib/client-auth";
+import { useStoredUser, updateStoredUser } from "@/lib/client-auth";
 import { passwordPolicyDescription } from "@/lib/password-policy";
 
 const authHeaders = () => ({
@@ -154,8 +154,101 @@ export default function AccountPage() {
         </form>
       </section>
 
+      <ChangeEmailSection />
+
       {user?.role === "CLIENT_ADMIN" && <OnboardingControls />}
     </div>
+  );
+}
+
+function ChangeEmailSection() {
+  const user = useStoredUser();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/change-email", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ currentPassword, newEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data?.error?.issues?.length) {
+          setError(data.error.issues[0]?.message ?? "Validation error");
+        } else {
+          setError(
+            typeof data.error === "string" ? data.error : "Email change failed",
+          );
+        }
+        return;
+      }
+      updateStoredUser({ email: data.email });
+      setSuccess(true);
+      setCurrentPassword("");
+      setNewEmail("");
+    } catch {
+      setError("Network error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <section className="rounded-lg border border-slate-200 bg-white">
+      <div className="border-b border-slate-200 px-4 py-2.5">
+        <h2 className="text-base font-semibold text-slate-900">Change email</h2>
+        <p className="text-xs text-slate-500">
+          Current: <span className="font-medium">{user?.email ?? "—"}</span>.
+          You&apos;ll sign in with the new email next time.
+        </p>
+      </div>
+      <form onSubmit={submit} className="space-y-3 px-4 py-3">
+        <Field
+          label="New email"
+          type="email"
+          value={newEmail}
+          onChange={setNewEmail}
+          autoComplete="email"
+          required
+        />
+        <Field
+          label="Current password"
+          type="password"
+          value={currentPassword}
+          onChange={setCurrentPassword}
+          autoComplete="current-password"
+          required
+        />
+        {error && (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            Email updated.
+          </p>
+        )}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={submitting || !newEmail || !currentPassword}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {submitting ? "Updating…" : "Update email"}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }
 

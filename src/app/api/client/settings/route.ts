@@ -12,10 +12,9 @@ const cleanString = (v: string | null | undefined): string | null => {
   return trimmed === "" ? null : trimmed;
 };
 
-// CLIENT_ADMIN can self-serve only branding-related settings (their public
-// slug + custom domain). Integrations like googlePlaceId and bookingUrl,
-// plus webhook secrets, are platform-managed via the super-admin clients
-// page.
+// CLIENT_ADMIN can self-serve their business contact details (name, email,
+// mobile). Slug + custom domain, integrations (googlePlaceId, bookingUrl),
+// and webhook secrets are platform-managed via the super-admin clients page.
 export async function PATCH(req: Request) {
   try {
     const user = getUser(req);
@@ -37,11 +36,14 @@ export async function PATCH(req: Request) {
     }
 
     const data: Record<string, string | null> = {};
-    if (parsed.data.profileSlug !== undefined) {
-      data.profileSlug = cleanString(parsed.data.profileSlug);
+    if (parsed.data.name !== undefined) {
+      data.name = parsed.data.name;
     }
-    if (parsed.data.customDomain !== undefined) {
-      data.customDomain = cleanString(parsed.data.customDomain);
+    if (parsed.data.email !== undefined) {
+      data.email = cleanString(parsed.data.email);
+    }
+    if (parsed.data.mobile !== undefined) {
+      data.mobile = cleanString(parsed.data.mobile);
     }
 
     let client;
@@ -52,8 +54,8 @@ export async function PATCH(req: Request) {
         select: {
           id: true,
           name: true,
-          profileSlug: true,
-          customDomain: true,
+          email: true,
+          mobile: true,
         },
       });
     } catch (err: unknown) {
