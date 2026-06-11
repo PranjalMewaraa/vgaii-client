@@ -28,6 +28,20 @@ const getEndpoint = () =>
 
 const getBucket = () => env("R2_BUCKET_NAME");
 
+// Public base URL for serving objects (the bucket's r2.dev URL or a custom
+// CDN domain), used for assets that are world-readable — e.g. profile images.
+// Returns null when unset; callers should treat that as "public serving not
+// configured".
+export const getPublicBaseUrl = (): string | null => {
+  const v = process.env.R2_PUBLIC_BASE_URL;
+  return v ? v.replace(/\/+$/, "") : null;
+};
+
+export const publicUrlFor = (key: string): string | null => {
+  const base = getPublicBaseUrl();
+  return base ? `${base}/${key.replace(/^\/+/, "")}` : null;
+};
+
 export const getMaxUploadBytes = (): number => {
   const raw = process.env.R2_MAX_UPLOAD_BYTES;
   if (!raw) return DEFAULT_MAX_UPLOAD_BYTES;
