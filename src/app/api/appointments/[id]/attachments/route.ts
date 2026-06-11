@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
-import { checkRole, checkModule } from "@/lib/rbac";
+import { checkRole, checkAnyModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
@@ -13,7 +13,8 @@ export async function GET(req: Request, ctx: RouteContext) {
   try {
     const user = getUser(req);
     checkRole(user, ["CLIENT_ADMIN", "STAFF"]);
-    checkModule(user, "appointments");
+    // Viewable from the appointments list AND a patient's history.
+    checkAnyModule(user, ["appointments", "patients"]);
 
     const { id } = await ctx.params;
     const scope = withClientFilter(user) as { clientId?: string };
