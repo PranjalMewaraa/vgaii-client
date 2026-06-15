@@ -58,4 +58,12 @@ services:
       # r2.dev URL or a custom domain, no trailing slash. Needed for profile
       # image uploads to produce a servable URL.
       R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL:-}
+      # SMTP for booking confirmation emails. Leave SMTP_HOST blank to disable
+      # (bookings still succeed, just no email).
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_FROM: ${SMTP_FROM:-}
       CRON_SECRET: ${CRON_SECRET:-}

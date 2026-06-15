@@ -5,6 +5,7 @@ import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
 import { appointmentCreateSchema } from "@/lib/validators/appointment";
 import { getBookingConfig, overlapsExisting } from "@/lib/booking";
+import { sendAppointmentConfirmation } from "@/lib/email";
 import { logAudit } from "@/lib/audit";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
     // omit durationMin and stay exempt; the Cal.com path is unaffected.
     const client = await prisma.client.findUnique({
       where: { id: user.clientId },
-      select: { bookingConfig: true },
+      select: { bookingConfig: true, name: true },
     });
     const config = getBookingConfig(client?.bookingConfig);
     const start = new Date(parsed.data.date);
@@ -117,6 +118,25 @@ export async function POST(req: Request) {
         source: appointment.source,
       },
     });
+
+    // Best-effort confirmation email for future appointments with an email on
+    // file (no-op unless SMTP is configured; never throws).
+    if (
+      appointment.email &&
+      appointment.date &&
+      appointment.date.getTime() > Date.now()
+    ) {
+      await sendAppointmentConfirmation({
+        to: appointment.email,
+        name: appointment.name ?? undefined,
+        whenLocalLabel: new Intl.DateTimeFormat("en-US", {
+          timeZone: config.timezone,
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(appointment.date),
+        clinicName: client?.name ?? undefined,
+      });
+    }
 
     return NextResponse.json({ appointment });
   } catch (err: unknown) {
