@@ -139,6 +139,10 @@ model Client {
   profile            Json?
   // Cached Google Business listing (was an embedded subdoc). Same reason.
   googleBusinessInfo Json?
+  // Self-hosted booking availability + toggle (working hours, slot length,
+  // timezone, blackouts). A single Json blob read in full; nothing queries
+  // inside it. Null/disabled => fall back to the Cal.com bookingUrl above.
+  bookingConfig      Json?
   reviewsTaskId      String?
   // Set the first time the tenant runs the onboarding tour; cleared when
   // the demo data is torn down (Finish / Skip-during-tour / Clear demo).
@@ -277,6 +281,9 @@ model Appointment {
   bpSystolic   Int?
   bpDiastolic  Int?
   source      String            @default("cal.com")
+  // Slot length in minutes for self-hosted bookings; used for overlap
+  // detection and calendar block sizing. Null for legacy/manual/Cal.com rows.
+  durationMin Int?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
