@@ -16,6 +16,7 @@ import {
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import BookingEmbed from "@/components/BookingEmbed";
+import SlotBookingPane from "@/components/SlotBookingPane";
 import AttachmentsSection from "@/components/AttachmentsSection";
 import VitalsTrendChart, {
   type VitalsPoint,
@@ -676,35 +677,41 @@ function PatientDetailPageInner({
               </button>
             </div>
             <div className="flex-1 overflow-auto px-4 py-3">
-              {!bookingUrl ? (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  No Cal.com booking URL is configured for this client.
-                  Ask your admin to set it on the{" "}
-                  <Link
-                    href="/settings"
-                    className="font-semibold underline"
-                  >
-                    Settings
-                  </Link>{" "}
-                  page.
-                </div>
-              ) : (
-                <BookingEmbed
-                  url={bookingUrl}
-                  name={lead.name}
-                  email={lead.email}
-                  phone={lead.phone}
-                  onScheduled={() => {
-                    // Cal.com's webhook usually arrives within a second of
-                    // the bookingSuccessful event, but not always. Refetch
-                    // now AND once more after a short delay so we don't
-                    // miss the appointment write.
-                    load();
-                    setTimeout(() => load(), 1500);
-                    setBookingOpen(false);
-                  }}
-                />
-              )}
+              <SlotBookingPane
+                leadId={lead.id}
+                name={lead.name}
+                phone={lead.phone}
+                email={lead.email}
+                onBooked={() => {
+                  load();
+                  setTimeout(() => load(), 1500);
+                  setBookingOpen(false);
+                }}
+                fallback={
+                  !bookingUrl ? (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                      No Cal.com booking URL is configured for this client. Ask
+                      your admin to set it on the{" "}
+                      <Link href="/settings" className="font-semibold underline">
+                        Settings
+                      </Link>{" "}
+                      page, or enable self-hosted booking there.
+                    </div>
+                  ) : (
+                    <BookingEmbed
+                      url={bookingUrl}
+                      name={lead.name}
+                      email={lead.email}
+                      phone={lead.phone}
+                      onScheduled={() => {
+                        load();
+                        setTimeout(() => load(), 1500);
+                        setBookingOpen(false);
+                      }}
+                    />
+                  )
+                }
+              />
             </div>
           </div>
         </div>

@@ -15,6 +15,9 @@ export const appointmentCreateSchema = z.object({
   gender: z.string().max(40).optional(),
   notes: z.string().max(5000).optional(),
   leadId: z.string().min(1).max(60).optional(),
+  // Slot length (minutes) when booked via the self-hosted SlotPicker. Its
+  // presence opts the appointment into double-booking prevention.
+  durationMin: z.number().int().min(5).max(480).optional(),
 });
 
 // Vitals fields accept null so the UI can explicitly clear a previously

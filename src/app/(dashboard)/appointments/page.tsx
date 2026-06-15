@@ -229,6 +229,9 @@ function AppointmentsPageInner() {
     mode: "edit" | "visit";
   } | null>(null);
 
+  // datetime-local seed for the Add modal when opened from a calendar slot.
+  const [prefillDate, setPrefillDate] = useState<string | undefined>(undefined);
+
   // tabs + filters
   const [tab, setTab] = useState<Tab>("upcoming");
   const [upcomingPreset, setUpcomingPreset] = useState<UpcomingPreset>("all");
@@ -389,7 +392,10 @@ function AppointmentsPageInner() {
         </div>
         <button
           type="button"
-          onClick={() => setAddOpen(true)}
+          onClick={() => {
+            setPrefillDate(undefined);
+            setAddOpen(true);
+          }}
           data-tour="appointments-add-btn"
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
         >
@@ -399,6 +405,7 @@ function AppointmentsPageInner() {
 
       <AddAppointmentModal
         open={addOpen}
+        prefillDate={prefillDate}
         onClose={() => setAddOpen(false)}
         onCreated={() => {
           setAddOpen(false);
@@ -530,6 +537,13 @@ function AppointmentsPageInner() {
           onPrevWeek={() => setWeekStart(addDays(weekStart, -7))}
           onNextWeek={() => setWeekStart(addDays(weekStart, 7))}
           onToday={() => setWeekStart(startOfWeek(new Date()))}
+          onSelectAppointment={a =>
+            setEditTarget({ appointment: a, mode: "edit" })
+          }
+          onSelectSlot={local => {
+            setPrefillDate(local);
+            setAddOpen(true);
+          }}
         />
       )}
 
@@ -837,12 +851,16 @@ function CalendarWeekGrid({
   onPrevWeek,
   onNextWeek,
   onToday,
+  onSelectAppointment,
+  onSelectSlot,
 }: {
   appointments: Appointment[];
   weekStart: Date;
   onPrevWeek: () => void;
   onNextWeek: () => void;
   onToday: () => void;
+  onSelectAppointment: (a: Appointment) => void;
+  onSelectSlot: (prefillLocal: string) => void;
 }) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const hours = Array.from(
@@ -960,7 +978,26 @@ function CalendarWeekGrid({
               return (
                 <div
                   key={dayIdx}
-                  className={`relative border-r border-slate-200 ${
+                  onClick={e => {
+                    // Click an empty area to pre-seed a new appointment at that
+                    // time (rounded to 15 min). Appointment blocks stop
+                    // propagation so they open the editor instead.
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const y = e.clientY - rect.top;
+                    const totalMin =
+                      WEEK_GRID_FIRST_HOUR * 60 + (y / HOUR_PX) * 60;
+                    const rounded = Math.max(
+                      0,
+                      Math.min(23 * 60 + 45, Math.round(totalMin / 15) * 15),
+                    );
+                    const hh = Math.floor(rounded / 60);
+                    const mm = rounded % 60;
+                    const p = (n: number) => String(n).padStart(2, "0");
+                    onSelectSlot(
+                      `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(hh)}:${p(mm)}`,
+                    );
+                  }}
+                  className={`relative cursor-pointer border-r border-slate-200 ${
                     isToday ? "bg-indigo-50/30" : ""
                   }`}
                   style={{ height: WEEK_GRID_HOURS * HOUR_PX }}
@@ -998,6 +1035,10 @@ function CalendarWeekGrid({
                       <button
                         key={a.id}
                         type="button"
+                        onClick={e => {
+                          e.stopPropagation();
+                          onSelectAppointment(a);
+                        }}
                         title={`${timeLabel} · ${a.name ?? "Unnamed"}${
                           a.status ? ` · ${a.status}` : ""
                         }`}

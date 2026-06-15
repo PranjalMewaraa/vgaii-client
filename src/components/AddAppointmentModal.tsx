@@ -4,11 +4,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import BookingEmbed from "@/components/BookingEmbed";
+import SlotPicker from "@/components/SlotPicker";
+import type { BookingConfig } from "@/lib/validators/bookingConfig";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
+  // Optional ISO/datetime-local seed for the Manual tab (calendar slot click).
+  prefillDate?: string;
 };
 
 type LeadHit = {
@@ -34,30 +38,42 @@ const authHeader = () => ({
   }`,
 });
 
-type Mode = "calcom" | "manual";
+type Mode = "self" | "calcom" | "manual";
 
 export default function AddAppointmentModal({
   open,
   onClose,
   onCreated,
+  prefillDate,
 }: Props) {
   if (!open) return null;
-  return <Shell onClose={onClose} onCreated={onCreated} />;
+  return (
+    <Shell onClose={onClose} onCreated={onCreated} prefillDate={prefillDate} />
+  );
 }
 
 function Shell({
   onClose,
   onCreated,
+  prefillDate,
 }: {
   onClose: () => void;
   onCreated: () => void;
+  prefillDate?: string;
 }) {
-  // Pull the Cal.com booking URL from the dashboard endpoint (SWR-cached).
-  // Default to Cal.com when one is configured; otherwise show the manual
-  // form so the user always has a way to record an appointment.
+  // Cal.com URL (legacy) + self-hosted booking config, both SWR-cached.
   const { data, isLoading } = useSWR<DashboardData>("/api/dashboard");
+  const { data: cfgData } = useSWR<{ config: BookingConfig }>(
+    "/api/booking/config",
+  );
   const bookingUrl = data?.bookingUrl ?? null;
-  const [mode, setMode] = useState<Mode>("calcom");
+  const config = cfgData?.config;
+  const selfEnabled = !!config?.enabled;
+  const configLoading = cfgData === undefined;
+
+  // `picked` = explicit user tab choice; falls back to the primary tab for
+  // the current config. Derived in render (no setState-in-effect).
+  const [picked, setPicked] = useState<Mode | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -67,11 +83,17 @@ function Shell({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // If the user hasn't set a Cal.com link, force-render the manual tab
-  // even if the state still says calcom — derived in render to keep the
-  // React 19 "no setState in effects" rule happy.
-  const effectiveMode: Mode =
-    mode === "calcom" && !isLoading && !bookingUrl ? "manual" : mode;
+  const primary: Mode = selfEnabled ? "self" : bookingUrl ? "calcom" : "manual";
+  let effectiveMode: Mode = picked ?? primary;
+  if (effectiveMode === "self" && !selfEnabled) effectiveMode = primary;
+  if (effectiveMode === "calcom" && !bookingUrl) effectiveMode = "manual";
+
+  const subtitle =
+    effectiveMode === "self"
+      ? "Pick an available slot from your clinic hours."
+      : effectiveMode === "calcom"
+        ? "Patient picks a slot via your Cal.com booking page."
+        : "Record an appointment manually — useful for walk-ins and back-dated visits.";
 
   return (
     <div
@@ -89,11 +111,7 @@ function Shell({
             <h2 className="text-lg font-bold text-slate-900">
               Add appointment
             </h2>
-            <p className="text-xs text-slate-500">
-              {mode === "calcom"
-                ? "Patient picks a slot via your Cal.com booking page."
-                : "Record an appointment manually — useful for walk-ins and back-dated visits."}
-            </p>
+            <p className="text-xs text-slate-500">{subtitle}</p>
           </div>
           <button
             type="button"
@@ -109,28 +127,50 @@ function Shell({
           data-tour="appt-modal-mode-tabs"
           className="flex border-b border-slate-200"
         >
-          <ModeTab
-            label="Cal.com booking"
-            active={effectiveMode === "calcom"}
-            disabled={!bookingUrl}
-            onClick={() => setMode("calcom")}
-          />
+          {selfEnabled ? (
+            <ModeTab
+              label="Book a slot"
+              active={effectiveMode === "self"}
+              onClick={() => setPicked("self")}
+            />
+          ) : (
+            <ModeTab
+              label="Cal.com booking"
+              active={effectiveMode === "calcom"}
+              disabled={!bookingUrl}
+              onClick={() => setPicked("calcom")}
+            />
+          )}
           <ModeTab
             label="Manual entry"
             active={effectiveMode === "manual"}
-            onClick={() => setMode("manual")}
+            onClick={() => setPicked("manual")}
           />
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto">
-          {effectiveMode === "calcom" ? (
+          {configLoading ? (
+            <p className="px-4 py-6 text-sm text-slate-500">Loading…</p>
+          ) : effectiveMode === "self" ? (
+            <ManualForm
+              onClose={onClose}
+              onCreated={onCreated}
+              slotMode
+              slotMinutes={config!.slotMinutes}
+              advanceDays={config!.advanceDays}
+            />
+          ) : effectiveMode === "calcom" ? (
             <CalcomPane
               bookingUrl={bookingUrl}
               isLoading={isLoading}
               onScheduled={onCreated}
             />
           ) : (
-            <ManualForm onClose={onClose} onCreated={onCreated} />
+            <ManualForm
+              onClose={onClose}
+              onCreated={onCreated}
+              prefillDate={prefillDate}
+            />
           )}
         </div>
       </div>
@@ -209,14 +249,24 @@ function CalcomPane({
 function ManualForm({
   onClose,
   onCreated,
+  slotMode = false,
+  slotMinutes,
+  advanceDays,
+  prefillDate,
 }: {
   onClose: () => void;
   onCreated: () => void;
+  slotMode?: boolean;
+  slotMinutes?: number;
+  advanceDays?: number;
+  prefillDate?: string;
 }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [date, setDate] = useState(() => defaultDateValue());
+  const [date, setDate] = useState(() =>
+    slotMode ? "" : (prefillDate ?? defaultDateValue()),
+  );
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [notes, setNotes] = useState("");
@@ -292,7 +342,8 @@ function ManualForm({
     if (!name.trim()) return setError("Name is required");
     if (phone.trim().length < 10)
       return setError("Phone must be at least 10 characters");
-    if (!date) return setError("Date and time are required");
+    if (!date)
+      return setError(slotMode ? "Pick a slot" : "Date and time are required");
     if (age && !/^\d+$/.test(age))
       return setError("Age must be a whole number");
 
@@ -310,6 +361,7 @@ function ManualForm({
           gender: gender.trim() || undefined,
           notes: notes.trim() || undefined,
           leadId: linkedLead?.id,
+          durationMin: slotMode ? slotMinutes : undefined,
         }),
       });
       if (!res.ok) {
@@ -368,17 +420,32 @@ function ManualForm({
             </label>
           </div>
 
-          <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Date &amp; time *
-            </span>
-            <input
-              type="datetime-local"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
+          {slotMode ? (
+            <div className="block">
+              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                Pick a slot *
+              </span>
+              <div className="mt-1">
+                <SlotPicker
+                  value={date}
+                  onChange={setDate}
+                  advanceDays={advanceDays}
+                />
+              </div>
+            </div>
+          ) : (
+            <label className="block">
+              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                Date &amp; time *
+              </span>
+              <input
+                type="datetime-local"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </label>
+          )}
 
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">

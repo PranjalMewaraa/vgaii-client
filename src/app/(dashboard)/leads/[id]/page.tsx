@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StatusPill from "@/components/StatusPill";
 import BookingEmbed from "@/components/BookingEmbed";
+import SlotBookingPane from "@/components/SlotBookingPane";
 import RoleGuard from "@/components/RoleGuard";
 import {
   LEAD_TRANSITIONS,
@@ -303,24 +304,33 @@ function LeadDetailPageInner({
             )}
           </div>
 
-          {!bookingUrl ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              No Cal.com booking URL is configured for this client. Ask your
-              admin to set it on the{" "}
-              <Link href="/settings" className="font-semibold underline">
-                Settings
-              </Link>{" "}
-              page.
-            </div>
-          ) : (
-            <BookingEmbed
-              url={bookingUrl}
-              name={lead.name}
-              email={lead.email}
-              phone={lead.phone}
-              onScheduled={() => refreshLead()}
-            />
-          )}
+          <SlotBookingPane
+            leadId={lead.id}
+            name={lead.name}
+            phone={lead.phone}
+            email={lead.email}
+            onBooked={() => refreshLead()}
+            fallback={
+              !bookingUrl ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  No Cal.com booking URL is configured for this client. Ask
+                  your admin to set it on the{" "}
+                  <Link href="/settings" className="font-semibold underline">
+                    Settings
+                  </Link>{" "}
+                  page, or enable self-hosted booking there.
+                </div>
+              ) : (
+                <BookingEmbed
+                  url={bookingUrl}
+                  name={lead.name}
+                  email={lead.email}
+                  phone={lead.phone}
+                  onScheduled={() => refreshLead()}
+                />
+              )
+            }
+          />
         </div>
       )}
 
