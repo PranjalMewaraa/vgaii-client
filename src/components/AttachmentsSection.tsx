@@ -42,6 +42,8 @@ type Attachment = {
   kind: AttachmentKind;
   uploadedAt: string;
   uploadedBy: string | null;
+  // Public CDN URL when configured; otherwise null and we use the auth route.
+  url?: string | null;
 };
 
 type UploadItem = {
@@ -335,7 +337,12 @@ export default function AttachmentsSection({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <a
-                    href={`/api/appointments/${appointmentId}/attachments/${a.id}/download`}
+                    href={
+                      a.url ??
+                      `/api/appointments/${appointmentId}/attachments/${a.id}/download`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="truncate text-sm font-medium text-indigo-700 hover:underline"
                     title={a.filename}
                   >

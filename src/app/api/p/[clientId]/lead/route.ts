@@ -1,6 +1,7 @@
 import { createLead } from "@/repos/lead";
 import { resolveClientByPublicIdentifier } from "@/lib/public-client";
 import { generateFeedbackToken, buildFeedbackUrl } from "@/lib/feedback-token";
+import { notifyNewLead } from "@/lib/mail";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
@@ -75,6 +76,9 @@ export async function POST(req: Request, ctx: RouteContext) {
         metadata: { phone: lead.phone, source: lead.source },
       },
     );
+
+    // Best-effort notify the clinic (no-op unless mail is configured).
+    await notifyNewLead(client!.email, lead);
 
     const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 

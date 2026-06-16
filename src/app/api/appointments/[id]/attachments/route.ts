@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getUser } from "@/middleware/auth";
 import { checkRole, checkAnyModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
+import { publicUrlFor } from "@/lib/r2";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
@@ -59,6 +60,9 @@ export async function GET(req: Request, ctx: RouteContext) {
         uploadedBy: r.uploadedBy
           ? r.uploadedBy.name || r.uploadedBy.email || "—"
           : null,
+        // Direct public-CDN URL when R2_PUBLIC_BASE_URL is set; null otherwise
+        // (the UI then falls back to the authenticated download route).
+        url: publicUrlFor(r.storageKey),
       })),
     });
   } catch (err: unknown) {

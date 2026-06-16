@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getClientByWebhookKey } from "@/lib/webhook-auth";
 import { canonicalPhone } from "@/lib/phone";
+import { notifyNewAppointment } from "@/lib/mail";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
 import { NextResponse } from "next/server";
@@ -130,6 +131,16 @@ export async function POST(req: Request) {
         metadata: { phone, leadMatched: !!leadId },
       },
     );
+
+    // Best-effort notify the clinic (no-op unless mail is configured).
+    await notifyNewAppointment(client.email, {
+      name,
+      phone,
+      whenLabel: appointment.date
+        ? new Date(appointment.date).toLocaleString()
+        : null,
+      via: "Cal.com",
+    });
 
     return NextResponse.json({ appointment });
   } catch (err: unknown) {
