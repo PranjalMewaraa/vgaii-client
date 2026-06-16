@@ -58,9 +58,10 @@ services:
       # r2.dev URL or a custom domain, no trailing slash. Needed for profile
       # image uploads to produce a servable URL.
       R2_PUBLIC_BASE_URL: ${R2_PUBLIC_BASE_URL:-}
-      # Resend (https://resend.com) for booking confirmation emails. Leave
-      # RESEND_API_KEY blank to disable (bookings still succeed, just no email).
-      # RESEND_FROM must be a verified sender, e.g. "Clinic <noreply@your.com>".
-      RESEND_API_KEY: ${RESEND_API_KEY:-}
-      RESEND_FROM: ${RESEND_FROM:-}
+      # ClinicEssential mail-notification service (new lead/appointment alerts
+      # to the clinic + patient confirmations). Leave MAIL_NOTIFICATION_KEY
+      # blank to disable (requests still succeed, just no mail).
+      MAIL_NOTIFICATION_KEY: ${MAIL_NOTIFICATION_KEY:-}
+      MAIL_NOTIFICATION_URL: ${MAIL_NOTIFICATION_URL:-}
+      MAIL_NOTIFICATION_TZ: ${MAIL_NOTIFICATION_TZ:-}
       CRON_SECRET: ${CRON_SECRET:-}

@@ -5,7 +5,7 @@ import { checkRole, checkModule } from "@/lib/rbac";
 import { withClientFilter } from "@/lib/query";
 import { appointmentCreateSchema } from "@/lib/validators/appointment";
 import { getBookingConfig, overlapsExisting } from "@/lib/booking";
-import { sendAppointmentConfirmation } from "@/lib/email";
+import { sendAppointmentConfirmation } from "@/lib/mail";
 import { logAudit } from "@/lib/audit";
 import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
