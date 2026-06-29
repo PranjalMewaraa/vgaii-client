@@ -1,15 +1,17 @@
 "use client";
 
-// Floating "+" in the bottom-right corner. Tap to fan out four
-// quick-add chips (Lead, Patient, Appointment, Payment). Each chip is
-// a Link to the same deep-link URLs the dashboard's Quick Actions
-// card uses — those routes already open the right modal on mount, so
-// the FAB doesn't need to know about per-feature modals itself.
+// Floating "+" in the bottom-right corner. Tap to fan out quick-add chips
+// (Lead, Patient, Appointment, Payment). Each chip is a Link to a deep-link
+// URL that opens the right modal on mount.
 //
 // Hidden when:
-//  - the user isn't logged in (no token in localStorage)
-//  - the onboarding tour is active (the FAB would compete with
-//    Joyride's spotlight and look noisy mid-tour)
+//  - not logged in (no token)
+//  - the user is SUPER_ADMIN (platform view — no clinic context)
+//  - the onboarding tour is active
+//  - STAFF with zero assigned modules (nothing actionable)
+//
+// For STAFF, only chips whose module is in assignedModules are shown.
+// CLIENT_ADMIN always sees all chips.
 //
 // Closes on: Esc, backdrop click, or after navigating to a chip.
 
@@ -26,15 +28,14 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTour } from "@/components/tour/TourContext";
+import { useStoredUser } from "@/lib/client-auth";
 
 type FabAction = {
   href: string;
   label: string;
   icon: LucideIcon;
-  // Tailwind classes for the chip's circular icon swatch. We keep
-  // these in sync with QuickActionsCard so the dashboard tile and the
-  // FAB chip read as the same action.
   iconClass: string;
+  module: string;
 };
 
 const ACTIONS: FabAction[] = [
@@ -43,24 +44,28 @@ const ACTIONS: FabAction[] = [
     label: "Add lead",
     icon: UserPlus,
     iconClass: "bg-indigo-100 text-indigo-600",
+    module: "leads",
   },
   {
     href: "/patients?add=1",
     label: "Add patient",
     icon: Users,
     iconClass: "bg-emerald-100 text-emerald-600",
+    module: "patients",
   },
   {
     href: "/appointments?add=1",
     label: "New appointment",
     icon: CalendarPlus,
     iconClass: "bg-sky-100 text-sky-600",
+    module: "appointments",
   },
   {
     href: "/finances?tab=payment&new=1",
     label: "Record payment",
     icon: Wallet,
     iconClass: "bg-amber-100 text-amber-600",
+    module: "payments",
   },
 ];
 
@@ -68,19 +73,14 @@ export default function QuickActionFab() {
   const [open, setOpen] = useState(false);
   const { active: tourActive } = useTour();
   const pathname = usePathname();
+  const user = useStoredUser();
 
-  // Close the panel whenever the user navigates. Store-and-compare
-  // during render instead of an effect — React-19's
-  // set-state-in-effect lint flags the effect form, and the result is
-  // identical (the synchronous setOpen runs once per pathname change).
   const [lastPath, setLastPath] = useState(pathname);
   if (pathname !== lastPath) {
     setLastPath(pathname);
     if (open) setOpen(false);
   }
 
-  // Esc closes. Captured at document level so it works regardless of
-  // which child has focus.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -90,21 +90,31 @@ export default function QuickActionFab() {
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // Only render for signed-in dashboard users. AppShell already gates
-  // routing behind AuthGuard, so this check is a belt-and-braces
-  // guard for the brief moment between mount and the guard kicking
-  // in. Same direct-read-localStorage pattern as authHeaders()
-  // elsewhere in the codebase — SSR sees `false`, CSR sees the real
-  // value on first paint.
   const hasToken =
     typeof window !== "undefined" && !!localStorage.getItem("token");
 
+  // Hide when not signed in or during the tour
   if (!hasToken || tourActive) return null;
+
+  // Only CLIENT_ADMIN and STAFF have a clinic context — SUPER_ADMIN operates
+  // at the platform level and has no need for per-clinic quick actions.
+  if (!user || user.role === "SUPER_ADMIN") return null;
+
+  // CLIENT_ADMIN sees every action. STAFF sees only actions whose module is
+  // in their assignedModules list.
+  const visibleActions =
+    user.role === "STAFF"
+      ? ACTIONS.filter(a =>
+          (user.assignedModules ?? []).includes(a.module),
+        )
+      : ACTIONS;
+
+  // Nothing to offer — hide completely (e.g. STAFF with no modules yet)
+  if (visibleActions.length === 0) return null;
 
   return (
     <>
-      {/* Click-outside backdrop. Transparent so it doesn't dim the page,
-          but still catches clicks anywhere outside the chip column. */}
+      {/* Transparent backdrop to catch click-outside */}
       {open && (
         <button
           type="button"
@@ -115,20 +125,15 @@ export default function QuickActionFab() {
       )}
 
       <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
-        {/* Action chips fan up above the FAB. Rendered top-down so the
-            first action (Add lead) is closest to the thumb. */}
         {open && (
           <div className="flex flex-col items-end gap-2">
-            {ACTIONS.map((a, i) => {
+            {visibleActions.map((a, i) => {
               const Icon = a.icon;
               return (
                 <Link
                   key={a.href}
                   href={a.href}
                   onClick={() => setOpen(false)}
-                  // Stagger entrance so chips cascade in. animation-delay
-                  // via inline style — Tailwind doesn't ship arbitrary
-                  // animation-delay utilities by default.
                   style={{
                     animation: "fab-chip-in 160ms ease-out backwards",
                     animationDelay: `${i * 30}ms`,
