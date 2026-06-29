@@ -5,7 +5,6 @@ import {
   BarChart3,
   Building2,
   Calendar,
-  Check,
   CheckCircle2,
   ClipboardList,
   Globe,
@@ -54,7 +53,6 @@ export default function LandingPage() {
       <WhoThisIsFor />
       <Roi />
       <Onboarding />
-      <Pricing />
       <Addons />
       <Comparison />
       <Faq />
@@ -90,9 +88,6 @@ function Nav() {
           </a>
           <a href="#roi" className="hover:text-slate-900">
             ROI
-          </a>
-          <a href="#pricing" className="hover:text-slate-900">
-            Pricing
           </a>
           <a href="#addons" className="hover:text-slate-900">
             Add-ons
@@ -1086,233 +1081,6 @@ function Onboarding() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Pricing                                                                     */
-/* -------------------------------------------------------------------------- */
-
-function Pricing() {
-  return (
-    <section className="bg-slate-50 py-20 md:py-28" id="pricing">
-      <div className="mx-auto max-w-6xl px-6 md:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 md:text-4xl">
-            Choose your clinic growth plan
-          </h2>
-          <p className="mt-3 text-base text-slate-600">
-            Simple monthly plans for follow-ups, bookings, reviews, and patient visibility.
-          </p>
-        </div>
-
-        <div className="mt-14 grid items-stretch gap-6 lg:grid-cols-3">
-          {/* Essential — light card */}
-          <PricingCardLight
-            name="Essential"
-            tagline="Base clinic automation"
-            price="₹9,999"
-            cadence="/mo"
-            setup="₹4,999"
-            cta="Book Free Demo"
-            features={[
-              "WhatsApp follow-up automation",
-              "GMB Optimization",
-              "Lead capture and routing",
-              "Appointment Booking",
-            ]}
-          />
-
-          {/* Growth — featured dark card */}
-          <PricingCardDark
-            name="Growth"
-            tagline="For aggressive scaling"
-            price="₹15,999"
-            cadence="/mo"
-            setup="₹6,999"
-            cta="Book Free Demo"
-            features={[
-              { text: "Everything in Essential", star: true },
-              { text: "Authority growth support" },
-              { text: "Patient email follow-ups" },
-              { text: "Local listing and data correction" },
-              { text: "Free premium single-page website (React/HTML)" },
-              { text: "SMS reminder setup (DLT extra)" },
-            ]}
-          />
-
-          {/* Power — light card, custom price */}
-          <PricingCardLight
-            name="Power"
-            tagline="Enterprise & multi-doctor"
-            price="Custom"
-            cadence=""
-            setup=""
-            customLabel="Prices on demand"
-            cta="Book Free Demo"
-            features={[
-              "Everything included",
-              "Custom clinic workflows",
-              "Dedicated launch support",
-              "High-volume multi-branch setup",
-            ]}
-          />
-        </div>
-
-        <p className="mt-10 text-center text-xs text-slate-500">
-          All prices in INR. Setup includes onboarding, branding, custom
-          domain wiring, and staff training.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function PricingCardLight({
-  name,
-  tagline,
-  price,
-  cadence,
-  setup,
-  customLabel,
-  cta,
-  features,
-}: {
-  name: string;
-  tagline: string;
-  price: string;
-  cadence: string;
-  setup: string;
-  customLabel?: string;
-  cta: string;
-  features: string[];
-}) {
-  const isCustom = !!customLabel;
-  return (
-    <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
-      <div>
-        <h3 className="text-2xl font-bold text-slate-900">{name}</h3>
-        <p className="mt-1 text-sm text-slate-500">{tagline}</p>
-      </div>
-
-      <div className="mt-6">
-        {isCustom ? (
-          <>
-            <p className="text-4xl font-bold leading-none tracking-tight text-slate-900">
-              {price}
-            </p>
-            <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              {customLabel}
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-bold tracking-tight text-slate-900">
-                {price}
-              </span>
-              <span className="text-sm text-slate-400">{cadence}</span>
-            </div>
-            {setup && (
-              <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-indigo-600">
-                + {setup} Setup
-              </p>
-            )}
-          </>
-        )}
-      </div>
-
-      <ul className="mt-7 flex-1 space-y-3 text-sm text-slate-700">
-        {features.map(f => (
-          <li key={f} className="flex items-start gap-2">
-            <Check size={14} className="mt-0.5 shrink-0 text-indigo-600" />
-            {f}
-          </li>
-        ))}
-      </ul>
-
-      <Link
-        href={DEMO_HREF}
-        className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-      >
-        {cta}
-      </Link>
-    </div>
-  );
-}
-
-function PricingCardDark({
-  name,
-  tagline,
-  price,
-  cadence,
-  setup,
-  cta,
-  features,
-}: {
-  name: string;
-  tagline: string;
-  price: string;
-  cadence: string;
-  setup: string;
-  cta: string;
-  features: Array<{ text: string; star?: boolean }>;
-}) {
-  return (
-    <div className="relative">
-      {/* Most Popular pill */}
-      <div className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2">
-        <span className="inline-flex items-center rounded-full border border-indigo-300/40 bg-indigo-600 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-lg shadow-indigo-900/40">
-          Most Popular
-        </span>
-      </div>
-
-      <div className="flex h-full flex-col rounded-2xl border border-indigo-400/30 bg-slate-950 p-7 text-white shadow-2xl shadow-indigo-900/30 ring-1 ring-indigo-500/40 lg:scale-[1.03]">
-        <div>
-          <h3 className="text-2xl font-bold">{name}</h3>
-          <p className="mt-1 text-sm text-indigo-200">{tagline}</p>
-        </div>
-
-        <div className="mt-6">
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-bold tracking-tight">{price}</span>
-            <span className="text-sm text-slate-400">{cadence}</span>
-          </div>
-          {setup && (
-            <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-indigo-300">
-              + {setup} Setup
-            </p>
-          )}
-        </div>
-
-        <div className="mt-5 border-t border-white/10" />
-
-        <ul className="mt-5 flex-1 space-y-3 text-sm text-slate-200">
-          {features.map(f => (
-            <li key={f.text} className="flex items-start gap-2">
-              {f.star ? (
-                <Star
-                  size={14}
-                  className="mt-0.5 shrink-0 fill-indigo-300 text-indigo-300"
-                />
-              ) : (
-                <Check size={14} className="mt-0.5 shrink-0 text-indigo-300" />
-              )}
-              <span className={f.star ? "font-semibold text-white" : ""}>
-                {f.text}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <Link
-          href={DEMO_HREF}
-          className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-900/40 transition hover:bg-indigo-500"
-        >
-          {cta}
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
 /* Add-ons                                                                     */
 /* -------------------------------------------------------------------------- */
 
@@ -1695,9 +1463,6 @@ function Footer() {
             <a href="#features" className="hover:text-slate-900">
               Features
             </a>
-            <a href="#pricing" className="hover:text-slate-900">
-              Pricing
-            </a>
             <a href="#addons" className="hover:text-slate-900">
               Add-ons
             </a>
@@ -1722,7 +1487,7 @@ function Footer() {
           </div>
           <div className="md:text-right">
             <p>Support: support@clinicessential.in</p>
-            <p>WhatsApp: +91 98765 43210</p>
+            <p>Phone: 080 4713 7030</p>
             <p className="mt-2">
               Privacy policy · Terms · Refund policy
             </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import {
   AlertCircle,
@@ -109,65 +109,7 @@ function AdminClientsPageInner() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Create-client form
-  const [showCreate, setShowCreate] = useState(false);
-  const [clientName, setClientName] = useState("");
-  const [adminName, setAdminName] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [plan, setPlan] = useState<"basic" | "pro">("basic");
-  const [createGooglePlaceId, setCreateGooglePlaceId] = useState("");
-  const [createBookingUrl, setCreateBookingUrl] = useState("");
-  const [createSubscriptionKey, setCreateSubscriptionKey] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-
   const refresh = () => mutate();
-
-  const submitCreate = async (e: FormEvent) => {
-    e.preventDefault();
-    setCreating(true);
-    setCreateError(null);
-    try {
-      const res = await fetch("/api/admin/clients", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          name: clientName,
-          plan,
-          googlePlaceId: createGooglePlaceId.trim() || undefined,
-          bookingUrl: createBookingUrl.trim() || undefined,
-          subscriptionKey: createSubscriptionKey.trim() || undefined,
-          admin: {
-            name: adminName,
-            email: adminEmail,
-            password: adminPassword,
-          },
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setCreateError(
-          typeof data.error === "string" ? data.error : "Failed to create",
-        );
-        return;
-      }
-      setClientName("");
-      setAdminName("");
-      setAdminEmail("");
-      setAdminPassword("");
-      setPlan("basic");
-      setCreateGooglePlaceId("");
-      setCreateBookingUrl("");
-      setCreateSubscriptionKey("");
-      setShowCreate(false);
-      refresh();
-    } catch {
-      setCreateError("Network error");
-    } finally {
-      setCreating(false);
-    }
-  };
 
   const toggle = (id: string) =>
     setExpanded(prev => {
@@ -200,23 +142,13 @@ function AdminClientsPageInner() {
             panel as that user.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowCreate(o => !o)}
+        <Link
+          href="/admin/clients/new"
           className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
         >
-          {showCreate ? (
-            <>
-              <X size={14} />
-              Cancel
-            </>
-          ) : (
-            <>
-              <Plus size={14} />
-              New client
-            </>
-          )}
-        </button>
+          <Plus size={14} />
+          Onboard new clinic
+        </Link>
       </header>
 
       {error && (
@@ -225,143 +157,6 @@ function AdminClientsPageInner() {
         </p>
       )}
 
-      {showCreate && (
-        <form
-          onSubmit={submitCreate}
-          className="rounded-lg border border-slate-200 bg-white"
-        >
-          <div className="border-b border-slate-200 px-4 py-2.5">
-            <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                <Building2 size={14} />
-              </span>
-              New client
-            </h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Creates the Client tenant + its first CLIENT_ADMIN user. A
-              webhook key is generated automatically. Integrations can be
-              filled now or edited later.
-            </p>
-          </div>
-
-          <div className="space-y-3 px-4 py-3">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Field
-                label="Client name"
-                value={clientName}
-                onChange={setClientName}
-                required
-                minLength={2}
-                placeholder="Aarogya Dental Studio"
-              />
-              <label className="block">
-                <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Plan
-                </span>
-                <select
-                  value={plan}
-                  onChange={e => setPlan(e.target.value as "basic" | "pro")}
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                >
-                  <option value="basic">Basic</option>
-                  <option value="pro">Pro</option>
-                </select>
-              </label>
-            </div>
-
-            <fieldset>
-              <legend className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <Plug size={12} />
-                Integrations (optional now, editable later)
-              </legend>
-              <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <PlaceIdField
-                  value={createGooglePlaceId}
-                  onChange={setCreateGooglePlaceId}
-                  hint="Pulls the client's Google Business listing."
-                />
-                <Field
-                  label="Cal.com booking URL"
-                  value={createBookingUrl}
-                  onChange={setCreateBookingUrl}
-                  type="url"
-                  placeholder="https://cal.com/account/event"
-                  hint="Embedded on the patient detail booking modal."
-                />
-                <Field
-                  label="Subscription key"
-                  value={createSubscriptionKey}
-                  onChange={setCreateSubscriptionKey}
-                  placeholder="External subscription token"
-                  hint="Used server-side to check subscription status."
-                />
-              </div>
-            </fieldset>
-
-            <fieldset>
-              <legend className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <ShieldCheck size={12} />
-                Client admin (first user)
-              </legend>
-              <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Field
-                  label="Admin name"
-                  value={adminName}
-                  onChange={setAdminName}
-                  required
-                  minLength={2}
-                  placeholder="Dr. Ananya Verma"
-                />
-                <Field
-                  label="Admin email"
-                  type="email"
-                  value={adminEmail}
-                  onChange={setAdminEmail}
-                  required
-                  placeholder="admin@aarogyadental.com"
-                />
-                <Field
-                  label="Temporary password"
-                  type="text"
-                  value={adminPassword}
-                  onChange={setAdminPassword}
-                  required
-                  minLength={8}
-                  placeholder="At least 8 characters"
-                />
-              </div>
-              <p className="mt-1 text-xs text-slate-500">
-                Share this password with the client admin after creation —
-                they can change it later.
-              </p>
-            </fieldset>
-          </div>
-
-          {createError && (
-            <p className="border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-              {createError}
-            </p>
-          )}
-
-          <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-2">
-            <button
-              type="button"
-              onClick={() => setShowCreate(false)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={creating}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
-              <Plus size={14} />
-              {creating ? "Creating…" : "Create client"}
-            </button>
-          </div>
-        </form>
-      )}
 
       <div className="rounded-lg border border-slate-200 bg-white">
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
