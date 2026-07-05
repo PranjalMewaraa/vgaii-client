@@ -256,43 +256,28 @@ export default function ReportsPanel() {
       </div>
 
       <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-        <h3 className="text-base font-semibold text-slate-900">Funnel</h3>
+        <h3 className="text-base font-semibold text-slate-900">
+          Appointment outcomes
+        </h3>
         <p className="text-xs text-slate-500">
-          Each stage shows leads that reached it or moved past. {lost} also
-          flagged as lost (excluded from drop-off).
+          All appointments dated in this period, by current status.
         </p>
-        <div className="mt-4 space-y-3">
-          {FUNNEL_STAGES.map((stage, i) => {
-            const count = funnel[stage.key];
-            const ratio = count / funnelMax;
-            const prevCount = i > 0 ? funnel[FUNNEL_STAGES[i - 1].key] : count;
-            const dropOff = prevCount - count;
-            return (
-              <div key={stage.key}>
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span className="font-semibold uppercase tracking-wider text-slate-700">
-                    {stage.label}
-                  </span>
-                  <span>
-                    {count}
-                    {i > 0 && prevCount > 0 && (
-                      <span className="ml-2 text-slate-400">
-                        {pct(count, prevCount)} from previous
-                        {dropOff > 0 && ` · −${dropOff}`}
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full ${stage.color}`}
-                    style={{ width: `${Math.max(ratio * 100, count > 0 ? 4 : 0)}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
+        <div className="mt-4 space-y-2">
+          <ApptRow label="Scheduled" count={appointments.scheduled} total={appointments.total} color="bg-sky-500" />
+          <ApptRow label="Visited" count={appointments.completed} total={appointments.total} color="bg-emerald-500" />
+          <ApptRow label="No-show" count={appointments.no_show} total={appointments.total} color="bg-red-500" />
+          <ApptRow label="Cancelled" count={appointments.cancelled} total={appointments.total} color="bg-slate-400" />
         </div>
+        {appointments.completed + appointments.no_show > 0 && (
+          <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            Of {appointments.completed + appointments.no_show} appointments
+            that resolved,{" "}
+            <span className="font-semibold text-slate-900">
+              {Math.round(appointments.noShowRate * 100)}%
+            </span>{" "}
+            ended as no-show.
+          </p>
+        )}
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white">
@@ -351,31 +336,6 @@ export default function ReportsPanel() {
       </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h3 className="text-base font-semibold text-slate-900">
-            Appointment outcomes
-          </h3>
-          <p className="text-xs text-slate-500">
-            All appointments dated in this period, by current status.
-          </p>
-          <div className="mt-4 space-y-2">
-            <ApptRow label="Scheduled" count={appointments.scheduled} total={appointments.total} color="bg-sky-500" />
-            <ApptRow label="Visited" count={appointments.completed} total={appointments.total} color="bg-emerald-500" />
-            <ApptRow label="No-show" count={appointments.no_show} total={appointments.total} color="bg-red-500" />
-            <ApptRow label="Cancelled" count={appointments.cancelled} total={appointments.total} color="bg-slate-400" />
-          </div>
-          {appointments.completed + appointments.no_show > 0 && (
-            <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-              Of {appointments.completed + appointments.no_show} appointments
-              that resolved,{" "}
-              <span className="font-semibold text-slate-900">
-                {Math.round(appointments.noShowRate * 100)}%
-              </span>{" "}
-              ended as no-show.
-            </p>
-          )}
-        </section>
-
         <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
@@ -461,6 +421,46 @@ export default function ReportsPanel() {
               buckets={data.googleRatings.distribution}
             />
           )}
+        </section>
+
+        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+          <h3 className="text-base font-semibold text-slate-900">Funnel</h3>
+          <p className="text-xs text-slate-500">
+            Each stage shows leads that reached it or moved past. {lost} also
+            flagged as lost (excluded from drop-off).
+          </p>
+          <div className="mt-4 space-y-3">
+            {FUNNEL_STAGES.map((stage, i) => {
+              const count = funnel[stage.key];
+              const ratio = count / funnelMax;
+              const prevCount = i > 0 ? funnel[FUNNEL_STAGES[i - 1].key] : count;
+              const dropOff = prevCount - count;
+              return (
+                <div key={stage.key}>
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span className="font-semibold uppercase tracking-wider text-slate-700">
+                      {stage.label}
+                    </span>
+                    <span>
+                      {count}
+                      {i > 0 && prevCount > 0 && (
+                        <span className="ml-2 text-slate-400">
+                          {pct(count, prevCount)} from previous
+                          {dropOff > 0 && ` · −${dropOff}`}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full ${stage.color}`}
+                      style={{ width: `${Math.max(ratio * 100, count > 0 ? 4 : 0)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </section>
       </div>
 
