@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
-import BookingEmbed from "@/components/BookingEmbed";
 import SlotBookingPane from "@/components/SlotBookingPane";
 import AttachmentsSection from "@/components/AttachmentsSection";
 import VitalsTrendChart, {
@@ -80,7 +79,6 @@ type DetailResponse =
       lead: Lead;
       appointments: Appointment[];
       feedbacks: Feedback[];
-      bookingUrl?: string | null;
     }
   | { kind: "direct"; appointment: Appointment }
   | { error: string };
@@ -143,8 +141,6 @@ function PatientDetailPageInner({
   const [notesDraft, setNotesDraft] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
-  // Cal.com scheduling
-  const [bookingUrl, setBookingUrl] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
 
   // Profile edit (name/email/age/gender/area — phone is locked).
@@ -193,7 +189,6 @@ function PatientDetailPageInner({
         setData(d);
         if ("kind" in d && d.kind === "lead") {
           setNotesDraft(d.lead.notes ?? "");
-          setBookingUrl(d.bookingUrl ?? null);
         }
       });
 
@@ -661,7 +656,7 @@ function PatientDetailPageInner({
                   <span className="font-medium text-slate-700">
                     {lead.name}
                   </span>
-                  . The new appointment will appear once Cal.com confirms.
+                  . The new appointment will appear here once booked.
                 </p>
               </div>
               <button
@@ -688,28 +683,14 @@ function PatientDetailPageInner({
                   setBookingOpen(false);
                 }}
                 fallback={
-                  !bookingUrl ? (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                      No Cal.com booking URL is configured for this client. Ask
-                      your admin to set it on the{" "}
-                      <Link href="/settings" className="font-semibold underline">
-                        Settings
-                      </Link>{" "}
-                      page, or enable self-hosted booking there.
-                    </div>
-                  ) : (
-                    <BookingEmbed
-                      url={bookingUrl}
-                      name={lead.name}
-                      email={lead.email}
-                      phone={lead.phone}
-                      onScheduled={() => {
-                        load();
-                        setTimeout(() => load(), 1500);
-                        setBookingOpen(false);
-                      }}
-                    />
-                  )
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Online booking isn&apos;t enabled for this clinic yet. Ask
+                    your admin to enable it on the{" "}
+                    <Link href="/settings" className="font-semibold underline">
+                      Settings
+                    </Link>{" "}
+                    page.
+                  </div>
                 }
               />
             </div>

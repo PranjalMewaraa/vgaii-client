@@ -6,7 +6,6 @@ import useSWR from "swr";
 import {
   Braces,
   Building2,
-  Calendar,
   CalendarDays,
   Check,
   ChevronDown,
@@ -60,7 +59,6 @@ type ClientRow = {
   profileSlug?: string;
   customDomain?: string;
   googlePlaceId?: string;
-  bookingUrl?: string;
   subscriptionKey?: string;
   webhookKey?: string;
   createdAt?: string;
@@ -208,15 +206,6 @@ function AdminClientsPageInner() {
                           >
                             <Globe size={10} />
                             Google
-                          </span>
-                        )}
-                        {c.bookingUrl && (
-                          <span
-                            className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-violet-700"
-                            title="Cal.com booking URL configured"
-                          >
-                            <Calendar size={10} />
-                            Cal.com
                           </span>
                         )}
                         {c.subscriptionKey && (
@@ -613,7 +602,6 @@ function ClientIntegrationsBlock({
 }) {
   const [editing, setEditing] = useState(false);
   const [googlePlaceId, setGooglePlaceId] = useState(client.googlePlaceId ?? "");
-  const [bookingUrl, setBookingUrl] = useState(client.bookingUrl ?? "");
   const [subscriptionKey, setSubscriptionKey] = useState(client.subscriptionKey ?? "");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -621,7 +609,6 @@ function ClientIntegrationsBlock({
 
   const startEdit = () => {
     setGooglePlaceId(client.googlePlaceId ?? "");
-    setBookingUrl(client.bookingUrl ?? "");
     setSubscriptionKey(client.subscriptionKey ?? "");
     setErr(null);
     setSavedAt(null);
@@ -642,7 +629,6 @@ function ClientIntegrationsBlock({
         headers: authHeaders(),
         body: JSON.stringify({
           googlePlaceId: googlePlaceId.trim() || null,
-          bookingUrl: bookingUrl.trim() || null,
           subscriptionKey: subscriptionKey.trim() || null,
         }),
       });
@@ -688,14 +674,6 @@ function ClientIntegrationsBlock({
               hint="Empty to clear."
             />
             <Field
-              label="Cal.com booking URL"
-              value={bookingUrl}
-              onChange={setBookingUrl}
-              type="url"
-              placeholder="https://cal.com/account/event"
-              hint="Empty to clear."
-            />
-            <Field
               label="Subscription key"
               value={subscriptionKey}
               onChange={setSubscriptionKey}
@@ -735,11 +713,6 @@ function ClientIntegrationsBlock({
               copyable
             />
             <ReadRow
-              label="Cal.com booking URL"
-              icon={Calendar}
-              value={client.bookingUrl}
-            />
-            <ReadRow
               label="Subscription key"
               icon={KeyRound}
               value={client.subscriptionKey}
@@ -775,7 +748,6 @@ function ClientWebhooksBlock({
     typeof window !== "undefined" ? window.location.origin : "";
   const leadUrl = `${origin}/api/webhooks/leads`;
   const leadStatusUrl = `${origin}/api/webhooks/leads/status`;
-  const bookingUrl = `${origin}/api/webhooks/booking`;
   const feedbackUrl = `${origin}/api/webhooks/feedback`;
 
   const rotate = async () => {
@@ -854,15 +826,6 @@ function ClientWebhooksBlock({
               url={leadStatusUrl}
               webhookKey={client.webhookKey}
               schema={LEAD_STATUS_SCHEMA}
-            />
-            <WebhookRow
-              method="POST"
-              label="Cal.com booking"
-              hint="Cal.com → Settings → Developer → Webhooks → BOOKING_CREATED."
-              url={bookingUrl}
-              webhookKey={client.webhookKey}
-              defaultMode="query"
-              schema={CAL_BOOKING_SCHEMA}
             />
             <WebhookRow
               method="POST"
@@ -996,44 +959,6 @@ const FEEDBACK_SCHEMA: WebhookSchema = {
 }`,
   responseStatus: "201 Created",
   notes: "leadMatched: true means the phone matched a Lead within this client, so the feedback is linked and the lead's status flipped to visited. leadMatched: false stores it standalone — still queryable from the Feedbacks tab.",
-};
-
-const CAL_BOOKING_SCHEMA: WebhookSchema = {
-  fields: [
-    { name: "triggerEvent", type: "string", required: true, description: "Cal.com event type. Only BOOKING_CREATED is acted on; others are accepted and ignored." },
-    { name: "payload.startTime", type: "ISO date", required: true, description: "Appointment date/time. Stored on the new Appointment row." },
-    { name: "payload.attendees[0]", type: "object", required: true, description: "First attendee — uses .name, .email, .phoneNumber to build the patient record." },
-    { name: "payload.responses", type: "object", required: false, description: "Cal.com booking-form answers. Used as a fallback for phone if attendees[0].phoneNumber is empty." },
-  ],
-  exampleRequest: `{
-  "triggerEvent": "BOOKING_CREATED",
-  "payload": {
-    "startTime": "2026-04-20T10:00:00Z",
-    "attendees": [
-      {
-        "name": "Riya Sharma",
-        "email": "riya@example.com",
-        "phoneNumber": "+91 98765 43210"
-      }
-    ],
-    "responses": {
-      "phone": { "label": "Phone", "value": "+91 98765 43210" }
-    }
-  }
-}`,
-  exampleResponse: `{
-  "appointment": {
-    "id": "cmox4def1234567890",
-    "name": "Riya Sharma",
-    "phone": "+91 98765 43210",
-    "date": "2026-04-20T10:00:00.000Z",
-    "status": "scheduled",
-    "leadId": "cmox4abc1234567890",
-    "source": "cal.com"
-  }
-}`,
-  responseStatus: "200 OK",
-  notes: "Cal.com sends this payload automatically — you don't construct it. If a Lead with the same phone exists in this client, the appointment links to it and the lead status flips to appointment_booked.",
 };
 
 function WebhookRow({

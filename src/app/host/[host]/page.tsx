@@ -12,7 +12,6 @@ type PageProps = {
 type ResolvedClient = {
   id: string;
   profile?: Partial<Profile> & { enabled?: boolean; faviconUrl?: string };
-  bookingUrl?: string | null;
 };
 
 const truncate = (s: string, max: number) =>
@@ -81,7 +80,6 @@ export default async function HostPage({ params, searchParams }: PageProps) {
   return (
     <ProfileRenderer
       profile={client.profile}
-      ctaUrl={client.bookingUrl ?? undefined}
       clientId={client.id}
       leadSource={source}
     />

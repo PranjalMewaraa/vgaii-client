@@ -25,7 +25,7 @@ export async function GET(req: Request, ctx: RouteContext) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     }
 
-    const [appointments, feedbacks, client] = await Promise.all([
+    const [appointments, feedbacks] = await Promise.all([
       prisma.appointment.findMany({
         where: { ...scope, leadId: lead.id },
         orderBy: { date: "desc" },
@@ -34,19 +34,12 @@ export async function GET(req: Request, ctx: RouteContext) {
         where: { ...scope, leadId: lead.id },
         orderBy: { createdAt: "desc" },
       }),
-      user.clientId
-        ? prisma.client.findUnique({
-            where: { id: user.clientId },
-            select: { bookingUrl: true },
-          })
-        : null,
     ]);
 
     return NextResponse.json({
       lead,
       appointments,
       feedbacks,
-      bookingUrl: client?.bookingUrl ?? null,
     });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });

@@ -776,7 +776,7 @@ function Features() {
     },
     {
       icon: Calendar,
-      title: "Cal.com booking",
+      title: "Online booking",
       body: "Patients book themselves. Phone, name, time pre-filled. Confirmation via WhatsApp.",
     },
     {

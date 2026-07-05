@@ -128,7 +128,6 @@ model Client {
   renewalDate        DateTime?
   subscriptionKey     String?            @db.VarChar(500)
   googlePlaceId      String?
-  bookingUrl         String?            @db.Text
   profileSlug        String?            @unique
   customDomain       String?            @unique
   plan               String             @default("basic")
@@ -141,7 +140,7 @@ model Client {
   googleBusinessInfo Json?
   // Self-hosted booking availability + toggle (working hours, slot length,
   // timezone, blackouts). A single Json blob read in full; nothing queries
-  // inside it. Null/disabled => fall back to the Cal.com bookingUrl above.
+  // inside it. Null/disabled => online booking is off; use manual entry.
   bookingConfig      Json?
   reviewsTaskId      String?
   // Set the first time the tenant runs the onboarding tour; cleared when
@@ -280,9 +279,9 @@ model Appointment {
   sugarMgDl    Float?
   bpSystolic   Int?
   bpDiastolic  Int?
-  source      String            @default("cal.com")
+  source      String            @default("manual")
   // Slot length in minutes for self-hosted bookings; used for overlap
-  // detection and calendar block sizing. Null for legacy/manual/Cal.com rows.
+  // detection and calendar block sizing. Null for legacy/manual rows.
   durationMin Int?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt

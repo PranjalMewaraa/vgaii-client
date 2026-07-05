@@ -106,8 +106,8 @@ export default function BookingSettings() {
         <div>
           <h2 className="text-base font-semibold text-slate-900">Booking</h2>
           <p className="text-xs text-slate-500">
-            Self-hosted appointment slots. When on, staff book patients into
-            your available slots instead of Cal.com.
+            Self-hosted appointment slots. When on, staff book patients
+            straight into your available slots.
           </p>
         </div>
         <label className="inline-flex items-center gap-2 text-sm text-slate-700">

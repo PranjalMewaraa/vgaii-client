@@ -11,9 +11,9 @@ export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
 // Allowed manual transitions in the panel UI and on PATCH /api/leads/[id].
 // `qualified → appointment_booked` is intentionally NOT here — that hop
-// happens automatically when Cal.com fires its BOOKING_CREATED webhook.
-// Webhooks and the public feedback flow bypass this matrix for legitimate
-// reasons.
+// happens as a side effect of booking/linking an appointment (see
+// PATCH /api/appointments/[id]), not through this matrix. The public
+// feedback flow also bypasses this matrix for legitimate reasons.
 //
 // "Lost" is preserved as an enum value for backward compatibility with
 // existing data, but is intentionally absent from this transition map:

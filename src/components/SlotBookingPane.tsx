@@ -13,8 +13,8 @@ const authHeaders = () => ({
 });
 
 // Slot-based booking for a known patient (used on the patient/lead detail
-// modals). When self-hosted booking is disabled it renders `fallback` (the
-// Cal.com embed / amber notice the page already had).
+// modals). When self-hosted booking is disabled it renders `fallback` (an
+// amber notice pointing the operator to Settings).
 export default function SlotBookingPane({
   leadId,
   name,

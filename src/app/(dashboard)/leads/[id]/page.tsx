@@ -4,7 +4,6 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StatusPill from "@/components/StatusPill";
-import BookingEmbed from "@/components/BookingEmbed";
 import SlotBookingPane from "@/components/SlotBookingPane";
 import RoleGuard from "@/components/RoleGuard";
 import {
@@ -81,7 +80,6 @@ function LeadDetailPageInner({
   const router = useRouter();
   const { id } = use(params);
   const [lead, setLead] = useState<Lead | null>(null);
-  const [bookingUrl, setBookingUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // notes editor
@@ -95,14 +93,10 @@ function LeadDetailPageInner({
   const [busy, setBusy] = useState(false);
   const [transitionError, setTransitionError] = useState<string | null>(null);
 
-  const applyLead = (data: {
-    lead?: Lead;
-    bookingUrl?: string | null;
-  }) => {
+  const applyLead = (data: { lead?: Lead }) => {
     if (!data.lead) return;
     setLead(data.lead);
     setNotesDraft(data.lead.notes ?? "");
-    setBookingUrl(data.bookingUrl ?? null);
   };
 
   const refreshLead = () =>
@@ -291,17 +285,15 @@ function LeadDetailPageInner({
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Book via Cal.com
+              Book appointment
             </p>
-            {bookingUrl && (
-              <p className="text-xs text-slate-500">
-                Status will move to{" "}
-                <span className="font-medium text-slate-700">
-                  appointment booked
-                </span>{" "}
-                automatically once a slot is selected.
-              </p>
-            )}
+            <p className="text-xs text-slate-500">
+              Status will move to{" "}
+              <span className="font-medium text-slate-700">
+                appointment booked
+              </span>{" "}
+              automatically once a slot is selected.
+            </p>
           </div>
 
           <SlotBookingPane
@@ -311,24 +303,14 @@ function LeadDetailPageInner({
             email={lead.email}
             onBooked={() => refreshLead()}
             fallback={
-              !bookingUrl ? (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  No Cal.com booking URL is configured for this client. Ask
-                  your admin to set it on the{" "}
-                  <Link href="/settings" className="font-semibold underline">
-                    Settings
-                  </Link>{" "}
-                  page, or enable self-hosted booking there.
-                </div>
-              ) : (
-                <BookingEmbed
-                  url={bookingUrl}
-                  name={lead.name}
-                  email={lead.email}
-                  phone={lead.phone}
-                  onScheduled={() => refreshLead()}
-                />
-              )
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Online booking isn&apos;t enabled for this clinic yet. Ask
+                your admin to enable it on the{" "}
+                <Link href="/settings" className="font-semibold underline">
+                  Settings
+                </Link>{" "}
+                page.
+              </div>
             }
           />
         </div>

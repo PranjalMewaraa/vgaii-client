@@ -99,7 +99,7 @@ function SettingsPageInner() {
         <p className="text-sm text-slate-500">
           Contact details for {settings.name}. Your public URL, integrations,
           and webhooks are managed by the platform team — contact them if you
-          need changes to your slug, domain, Google listing, or Cal.com link.
+          need changes to your slug, domain, Google listing, or booking setup.
         </p>
       </header>
 
@@ -186,9 +186,9 @@ function SettingsPageInner() {
       <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-600">
         <p className="font-semibold text-slate-900">Managed by the platform</p>
         <p className="mt-1">
-          Google Place ID, Cal.com booking link, and webhook credentials are
-          configured by your platform admin. If you need to update your
-          Google listing or change your booking link, reach out to support.
+          Google Place ID and webhook credentials are configured by your
+          platform admin. If you need to update your Google listing, reach
+          out to support.
         </p>
       </div>
     </div>

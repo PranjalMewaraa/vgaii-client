@@ -386,7 +386,7 @@ function AppointmentsPageInner() {
         <div>
           <h1 className="text-lg font-bold text-slate-900">Appointments</h1>
           <p className="text-sm text-slate-500">
-            Booked via Cal.com. After each visit, click <strong>Mark
+            After each visit, click <strong>Mark
             visited</strong> to record diagnosis and medicines.
           </p>
         </div>

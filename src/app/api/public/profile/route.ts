@@ -12,7 +12,7 @@ import { getErrorMessage } from "@/lib/errors";
  *   GET /api/public/profile?identifier=<cuid|profileSlug>   (alias of id)
  *   GET /api/public/profile?host=<customDomain>
  *
- * Returns ONLY public-safe fields ({ id, profile, bookingUrl }) and 404s when
+ * Returns ONLY public-safe fields ({ id, profile }) and 404s when
  * the profile isn't enabled. The consumer is a browser on a different origin,
  * so this endpoint is intentionally OPEN (the data is already public on the
  * rendered page) and sends permissive CORS headers.
@@ -67,7 +67,6 @@ export async function GET(req: Request) {
         // template picker existed.
         template: profile.template ?? "classic",
         profile: client.profile,
-        bookingUrl: client.bookingUrl ?? null,
       },
       { headers: CORS },
     );

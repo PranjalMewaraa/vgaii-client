@@ -31,20 +31,24 @@ export async function POST(req: Request) {
     }
 
     // If the caller passed a leadId, make sure it belongs to the same client
-    // before we attach. Cross-tenant linkage would leak data.
+    // before we attach. Cross-tenant linkage would leak data. Status is
+    // fetched here too so we can bump the lead to appointment_booked below
+    // once the appointment is actually created.
+    let bumpLead: { id: string; status: string } | null = null;
     if (parsed.data.leadId) {
       const lead = await prisma.lead.findFirst({
         where: { id: parsed.data.leadId, clientId: user.clientId },
-        select: { id: true },
+        select: { id: true, status: true },
       });
       if (!lead) {
         return NextResponse.json({ error: "Lead not found" }, { status: 400 });
       }
+      bumpLead = lead;
     }
 
     // Self-hosted booking: when enabled and the caller sends a slot length
     // (i.e. from the SlotPicker), prevent double-booking. Walk-in manual posts
-    // omit durationMin and stay exempt; the Cal.com path is unaffected.
+    // omit durationMin and stay exempt.
     const client = await prisma.client.findUnique({
       where: { id: user.clientId },
       select: { bookingConfig: true, name: true },
@@ -104,6 +108,21 @@ export async function POST(req: Request) {
       }
     } else {
       appointment = await prisma.appointment.create({ data });
+    }
+
+    // Mirrors the bump in PATCH /api/appointments/[id]: once a lead has an
+    // appointment on the books, move it past "qualified". Never demotes a
+    // lead that's already further along (or lost).
+    if (
+      bumpLead &&
+      bumpLead.status !== "appointment_booked" &&
+      bumpLead.status !== "visited" &&
+      bumpLead.status !== "lost"
+    ) {
+      await prisma.lead.update({
+        where: { id: bumpLead.id },
+        data: { status: "appointment_booked", statusUpdatedAt: new Date() },
+      });
     }
 
     await logAudit(req, { actorType: "user", user }, {

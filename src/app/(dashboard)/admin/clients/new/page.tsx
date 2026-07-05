@@ -31,7 +31,6 @@ type FormState = {
   adminEmail: string;
   adminPassword: string;
   googlePlaceId: string;
-  bookingUrl: string;
 };
 
 type SetFn = <K extends keyof FormState>(k: K, v: FormState[K]) => void;
@@ -46,7 +45,6 @@ const INITIAL: FormState = {
   adminEmail: "",
   adminPassword: "",
   googlePlaceId: "",
-  bookingUrl: "",
 };
 
 const authHeaders = () => ({
@@ -426,15 +424,6 @@ function StepSettings({
       </div>
 
       <Field
-        label="Cal.com booking URL"
-        type="url"
-        value={form.bookingUrl}
-        onChange={e => set("bookingUrl", e.target.value)}
-        placeholder="https://cal.com/account/event"
-        hint="Embedded in the patient booking modal when self-hosted booking is off."
-      />
-
-      <Field
         label="Subscription key"
         value={form.subscriptionKey}
         onChange={e => set("subscriptionKey", e.target.value)}
@@ -507,10 +496,6 @@ function StepReview({ form, error }: { form: FormState; error: string | null }) 
         <ReviewRow
           label="Google Place ID"
           value={form.googlePlaceId || "—"}
-        />
-        <ReviewRow
-          label="Booking URL"
-          value={form.bookingUrl || "—"}
         />
         <ReviewRow
           label="Subscription key"
@@ -626,7 +611,6 @@ function OnboardClientWizard() {
           renewalDate: form.renewalDate || undefined,
           subscriptionKey: form.subscriptionKey.trim() || undefined,
           googlePlaceId: form.googlePlaceId.trim() || undefined,
-          bookingUrl: form.bookingUrl.trim() || undefined,
           admin: {
             name: form.adminName.trim(),
             email: form.adminEmail.trim().toLowerCase(),

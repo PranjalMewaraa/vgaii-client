@@ -222,7 +222,7 @@ async function main() {
       modules: u.assignedModules.join(", ") || "-",
     })),
   );
-  console.log("Webhook keys (used for Cal.com booking + lead webhooks):");
+  console.log("Webhook keys (used for lead + feedback webhooks):");
   for (const c of seedClients) {
     console.log(`${c.name}: ${c.webhookKey}`);
   }

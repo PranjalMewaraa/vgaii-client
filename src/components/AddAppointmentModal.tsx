@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
-import BookingEmbed from "@/components/BookingEmbed";
 import SlotPicker from "@/components/SlotPicker";
 import type { BookingConfig } from "@/lib/validators/bookingConfig";
 
@@ -21,10 +19,6 @@ type LeadHit = {
   phone: string;
 };
 
-type DashboardData = {
-  bookingUrl?: string | null;
-};
-
 const authHeaders = () => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${
@@ -38,7 +32,7 @@ const authHeader = () => ({
   }`,
 });
 
-type Mode = "self" | "calcom" | "manual";
+type Mode = "self" | "manual";
 
 export default function AddAppointmentModal({
   open,
@@ -61,12 +55,9 @@ function Shell({
   onCreated: () => void;
   prefillDate?: string;
 }) {
-  // Cal.com URL (legacy) + self-hosted booking config, both SWR-cached.
-  const { data, isLoading } = useSWR<DashboardData>("/api/dashboard");
   const { data: cfgData } = useSWR<{ config: BookingConfig }>(
     "/api/booking/config",
   );
-  const bookingUrl = data?.bookingUrl ?? null;
   const config = cfgData?.config;
   const selfEnabled = !!config?.enabled;
   const configLoading = cfgData === undefined;
@@ -83,17 +74,14 @@ function Shell({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const primary: Mode = selfEnabled ? "self" : bookingUrl ? "calcom" : "manual";
+  const primary: Mode = selfEnabled ? "self" : "manual";
   let effectiveMode: Mode = picked ?? primary;
-  if (effectiveMode === "self" && !selfEnabled) effectiveMode = primary;
-  if (effectiveMode === "calcom" && !bookingUrl) effectiveMode = "manual";
+  if (effectiveMode === "self" && !selfEnabled) effectiveMode = "manual";
 
   const subtitle =
     effectiveMode === "self"
       ? "Pick an available slot from your clinic hours."
-      : effectiveMode === "calcom"
-        ? "Patient picks a slot via your Cal.com booking page."
-        : "Record an appointment manually — useful for walk-ins and back-dated visits.";
+      : "Record an appointment manually — useful for walk-ins and back-dated visits.";
 
   return (
     <div
@@ -123,30 +111,23 @@ function Shell({
           </button>
         </div>
 
-        <div
-          data-tour="appt-modal-mode-tabs"
-          className="flex border-b border-slate-200"
-        >
-          {selfEnabled ? (
+        {selfEnabled && (
+          <div
+            data-tour="appt-modal-mode-tabs"
+            className="flex border-b border-slate-200"
+          >
             <ModeTab
               label="Book a slot"
               active={effectiveMode === "self"}
               onClick={() => setPicked("self")}
             />
-          ) : (
             <ModeTab
-              label="Cal.com booking"
-              active={effectiveMode === "calcom"}
-              disabled={!bookingUrl}
-              onClick={() => setPicked("calcom")}
+              label="Manual entry"
+              active={effectiveMode === "manual"}
+              onClick={() => setPicked("manual")}
             />
-          )}
-          <ModeTab
-            label="Manual entry"
-            active={effectiveMode === "manual"}
-            onClick={() => setPicked("manual")}
-          />
-        </div>
+          </div>
+        )}
 
         <div className="min-h-0 flex-1 overflow-auto">
           {configLoading ? (
@@ -158,12 +139,6 @@ function Shell({
               slotMode
               slotMinutes={config!.slotMinutes}
               advanceDays={config!.advanceDays}
-            />
-          ) : effectiveMode === "calcom" ? (
-            <CalcomPane
-              bookingUrl={bookingUrl}
-              isLoading={isLoading}
-              onScheduled={onCreated}
             />
           ) : (
             <ManualForm
@@ -202,47 +177,6 @@ function ModeTab({
     >
       {label}
     </button>
-  );
-}
-
-function CalcomPane({
-  bookingUrl,
-  isLoading,
-  onScheduled,
-}: {
-  bookingUrl: string | null;
-  isLoading: boolean;
-  onScheduled: () => void;
-}) {
-  if (isLoading) {
-    return <p className="px-4 py-6 text-sm text-slate-500">Loading…</p>;
-  }
-  if (!bookingUrl) {
-    return (
-      <div className="px-4 py-4">
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          No Cal.com booking URL is configured for this client. Ask your
-          admin to set it on the{" "}
-          <Link href="/settings" className="font-semibold underline">
-            Settings
-          </Link>{" "}
-          page, or use the <strong>Manual entry</strong> tab.
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="px-2 py-2">
-      <BookingEmbed
-        url={bookingUrl}
-        onScheduled={() => {
-          // Cal.com webhook usually writes the appointment within a second,
-          // so notify the parent to refetch immediately and let the parent
-          // close the modal.
-          onScheduled();
-        }}
-      />
-    </div>
   );
 }
 

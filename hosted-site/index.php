@@ -284,7 +284,6 @@ $pageTitle = '';
 if (!$error) {
     $profile   = applyFallbacks($apiData['profile'] ?? [], $FALLBACK);
     $tpl       = $apiData['template'] ?? 'classic';
-    $cta       = $apiData['bookingUrl'] ?? null;
     $tplMap    = [
         '1' => 'template1', 'classic'  => 'template1',
         '2' => 'template2', 'premium'  => 'template2',

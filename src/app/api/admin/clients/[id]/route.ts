@@ -15,8 +15,8 @@ const cleanString = (v: string | null | undefined): string | null => {
 };
 
 // Super-admin-only client patch. Used to set integration details
-// (googlePlaceId, bookingUrl) at any time after creation, plus rename,
-// plan, subscription, and the existing branding fields. CLIENT_ADMIN can
+// (googlePlaceId) at any time after creation, plus rename, plan,
+// subscription, and the existing branding fields. CLIENT_ADMIN can
 // only modify branding via /api/client/settings.
 export async function PATCH(req: Request, ctx: RouteContext) {
   try {
@@ -47,9 +47,6 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (data.googlePlaceId !== undefined) {
       update.googlePlaceId = data.googlePlaceId ?? null;
     }
-    if (data.bookingUrl !== undefined) {
-      update.bookingUrl = data.bookingUrl ?? null;
-    }
     if (data.subscriptionKey !== undefined) {
       update.subscriptionKey = data.subscriptionKey ?? null;
     }
@@ -72,7 +69,6 @@ export async function PATCH(req: Request, ctx: RouteContext) {
           subscriptionStatus: true,
           renewalDate: true,
           googlePlaceId: true,
-          bookingUrl: true,
           subscriptionKey: true,
           profileSlug: true,
           customDomain: true,
