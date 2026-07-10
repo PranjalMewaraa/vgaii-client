@@ -69,7 +69,7 @@ export default function AccountPage() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Account</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Account</h1>
         <p className="mt-1 text-sm text-slate-500">
           Manage your sign-in details. For role or module access, ask your
           admin.
@@ -146,7 +146,7 @@ export default function AccountPage() {
                 !newPassword ||
                 !confirmPassword
               }
-              className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
             >
               {submitting ? "Updating…" : "Update password"}
             </button>
@@ -242,7 +242,7 @@ function ChangeEmailSection() {
           <button
             type="submit"
             disabled={submitting || !newEmail || !currentPassword}
-            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
           >
             {submitting ? "Updating…" : "Update email"}
           </button>
@@ -339,7 +339,7 @@ function OnboardingControls() {
           type="button"
           onClick={restart}
           disabled={busy !== null}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
         >
           <Sparkles size={12} />
           {busy === "restart" ? "Restarting…" : "Restart tour"}
@@ -398,7 +398,7 @@ function Field({
         onChange={e => onChange(e.target.value)}
         autoComplete={autoComplete}
         required={required}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
       />
     </label>
   );

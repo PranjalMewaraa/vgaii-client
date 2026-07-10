@@ -91,7 +91,7 @@ export default function BusinessInfoCard({
             type="button"
             onClick={refresh}
             disabled={refreshing}
-            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
           >
             {refreshing ? "Refreshing…" : "Refresh now"}
           </button>
@@ -115,7 +115,7 @@ export default function BusinessInfoCard({
               className="h-28 w-28 rounded-xl object-cover"
             />
           ) : (
-            <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-indigo-600 text-3xl font-semibold text-white">
+            <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-blue-600 text-3xl font-semibold text-white">
               {businessInfo.name.charAt(0)}
             </div>
           )}
@@ -124,7 +124,7 @@ export default function BusinessInfoCard({
               href={businessInfo.mapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 block text-center text-xs text-indigo-600 hover:underline"
+              className="mt-2 block text-center text-xs text-blue-600 hover:underline"
             >
               View on Maps →
             </a>
@@ -173,7 +173,7 @@ export default function BusinessInfoCard({
                   href={businessInfo.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="truncate text-indigo-600 hover:underline"
+                  className="truncate text-blue-600 hover:underline"
                 >
                   {businessInfo.website}
                 </a>

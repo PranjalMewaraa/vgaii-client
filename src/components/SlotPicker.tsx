@@ -74,7 +74,7 @@ export default function SlotPicker({
             onClick={() => setDate(d)}
             className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium shadow-sm transition ${
               d === date
-                ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                ? "border-blue-500 bg-blue-50 text-blue-700"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -114,9 +114,9 @@ export default function SlotPicker({
                   }
                   className={`rounded-lg border px-2 py-1.5 text-xs font-medium shadow-sm transition ${
                     selected
-                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      ? "border-blue-600 bg-blue-600 text-white"
                       : s.available
-                        ? "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50"
+                        ? "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50"
                         : "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 line-through"
                   }`}
                 >

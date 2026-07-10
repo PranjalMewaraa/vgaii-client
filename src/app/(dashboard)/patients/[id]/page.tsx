@@ -313,7 +313,7 @@ function PatientDetailPageInner({
     <div className="space-y-5">
       <Link
         href="/patients"
-        className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline"
+        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
       >
         <ArrowLeft size={14} />
         Back to patients
@@ -332,7 +332,7 @@ function PatientDetailPageInner({
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-900">
+              <h1 className="truncate text-3xl font-bold tracking-tight text-slate-900">
                 {lead.name}
               </h1>
               <span
@@ -383,7 +383,7 @@ function PatientDetailPageInner({
           <button
             type="button"
             onClick={() => setBookingOpen(true)}
-            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+            className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
           >
             + Schedule appointment
           </button>
@@ -405,7 +405,7 @@ function PatientDetailPageInner({
                 onClick={() => setTab(key)}
                 className={`flex-1 border-b-2 px-4 py-3 text-sm font-semibold transition ${
                   isActive
-                    ? "border-indigo-600 text-indigo-700"
+                    ? "border-blue-600 text-blue-700"
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -488,7 +488,7 @@ function PatientDetailPageInner({
                 value={notesDraft}
                 onChange={e => setNotesDraft(e.target.value)}
                 rows={6}
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 placeholder="Allergies, chronic conditions, preferences, follow-up reminders…"
               />
               <div className="mt-2 flex justify-end">
@@ -496,7 +496,7 @@ function PatientDetailPageInner({
                   type="button"
                   onClick={saveNotes}
                   disabled={!dirtyNotes || savingNotes}
-                  className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
                 >
                   {savingNotes ? "Saving…" : "Save notes"}
                 </button>
@@ -709,7 +709,7 @@ type LeadSearchHit = {
 };
 
 const AVATAR_COLORS = [
-  "bg-indigo-500",
+  "bg-blue-500",
   "bg-emerald-500",
   "bg-amber-500",
   "bg-sky-500",
@@ -963,7 +963,7 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
         </h2>
         <Link
           href={`/finances?tab=payment&leadId=${encodeURIComponent(lead.id)}&name=${encodeURIComponent(lead.name)}&phone=${encodeURIComponent(lead.phone)}`}
-          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+          className="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
         >
           + Record payment
         </Link>
@@ -1176,7 +1176,7 @@ function MedicalHistory({
               <li key={a.id} className="relative">
                 {/* Dot marker on the timeline */}
                 <span
-                  className="absolute -left-[27px] top-1.5 inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-indigo-500 shadow"
+                  className="absolute -left-[27px] top-1.5 inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-blue-500 shadow"
                   aria-hidden
                 />
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -1294,7 +1294,7 @@ function DirectAppointmentView({
 
   return (
     <div className="space-y-5">
-      <Link href="/patients" className="text-sm text-indigo-600 hover:underline">
+      <Link href="/patients" className="text-sm text-blue-600 hover:underline">
         ← Back to patients
       </Link>
 
@@ -1337,7 +1337,7 @@ function DirectAppointmentView({
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Name or phone…"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
           {error && (
             <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -1370,7 +1370,7 @@ function DirectAppointmentView({
                     type="button"
                     onClick={() => link(r.id)}
                     disabled={linking === r.id}
-                    className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+                    className="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
                   >
                     {linking === r.id ? "Linking…" : "Link"}
                   </button>

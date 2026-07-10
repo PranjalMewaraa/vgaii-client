@@ -253,7 +253,7 @@ function ModalContents({
         <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
             <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-tight text-slate-900">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
                 <MapPin size={14} />
               </span>
               Find a Place ID
@@ -357,7 +357,7 @@ function ModalContents({
               href={`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(place.id)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 transition-colors hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 transition-colors hover:underline"
             >
               <ExternalLink size={12} />
               Open in Maps
@@ -384,7 +384,7 @@ function ModalContents({
                   onClose();
                 }
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Check size={12} />
               Use this Place ID

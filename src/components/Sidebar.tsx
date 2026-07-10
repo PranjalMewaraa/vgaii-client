@@ -7,6 +7,7 @@ import {
   BarChart3,
   Building2,
   Calendar,
+  ChevronsUpDown,
   ClipboardList,
   IndianRupee,
   LayoutDashboard,
@@ -67,6 +68,9 @@ export default function Sidebar({
   const sectionLabel =
     user?.role === "SUPER_ADMIN" ? "PLATFORM" : "CLIENT";
 
+  const initial = (user?.name || user?.email || "?").charAt(0).toUpperCase();
+  const displayName = user?.name || user?.email?.split("@")[0] || "User";
+
   return (
     <>
       {open && (
@@ -82,7 +86,7 @@ export default function Sidebar({
         }`}
       >
         <div className="flex items-center gap-2.5 px-5 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-sm shadow-indigo-600/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm shadow-blue-600/30">
             V
           </div>
           <div className="leading-tight">
@@ -117,19 +121,19 @@ export default function Sidebar({
                     aria-current={active ? "page" : undefined}
                     className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                       active
-                        ? "bg-indigo-50 text-indigo-700"
+                        ? "bg-blue-50 text-blue-700"
                         : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
                     }`}
                   >
                     {active && (
-                      <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-indigo-600" />
+                      <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-blue-600" />
                     )}
                     <Icon
                       size={18}
                       strokeWidth={active ? 2.25 : 2}
                       className={
                         active
-                          ? "text-indigo-600"
+                          ? "text-blue-600"
                           : "text-slate-400 transition-colors group-hover:text-slate-500"
                       }
                     />
@@ -139,6 +143,31 @@ export default function Sidebar({
               })}
           </nav>
         </div>
+
+        {user && (
+          <div className="border-t border-slate-100 p-3">
+            <Link
+              href="/account"
+              onClick={onClose}
+              className="flex items-center gap-2.5 rounded-xl px-2 py-2 transition-colors hover:bg-slate-100/70"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-700 ring-1 ring-inset ring-blue-100">
+                {initial}
+              </span>
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block truncate text-sm font-semibold text-slate-900">
+                  {displayName}
+                </span>
+                {user.email && (
+                  <span className="block truncate text-[11px] text-slate-400">
+                    {user.email}
+                  </span>
+                )}
+              </span>
+              <ChevronsUpDown size={15} className="shrink-0 text-slate-300" />
+            </Link>
+          </div>
+        )}
       </aside>
     </>
   );

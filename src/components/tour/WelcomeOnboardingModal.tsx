@@ -104,7 +104,7 @@ export default function WelcomeOnboardingModal() {
     >
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
         <div className="flex items-start gap-3">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
             <Sparkles size={20} />
           </span>
           <div>
@@ -137,7 +137,7 @@ export default function WelcomeOnboardingModal() {
             type="button"
             onClick={handleStart}
             disabled={busy}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
           >
             <Sparkles size={14} />
             {busy ? "Setting up…" : "Start tour"}

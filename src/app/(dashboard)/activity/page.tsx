@@ -19,7 +19,7 @@ type Entry = {
 };
 
 const ACTOR_BADGE: Record<string, string> = {
-  user: "bg-indigo-100 text-indigo-700",
+  user: "bg-blue-100 text-blue-700",
   webhook: "bg-amber-100 text-amber-700",
   public: "bg-sky-100 text-sky-700",
   system: "bg-slate-100 text-slate-700",
@@ -112,7 +112,7 @@ function ActivityPageInner() {
   return (
     <div className="space-y-5">
       <header data-tour="activity-feed">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Activity log</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Activity log</h1>
         <p className="mt-1 text-sm text-slate-500">
           Append-only record of every action taken by you and your staff —
           patient edits, status changes, settings updates.
@@ -128,7 +128,7 @@ function ActivityPageInner() {
             <select
               value={entityType}
               onChange={e => setEntityType(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             >
               <option value="">All entities</option>
               <option value="Lead">Leads / Patients</option>
@@ -146,14 +146,14 @@ function ActivityPageInner() {
               value={actionFilter}
               onChange={e => setActionFilter(e.target.value)}
               placeholder="e.g. lead.status.changed"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </label>
           {filtersActive && (
             <button
               type="button"
               onClick={clear}
-              className="text-xs text-indigo-600 transition-colors hover:underline"
+              className="text-xs text-blue-600 transition-colors hover:underline"
             >
               Clear filters
             </button>

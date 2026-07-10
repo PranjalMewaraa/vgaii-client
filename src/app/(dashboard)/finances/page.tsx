@@ -84,7 +84,7 @@ function FinancesPageInner() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Finances</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Finances</h1>
         <p className="mt-1 text-sm text-slate-500">
           Day-to-day patient payments, clinic expenses, and reports.
         </p>
@@ -102,7 +102,7 @@ function FinancesPageInner() {
                 data-tour={t.key === "payment" ? "payments-tab" : undefined}
                 className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition md:flex-1 ${
                   isActive
-                    ? "border-indigo-600 text-indigo-700"
+                    ? "border-blue-600 text-blue-700"
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -130,7 +130,7 @@ function FinancesPageInner() {
               onClick={() => setPresetSubTab("earning")}
               className={`rounded-md px-3 py-1.5 font-medium transition ${
                 presetSubTab === "earning"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-blue-600 text-white"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >
@@ -141,7 +141,7 @@ function FinancesPageInner() {
               onClick={() => setPresetSubTab("expense")}
               className={`rounded-md px-3 py-1.5 font-medium transition ${
                 presetSubTab === "expense"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-blue-600 text-white"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >

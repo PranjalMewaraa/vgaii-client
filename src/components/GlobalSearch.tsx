@@ -197,7 +197,7 @@ export default function GlobalSearch() {
   };
 
   return (
-    <div ref={wrapperRef} className="relative flex-1 min-w-0 max-w-xs sm:max-w-sm md:max-w-md">
+    <div ref={wrapperRef} className="relative w-full min-w-0 max-w-xl">
       <div className="relative">
         <input
           ref={inputRef}
@@ -205,13 +205,13 @@ export default function GlobalSearch() {
           onChange={e => setQ(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder="Search leads, patients, appointments…"
-          className="w-full rounded-lg border border-slate-200 bg-white px-9 py-2 text-sm text-slate-700 shadow-sm placeholder:text-slate-400 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+          placeholder="Search patients, appointments…"
+          className="w-full rounded-xl border border-transparent bg-slate-100 px-10 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
         />
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-          <Search size={14} />
+        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+          <Search size={16} />
         </span>
-        <span className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">
+        <span className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 sm:inline">
           ⌘K
         </span>
       </div>
@@ -233,7 +233,7 @@ export default function GlobalSearch() {
                     onClick={() => navigate(hit)}
                     onMouseEnter={() => setActiveIdx(i)}
                     className={`flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors ${
-                      i === activeIdx ? "bg-indigo-50" : "hover:bg-slate-50"
+                      i === activeIdx ? "bg-blue-50" : "hover:bg-slate-50"
                     }`}
                   >
                     <span

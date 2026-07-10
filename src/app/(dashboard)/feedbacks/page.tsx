@@ -72,7 +72,7 @@ function FeedbacksPageInner() {
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Feedbacks</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Feedbacks</h1>
         <p className="mt-1 text-sm text-slate-500">
           Internal post-visit feedback alongside public reviews from your
           Google Business listing.
@@ -118,7 +118,7 @@ function TabButton({
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium uppercase tracking-wider transition ${
         active
-          ? "bg-indigo-600 text-white"
+          ? "bg-blue-600 text-white"
           : "text-slate-600 hover:bg-slate-50"
       }`}
     >
@@ -181,7 +181,7 @@ function InternalFeedbacks() {
               onClick={() => setFilter(f)}
               className={`rounded-md px-3 py-1 font-medium uppercase tracking-wider transition ${
                 filter === f
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-blue-600 text-white"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >
@@ -234,7 +234,7 @@ function InternalFeedbacks() {
                     {f.lead && (
                       <Link
                         href={`/patients/${f.lead.id}`}
-                        className="mt-1 inline-block text-xs text-indigo-600 hover:underline"
+                        className="mt-1 inline-block text-xs text-blue-600 hover:underline"
                       >
                         View patient →
                       </Link>
@@ -257,7 +257,7 @@ function InternalFeedbacks() {
                       type="button"
                       onClick={() => resolve(f.id)}
                       disabled={busyId === f.id}
-                      className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+                      className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
                     >
                       {busyId === f.id ? "Resolving…" : "Mark resolved"}
                     </button>
@@ -427,7 +427,7 @@ function GoogleReviews() {
           type="button"
           onClick={refresh}
           disabled={refreshing}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
         >
           <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Refreshing…" : "Refresh"}
@@ -446,7 +446,7 @@ function GoogleReviews() {
         </p>
       )}
       {data.pending && !refreshing && (
-        <p className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
+        <p className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
           <RefreshCw size={12} className="animate-spin" />
           Fetching reviews from Google in the background. This page is
           checking every 15s — reviews will appear automatically.
@@ -467,7 +467,7 @@ function GoogleReviews() {
                 onClick={() => setFilter(f)}
                 className={`rounded-md px-2.5 py-1 font-medium transition ${
                   filter === f
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-blue-600 text-white"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
@@ -506,7 +506,7 @@ function ReviewCard({ review }: { review: GoogleReview }) {
             className="h-10 w-10 shrink-0 rounded-full object-cover"
           />
         ) : (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
             {initial}
           </span>
         )}
@@ -547,8 +547,8 @@ function ReviewCard({ review }: { review: GoogleReview }) {
             </p>
           )}
           {review.ownerAnswer && (
-            <div className="mt-3 rounded-lg border-l-2 border-indigo-300 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-700">
+            <div className="mt-3 rounded-lg border-l-2 border-blue-300 bg-blue-50/60 px-3 py-2 text-xs text-slate-700">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-700">
                 Owner reply
               </p>
               <p className="mt-0.5 whitespace-pre-line">

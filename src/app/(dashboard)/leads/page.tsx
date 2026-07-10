@@ -114,7 +114,7 @@ function LeadsPageInner() {
     <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Leads</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Leads</h1>
           <p className="mt-1 text-sm text-slate-500">
             Early-funnel and dropped contacts. Once a lead is{" "}
             <code className="rounded bg-slate-100 px-1">qualified</code>, they
@@ -125,7 +125,7 @@ function LeadsPageInner() {
           type="button"
           onClick={() => setAddOpen(true)}
           data-tour="leads-add-btn"
-          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
         >
           + Add lead
         </button>
@@ -182,7 +182,7 @@ function LeadsPageInner() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Name or phone…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </label>
           <label className="block">
@@ -192,7 +192,7 @@ function LeadsPageInner() {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             >
               <option value="">All statuses</option>
               {LEAD_STATUSES.filter(
@@ -215,7 +215,7 @@ function LeadsPageInner() {
             <select
               value={sourceFilter}
               onChange={e => setSourceFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             >
               <option value="">All sources</option>
               {sources.map(s => (
@@ -230,7 +230,7 @@ function LeadsPageInner() {
             <button
               type="button"
               onClick={clearFilters}
-              className="ml-auto text-xs text-indigo-600 hover:underline"
+              className="ml-auto text-xs text-blue-600 hover:underline"
             >
               Clear filters
             </button>
@@ -300,7 +300,7 @@ function LeadsPageInner() {
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}`)}
-                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-indigo-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
                           aria-label={`View ${lead.name}`}
                           title="View"
                         >
@@ -309,7 +309,7 @@ function LeadsPageInner() {
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}?edit=1`)}
-                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-indigo-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
                           aria-label={`Edit ${lead.name}`}
                           title="Edit"
                         >

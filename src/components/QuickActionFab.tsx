@@ -43,7 +43,7 @@ const ACTIONS: FabAction[] = [
     href: "/leads?add=1",
     label: "Add lead",
     icon: UserPlus,
-    iconClass: "bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100",
+    iconClass: "bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100",
     module: "leads",
   },
   {
@@ -158,10 +158,10 @@ export default function QuickActionFab() {
           aria-expanded={open}
           aria-haspopup="menu"
           aria-label={open ? "Close quick actions" : "Open quick actions"}
-          className={`inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition focus:outline-none focus:ring-4 focus:ring-indigo-200 ${
+          className={`inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition focus:outline-none focus:ring-4 focus:ring-blue-200 ${
             open
               ? "rotate-90 bg-slate-700 hover:bg-slate-800"
-              : "bg-indigo-600 hover:bg-indigo-700"
+              : "bg-blue-600 hover:bg-slate-800"
           }`}
           style={{ transitionProperty: "transform, background-color" }}
         >

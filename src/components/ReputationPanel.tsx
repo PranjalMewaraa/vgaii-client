@@ -65,7 +65,7 @@ export default function ReputationPanel({
         </div>
         <Link
           href="/feedbacks"
-          className="text-xs font-medium text-indigo-600 hover:underline"
+          className="text-xs font-medium text-blue-600 hover:underline"
         >
           View internal feedback →
         </Link>
@@ -91,7 +91,7 @@ export default function ReputationPanel({
                   href={businessInfo.mapsUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline"
+                  className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline"
                 >
                   <ExternalLink size={11} />
                   Open in Maps
@@ -168,7 +168,7 @@ function Pill({
   const map: Record<string, string> = {
     red: "bg-red-50 text-red-700",
     emerald: "bg-emerald-50 text-emerald-700",
-    indigo: "bg-indigo-50 text-indigo-700",
+    indigo: "bg-blue-50 text-blue-700",
     slate: "bg-slate-50 text-slate-600 ring-1 ring-inset ring-slate-200",
   };
   return (

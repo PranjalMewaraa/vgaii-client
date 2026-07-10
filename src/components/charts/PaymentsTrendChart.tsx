@@ -86,9 +86,9 @@ export default function PaymentsTrendChart({
           <Line
             type="monotone"
             dataKey="collected"
-            stroke="#6366f1"
+            stroke="#2563eb"
             strokeWidth={2}
-            dot={{ r: 3, fill: "#6366f1" }}
+            dot={{ r: 3, fill: "#2563eb" }}
             activeDot={{ r: 5 }}
             isAnimationActive={false}
           />

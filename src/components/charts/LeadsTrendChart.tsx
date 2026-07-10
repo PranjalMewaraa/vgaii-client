@@ -81,7 +81,7 @@ export default function LeadsTrendChart({
             content={<LeadsTooltip />}
             cursor={{ fill: "#f1f5f9" }}
           />
-          <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>

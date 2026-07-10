@@ -45,7 +45,7 @@ export default function NextAppointmentCard() {
         </div>
         <Link
           href="/appointments"
-          className="text-xs font-medium text-indigo-600 hover:underline"
+          className="text-xs font-medium text-blue-600 hover:underline"
         >
           All appointments →
         </Link>
@@ -59,7 +59,7 @@ export default function NextAppointmentCard() {
         </div>
       ) : (
         <div className="mt-3 flex items-start gap-3">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
             <Calendar size={18} />
           </span>
           <div className="min-w-0 flex-1">

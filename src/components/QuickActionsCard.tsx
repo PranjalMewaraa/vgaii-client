@@ -19,8 +19,8 @@ const ACTIONS: Action[] = [
     href: "/leads?add=1",
     label: "Add Lead",
     icon: UserPlus,
-    iconClass: "bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100",
-    hoverClass: "hover:border-indigo-200 hover:bg-indigo-50",
+    iconClass: "bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100",
+    hoverClass: "hover:border-blue-200 hover:bg-blue-50",
   },
   {
     href: "/patients?add=1",

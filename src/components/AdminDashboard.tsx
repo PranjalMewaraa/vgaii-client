@@ -83,7 +83,7 @@ const SEVERITY_LABEL: Record<AttentionRow["severity"], string> = {
 };
 
 const ACTOR_BADGE: Record<ActivityEntry["actorType"], string> = {
-  user: "bg-indigo-100 text-indigo-700",
+  user: "bg-blue-100 text-blue-700",
   webhook: "bg-violet-100 text-violet-700",
   public: "bg-sky-100 text-sky-700",
   system: "bg-slate-100 text-slate-600",
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
     <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             Platform overview
           </h1>
           <p className="mt-1 text-sm text-slate-500">
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
           </Link>
           <Link
             href="/admin/clients"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
           >
             <Plus size={14} />
             New client
@@ -335,7 +335,7 @@ function TopClients({ rows }: { rows: TopClientRow[] }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
           <TrendingUp size={14} />
         </span>
         <div>
@@ -365,7 +365,7 @@ function TopClients({ rows }: { rows: TopClientRow[] }) {
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">
                   {row.clientName}
                 </span>
-                <span className="shrink-0 text-sm font-semibold text-indigo-600">
+                <span className="shrink-0 text-sm font-semibold text-blue-600">
                   {row.leads}
                   <span className="ml-1 text-[10px] font-normal uppercase tracking-wider text-slate-400">
                     leads
@@ -399,7 +399,7 @@ function RecentActivity({ entries }: { entries: ActivityEntry[] | null }) {
         </div>
         <Link
           href="/activity"
-          className="text-xs font-medium text-indigo-600 transition-colors hover:underline"
+          className="text-xs font-medium text-blue-600 transition-colors hover:underline"
         >
           View all →
         </Link>

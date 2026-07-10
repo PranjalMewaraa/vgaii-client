@@ -98,7 +98,7 @@ export default function DailySummaryTab() {
             type="date"
             value={date}
             onChange={e => setDate(e.target.value || todayISO())}
-            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
         </label>
       </div>
@@ -200,8 +200,8 @@ const TONE: Record<
     tile: "border-slate-200",
   },
   indigo: {
-    bg: "bg-indigo-50 ring-1 ring-inset ring-indigo-100",
-    text: "text-indigo-600",
+    bg: "bg-blue-50 ring-1 ring-inset ring-blue-100",
+    text: "text-blue-600",
     tile: "border-slate-200",
   },
   sky: { bg: "bg-sky-50 ring-1 ring-inset ring-sky-100", text: "text-sky-600", tile: "border-slate-200" },

@@ -132,7 +132,7 @@ export default function PaymentsListTab({
               onClick={() => setPreset(p)}
               className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
                 preset === p
-                  ? "bg-indigo-600 text-white shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -143,7 +143,7 @@ export default function PaymentsListTab({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
         >
           <Plus size={12} />
           New payment
@@ -164,7 +164,7 @@ export default function PaymentsListTab({
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Patient, phone, or charge…"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 pl-9 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 pl-9 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </div>
         </label>
@@ -175,7 +175,7 @@ export default function PaymentsListTab({
           <select
             value={method}
             onChange={e => setMethod(e.target.value as typeof method)}
-            className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           >
             <option value="">All</option>
             {PAYMENT_METHODS.map(m => (

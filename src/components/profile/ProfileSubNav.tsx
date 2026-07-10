@@ -39,7 +39,7 @@ export default function ProfileSubNav() {
               href={t.href}
               className={`flex flex-1 flex-col items-start gap-0.5 border-b-2 px-5 py-3.5 text-sm transition-colors ${
                 isActive
-                  ? "border-indigo-600 bg-indigo-50/40 text-indigo-700"
+                  ? "border-blue-600 bg-blue-50/40 text-blue-700"
                   : "border-transparent text-slate-500 hover:bg-slate-50/70 hover:text-slate-700"
               }`}
               aria-current={isActive ? "page" : undefined}

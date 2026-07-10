@@ -89,30 +89,34 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
 
       {user && (
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          {roleLabel && (
-            <span className="hidden rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 sm:block">
-              {roleLabel}
-            </span>
-          )}
+          <span className="mx-0.5 hidden h-6 w-px bg-slate-200 sm:block" />
           <Link
             href="/account"
             title="Account & password"
-            className="flex items-center gap-2 rounded-full py-0.5 pl-0.5 pr-1 transition-colors hover:bg-slate-100 sm:pr-2.5"
+            className="flex items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-100 sm:pr-2.5"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white shadow-sm shadow-indigo-600/30">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-sm shadow-blue-600/30">
               {initial}
             </span>
-            <span className="hidden max-w-[140px] truncate text-sm font-medium text-slate-700 sm:block">
-              {displayName}
+            <span className="hidden text-left leading-tight sm:block">
+              <span className="block max-w-[160px] truncate text-sm font-semibold text-slate-900">
+                {displayName}
+              </span>
+              {roleLabel && (
+                <span className="block text-[11px] font-medium text-slate-400">
+                  {roleLabel}
+                </span>
+              )}
             </span>
           </Link>
           <button
             type="button"
             onClick={logout}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 sm:px-3"
+            title="Logout"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <LogOut size={14} />
-            <span className="hidden sm:inline">Logout</span>
+            <LogOut size={15} />
+            <span className="sr-only sm:not-sr-only">Logout</span>
           </button>
         </div>
       )}

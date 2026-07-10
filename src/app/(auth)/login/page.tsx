@@ -92,7 +92,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
         <div className="mb-8 flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-sm shadow-indigo-600/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm shadow-blue-600/30">
             V
           </div>
           <span className="text-sm font-semibold tracking-tight text-slate-900">
@@ -101,7 +101,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             Sign in
           </h1>
           <p className="mt-1.5 text-sm text-slate-500">
@@ -113,7 +113,7 @@ export default function LoginPage() {
           <label className="block">
             <span className="text-sm font-medium text-slate-700">Email</span>
             <input
-              className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -125,7 +125,7 @@ export default function LoginPage() {
           <label className="block">
             <span className="text-sm font-medium text-slate-700">Password</span>
             <input
-              className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -149,7 +149,7 @@ export default function LoginPage() {
           )}
 
           <button
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             type="submit"
             disabled={loading || (captchaEnabled && !captchaToken)}
           >

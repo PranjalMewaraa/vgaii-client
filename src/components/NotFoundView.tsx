@@ -40,12 +40,12 @@ export default function NotFoundView({
   return (
     <div className={shell}>
       <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <p className="text-5xl font-semibold tracking-tight text-indigo-600">{copy.eyebrow}</p>
+        <p className="text-5xl font-semibold tracking-tight text-blue-600">{copy.eyebrow}</p>
         <h1 className="mt-3 text-xl font-semibold tracking-tight text-slate-900">{copy.title}</h1>
         <p className="mt-2 text-sm text-slate-500">{copy.description}</p>
         <Link
           href="/"
-          className="mt-6 inline-block rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+          className="mt-6 inline-block rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
         >
           {copy.cta}
         </Link>

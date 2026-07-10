@@ -109,7 +109,7 @@ export default function ExpensePresetsTab() {
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
           >
             <Plus size={12} />
             Add preset
@@ -127,7 +127,7 @@ export default function ExpensePresetsTab() {
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
               placeholder="e.g. Staff Salary"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </label>
           <label className="block">
@@ -137,7 +137,7 @@ export default function ExpensePresetsTab() {
             <select
               value={newCategory}
               onChange={e => setNewCategory(e.target.value as ExpenseCategory)}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             >
               {EXPENSE_CATEGORIES.map(c => (
                 <option key={c} value={c}>
@@ -155,14 +155,14 @@ export default function ExpensePresetsTab() {
               onChange={e => setNewAmount(e.target.value)}
               inputMode="numeric"
               placeholder="20000"
-              className="mt-1 w-32 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-32 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </label>
           <button
             type="button"
             onClick={addPreset}
             disabled={busy}
-            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
           >
             {busy ? "Saving…" : "Save"}
           </button>
@@ -201,7 +201,7 @@ export default function ExpensePresetsTab() {
               type="button"
               onClick={seedDefaults}
               disabled={seeding}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-sm font-semibold text-indigo-700 shadow-sm transition-colors hover:bg-indigo-100 disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-colors hover:bg-blue-100 disabled:opacity-60"
             >
               <Sparkles size={12} />
               {seeding ? "Adding starter presets…" : "Add starter presets"}
@@ -297,12 +297,12 @@ function ExpensePresetRow({
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
-          className="flex-1 min-w-[160px] rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="flex-1 min-w-[160px] rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
         <select
           value={category}
           onChange={e => setCategory(e.target.value as ExpenseCategory)}
-          className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         >
           {EXPENSE_CATEGORIES.map(c => (
             <option key={c} value={c}>
@@ -314,13 +314,13 @@ function ExpensePresetRow({
           value={amount}
           onChange={e => setAmount(e.target.value)}
           inputMode="numeric"
-          className="w-32 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="w-32 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
         />
         <button
           type="button"
           onClick={save}
           disabled={busy}
-          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
         >
           {busy ? "…" : "Save"}
         </button>

@@ -144,7 +144,7 @@ function ProfilePageInner() {
     <form onSubmit={submit} className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Profile</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Profile</h1>
           <p className="mt-1 text-sm text-slate-500">
             Edit your public landing page. Toggle <em>Enabled</em> to publish.
           </p>
@@ -163,7 +163,7 @@ function ProfilePageInner() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save profile"}
           </button>
@@ -189,7 +189,7 @@ function ProfilePageInner() {
         Current template: <strong>{labelFor(profile.template)}</strong>.{" "}
         <Link
           href="/profile/template"
-          className="font-medium text-indigo-600 hover:underline"
+          className="font-medium text-blue-600 hover:underline"
         >
           Change template →
         </Link>
@@ -205,7 +205,7 @@ function ProfilePageInner() {
             type="checkbox"
             checked={profile.enabled}
             onChange={e => set("enabled", e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
           />
           <span>Enabled — publish this profile at the public URL.</span>
         </label>
@@ -273,7 +273,7 @@ function ProfilePageInner() {
                   value={a}
                   onChange={e => setAchievement(i, e.target.value)}
                   placeholder="Board Certified in Cardiovascular Disease"
-                  className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
                 <button
                   type="button"
@@ -319,7 +319,7 @@ function ProfilePageInner() {
                       value={s.title}
                       onChange={e => setService(i, "title", e.target.value)}
                       placeholder="Service title"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
                     <textarea
                       value={s.description}
@@ -328,7 +328,7 @@ function ProfilePageInner() {
                       }
                       placeholder="Service description"
                       rows={2}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
                   </div>
                   <button
@@ -383,7 +383,7 @@ function ProfilePageInner() {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save profile"}
         </button>
@@ -440,7 +440,7 @@ function Field({
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
       />
     </label>
   );
@@ -469,7 +469,7 @@ function Textarea({
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
       />
     </label>
   );

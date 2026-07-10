@@ -86,7 +86,7 @@ export default function SlotBookingPane({
           type="button"
           onClick={book}
           disabled={busy || !slot}
-          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
         >
           {busy ? "Booking…" : "Confirm booking"}
         </button>

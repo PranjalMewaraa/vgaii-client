@@ -129,7 +129,7 @@ function ProfileTemplatePageInner() {
     <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Profile</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Profile</h1>
           <p className="mt-1 text-sm text-slate-500">
             Choose the visual style of your public landing page. Your
             content (text, images, services) carries over between styles.
@@ -186,7 +186,7 @@ function ProfileTemplatePageInner() {
                   aria-pressed={isActive}
                   className={`group flex flex-col gap-3 rounded-2xl border-2 p-4 text-left shadow-sm transition hover:shadow-md disabled:cursor-wait ${
                     isActive
-                      ? "border-indigo-600 ring-2 ring-indigo-100"
+                      ? "border-blue-600 ring-2 ring-blue-100"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
@@ -212,7 +212,7 @@ function ProfileTemplatePageInner() {
                   <p className="text-xs text-slate-500">{opt.description}</p>
                   <span
                     className={`mt-auto inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider ${
-                      isActive ? "text-indigo-600" : "text-slate-400"
+                      isActive ? "text-blue-600" : "text-slate-400"
                     }`}
                   >
                     {isSaving
