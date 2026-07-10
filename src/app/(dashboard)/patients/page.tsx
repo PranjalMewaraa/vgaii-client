@@ -18,6 +18,7 @@ import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddPatientModal from "@/components/AddPatientModal";
 import StatCard from "@/components/StatCard";
+import Avatar from "@/components/Avatar";
 
 type PatientRow = {
   kind: "lead" | "direct";
@@ -667,8 +668,13 @@ function PatientsPageInner() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 font-medium text-slate-900">
-                        {p.name}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={p.name} size="md" />
+                          <span className="font-semibold text-slate-900">
+                            {p.name}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-slate-700">{p.phone}</td>
                       <td className="px-4 py-3 text-slate-600">

@@ -95,7 +95,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             title="Account & password"
             className="flex items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-100 sm:pr-2.5"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-sm shadow-blue-600/30">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700 ring-1 ring-inset ring-blue-200">
               {initial}
             </span>
             <span className="hidden text-left leading-tight sm:block">

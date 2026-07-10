@@ -8,6 +8,7 @@ import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddLeadModal from "@/components/AddLeadModal";
 import StatCard from "@/components/StatCard";
+import Avatar from "@/components/Avatar";
 import TopSourcesCard from "@/components/TopSourcesCard";
 import { LEAD_STATUSES } from "@/lib/constants";
 
@@ -272,13 +273,18 @@ function LeadsPageInner() {
                     onClick={() => router.push(`/leads/${lead.id}`)}
                     className="cursor-pointer border-t border-slate-100 transition-colors hover:bg-slate-50/70"
                   >
-                    <td className="px-4 py-3 font-medium text-slate-900">
-                      {lead.name}
-                      {typeof lead.outcomeRating === "number" && (
-                        <span className="ml-2 text-xs text-amber-600">
-                          ⭐ {lead.outcomeRating}/5
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={lead.name} size="md" />
+                        <span className="font-semibold text-slate-900">
+                          {lead.name}
+                          {typeof lead.outcomeRating === "number" && (
+                            <span className="ml-2 text-xs font-medium text-amber-600">
+                              ⭐ {lead.outcomeRating}/5
+                            </span>
+                          )}
                         </span>
-                      )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-slate-700">{lead.phone}</td>
                     <td className="px-4 py-3 text-slate-600">

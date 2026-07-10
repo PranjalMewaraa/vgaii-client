@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import useSWR from "swr";
 import {
   Activity,
   BarChart3,
@@ -12,6 +13,7 @@ import {
   IndianRupee,
   LayoutDashboard,
   MessageSquare,
+  Plus,
   Settings,
   Stethoscope,
   UserRound,
@@ -65,11 +67,24 @@ export default function Sidebar({
   const pathname = usePathname();
   const user = useStoredUser();
 
-  const sectionLabel =
-    user?.role === "SUPER_ADMIN" ? "PLATFORM" : "CLIENT";
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const sectionLabel = isSuperAdmin ? "PLATFORM" : "CLIENT";
 
   const initial = (user?.name || user?.email || "?").charAt(0).toUpperCase();
   const displayName = user?.name || user?.email?.split("@")[0] || "User";
+
+  // Only client admins reliably have a dashboard payload (which carries the
+  // Google business name). Everyone else falls back to a neutral label — we
+  // never fabricate a clinic name.
+  const { data: dash } = useSWR<{ businessInfo?: { name?: string } | null }>(
+    user?.role === "CLIENT_ADMIN" ? "/api/dashboard" : null,
+  );
+
+  const workspaceName = isSuperAdmin
+    ? "Platform"
+    : dash?.businessInfo?.name || "Your workspace";
+  const workspaceSub = isSuperAdmin ? "All clients" : "Main branch";
+  const workspaceHref = isSuperAdmin ? "/admin/clients" : "/settings";
 
   return (
     <>
@@ -97,6 +112,28 @@ export default function Sidebar({
               Practice CRM
             </span>
           </div>
+        </div>
+
+        <div className="px-3 pb-1">
+          <Link
+            href={workspaceHref}
+            onClick={onClose}
+            title="Workspace settings"
+            className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm transition-colors hover:bg-slate-50"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
+              {isSuperAdmin ? <Building2 size={18} /> : <Plus size={18} />}
+            </span>
+            <span className="min-w-0 flex-1 leading-tight">
+              <span className="block truncate text-sm font-semibold text-slate-900">
+                {workspaceName}
+              </span>
+              <span className="block truncate text-[11px] font-medium text-slate-400">
+                {workspaceSub}
+              </span>
+            </span>
+            <ChevronsUpDown size={15} className="shrink-0 text-slate-300" />
+          </Link>
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-2">
