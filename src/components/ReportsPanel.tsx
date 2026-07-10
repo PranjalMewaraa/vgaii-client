@@ -255,6 +255,7 @@ export default function ReportsPanel() {
         />
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="text-sm font-semibold tracking-tight text-slate-900">
           Appointment outcomes
@@ -334,6 +335,7 @@ export default function ReportsPanel() {
           </div>
         )}
       </section>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
