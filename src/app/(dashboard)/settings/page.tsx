@@ -116,7 +116,7 @@ function SettingsPageInner() {
           </p>
         </div>
 
-        <div className="space-y-4 p-5">
+        <div className="grid gap-4 p-5 sm:grid-cols-3">
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Name
