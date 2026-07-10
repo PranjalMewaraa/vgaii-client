@@ -21,15 +21,22 @@ export default function ChartCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div>
-        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-        {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+        <h2 className="text-sm font-semibold tracking-tight text-slate-900">
+          {title}
+        </h2>
+        {subtitle && <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>}
       </div>
       {empty ? (
-        <p className="mt-4 text-xs text-slate-500">No data for this range.</p>
+        <div
+          className="mt-3 flex items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50"
+          style={{ height }}
+        >
+          <p className="text-xs text-slate-400">No data for this range.</p>
+        </div>
       ) : (
-        <div className="mt-3" style={{ height }}>
+        <div className="mt-4" style={{ height }}>
           {children}
         </div>
       )}

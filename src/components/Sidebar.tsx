@@ -77,25 +77,30 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-slate-200 bg-white transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200/80 bg-white transition-transform duration-200 md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
+        <div className="flex items-center gap-2.5 px-5 py-4">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-sm shadow-indigo-600/30">
             V
           </div>
-          <span className="text-sm font-bold tracking-wide text-slate-900">
-            VGAII-CRM
-          </span>
+          <div className="leading-tight">
+            <span className="block text-sm font-semibold tracking-tight text-slate-900">
+              VGAII
+            </span>
+            <span className="block text-[11px] font-medium text-slate-400">
+              Practice CRM
+            </span>
+          </div>
         </div>
 
-        <div className="flex-1 px-3 py-5">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        <div className="flex-1 overflow-y-auto px-3 py-2">
+          <p className="px-3 pb-2 pt-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
             {sectionLabel}
           </p>
 
-          <nav className="space-y-1">
+          <nav className="space-y-0.5">
             {(user?.role === "SUPER_ADMIN" ? SUPER_ADMIN_NAV : CLIENT_NAV)
               .filter(item => isVisible(item, user))
               .map(item => {
@@ -109,16 +114,24 @@ export default function Sidebar({
                     key={item.href}
                     href={item.href}
                     onClick={onClose}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                    aria-current={active ? "page" : undefined}
+                    className={`group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                       active
-                        ? "bg-indigo-50 font-semibold text-indigo-700"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
                     }`}
                   >
+                    {active && (
+                      <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-indigo-600" />
+                    )}
                     <Icon
                       size={18}
                       strokeWidth={active ? 2.25 : 2}
-                      className={active ? "text-indigo-600" : "text-slate-400"}
+                      className={
+                        active
+                          ? "text-indigo-600"
+                          : "text-slate-400 transition-colors group-hover:text-slate-500"
+                      }
                     />
                     <span>{item.label}</span>
                   </Link>

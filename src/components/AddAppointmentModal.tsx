@@ -85,26 +85,26 @@ function Shell({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-8 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+        className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
               Add appointment
             </h2>
-            <p className="text-xs text-slate-500">{subtitle}</p>
+            <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
             aria-label="Close"
           >
             ✕
@@ -131,7 +131,7 @@ function Shell({
 
         <div className="min-h-0 flex-1 overflow-auto">
           {configLoading ? (
-            <p className="px-4 py-6 text-sm text-slate-500">Loading…</p>
+            <p className="px-5 py-6 text-sm text-slate-500">Loading…</p>
           ) : effectiveMode === "self" ? (
             <ManualForm
               onClose={onClose}
@@ -169,7 +169,7 @@ function ModeTab({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex-1 border-b-2 px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`flex-1 border-b-2 px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
         active
           ? "border-indigo-600 text-indigo-700"
           : "border-transparent text-slate-500 hover:text-slate-700"
@@ -326,10 +326,10 @@ function ManualForm({
     <form
       onSubmit={submit}
       data-tour="appt-modal-form"
-      className="px-4 py-4"
+      className="px-5 py-4"
     >
-      <div className="space-y-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                 Name *
@@ -338,7 +338,7 @@ function ManualForm({
                 value={name}
                 onChange={e => setName(e.target.value)}
                 autoFocus
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
             <label className="block">
@@ -349,7 +349,7 @@ function ManualForm({
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 inputMode="tel"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
           </div>
@@ -376,7 +376,7 @@ function ManualForm({
                 type="datetime-local"
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
           )}
@@ -389,11 +389,11 @@ function ManualForm({
               value={email}
               onChange={e => setEmail(e.target.value)}
               type="email"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                 Age
@@ -402,7 +402,7 @@ function ManualForm({
                 value={age}
                 onChange={e => setAge(e.target.value)}
                 inputMode="numeric"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
             <label className="block">
@@ -412,7 +412,7 @@ function ManualForm({
               <select
                 value={gender}
                 onChange={e => setGender(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               >
                 <option value="">—</option>
                 <option value="male">Male</option>
@@ -437,7 +437,7 @@ function ManualForm({
                 <button
                   type="button"
                   onClick={clearLead}
-                  className="text-xs text-slate-500 hover:text-slate-700"
+                  className="text-xs text-slate-500 transition-colors hover:text-slate-700"
                 >
                   Unlink
                 </button>
@@ -452,7 +452,7 @@ function ManualForm({
                   }}
                   onFocus={() => setSearchOpen(true)}
                   placeholder="Search by name or phone…"
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 />
                 {showHits && (
                   <ul className="absolute left-0 right-0 z-10 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
@@ -461,7 +461,7 @@ function ManualForm({
                         <button
                           type="button"
                           onClick={() => pickLead(hit)}
-                          className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+                          className="block w-full px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50"
                         >
                           <span className="font-medium text-slate-900">
                             {hit.name}
@@ -486,13 +486,13 @@ function ManualForm({
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={2}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
         </div>
 
         {error && (
-          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+          <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
             {error}
           </p>
         )}
@@ -501,14 +501,14 @@ function ManualForm({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+          className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={busy}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
         >
           {busy ? "Adding…" : "Add appointment"}
         </button>

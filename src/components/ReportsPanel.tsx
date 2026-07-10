@@ -153,14 +153,14 @@ export default function ReportsPanel() {
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <div
         className="flex flex-wrap items-end justify-between gap-3"
         data-tour="reports-charts"
       >
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Reports</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Reports</h2>
+          <p className="mt-1 text-sm text-slate-500">
             Funnel, source attribution, and clinical outcomes for the
             selected period.
           </p>
@@ -197,7 +197,7 @@ export default function ReportsPanel() {
       </div>
 
       {preset === "custom" && (
-        <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+        <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               From
@@ -206,7 +206,7 @@ export default function ReportsPanel() {
               type="date"
               value={fromCustom}
               onChange={e => setFromCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
           <label className="block">
@@ -217,7 +217,7 @@ export default function ReportsPanel() {
               type="date"
               value={toCustom}
               onChange={e => setToCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
         </div>
@@ -255,8 +255,8 @@ export default function ReportsPanel() {
         />
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-        <h3 className="text-base font-semibold text-slate-900">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-semibold tracking-tight text-slate-900">
           Appointment outcomes
         </h3>
         <p className="text-xs text-slate-500">
@@ -280,9 +280,9 @@ export default function ReportsPanel() {
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h3 className="text-base font-semibold text-slate-900">
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-5 py-3.5">
+          <h3 className="text-sm font-semibold tracking-tight text-slate-900">
             Source attribution
           </h3>
           <p className="text-xs text-slate-500">
@@ -290,41 +290,41 @@ export default function ReportsPanel() {
           </p>
         </div>
         {sources.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">
+          <p className="px-5 py-4 text-sm text-slate-500">
             No leads captured in this range.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-2 text-left">Source</th>
-                  <th className="px-4 py-2 text-right">Leads</th>
-                  <th className="px-4 py-2 text-right">Booked</th>
-                  <th className="px-4 py-2 text-right">Visited</th>
-                  <th className="px-4 py-2 text-right">Lost</th>
-                  <th className="px-4 py-2 text-right">Conversion</th>
+              <thead className="bg-slate-50/70">
+                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-3 text-left">Source</th>
+                  <th className="px-4 py-3 text-right">Leads</th>
+                  <th className="px-4 py-3 text-right">Booked</th>
+                  <th className="px-4 py-3 text-right">Visited</th>
+                  <th className="px-4 py-3 text-right">Lost</th>
+                  <th className="px-4 py-3 text-right">Conversion</th>
                 </tr>
               </thead>
               <tbody>
                 {sources.map(s => (
-                  <tr key={s.source} className="border-t border-slate-200">
-                    <td className="px-4 py-2 font-medium text-slate-900">
+                  <tr key={s.source} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
+                    <td className="px-4 py-3 font-medium text-slate-900">
                       {s.source}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-700">
+                    <td className="px-4 py-3 text-right text-slate-700">
                       {s.total}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-700">
+                    <td className="px-4 py-3 text-right text-slate-700">
                       {s.booked}
                     </td>
-                    <td className="px-4 py-2 text-right text-emerald-700">
+                    <td className="px-4 py-3 text-right text-emerald-700">
                       {s.visited}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-500">
+                    <td className="px-4 py-3 text-right text-slate-500">
                       {s.lost}
                     </td>
-                    <td className="px-4 py-2 text-right font-semibold text-indigo-700">
+                    <td className="px-4 py-3 text-right font-semibold text-indigo-700">
                       {pct(s.visited, s.total)}
                     </td>
                   </tr>
@@ -336,10 +336,10 @@ export default function ReportsPanel() {
       </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold tracking-tight text-slate-900">
                 Patient ratings
               </h3>
               <p className="text-xs text-slate-500">
@@ -423,8 +423,8 @@ export default function ReportsPanel() {
           )}
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h3 className="text-base font-semibold text-slate-900">Funnel</h3>
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="text-sm font-semibold tracking-tight text-slate-900">Funnel</h3>
           <p className="text-xs text-slate-500">
             Each stage shows leads that reached it or moved past. {lost} also
             flagged as lost (excluded from drop-off).
@@ -464,8 +464,8 @@ export default function ReportsPanel() {
         </section>
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-        <h3 className="text-base font-semibold text-slate-900">Daily volume</h3>
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-semibold tracking-tight text-slate-900">Daily volume</h3>
         <p className="text-xs text-slate-500">
           Leads captured and appointments dated for each day in the range.
         </p>
@@ -519,12 +519,12 @@ function Stat({
   tone?: "warn";
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </p>
       <p
-        className={`mt-1 text-lg font-bold ${
+        className={`mt-1 text-2xl font-semibold tracking-tight ${
           tone === "warn" ? "text-amber-600" : "text-slate-900"
         }`}
       >

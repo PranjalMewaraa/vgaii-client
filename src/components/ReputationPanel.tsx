@@ -49,11 +49,11 @@ export default function ReputationPanel({
     typeof businessInfo.totalReviews === "number";
 
   return (
-    <section className="flex h-full flex-col rounded-lg border border-slate-200 bg-white">
-      <header className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-2.5">
+    <section className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <header className="flex items-center justify-between gap-2 border-b border-slate-200 px-5 py-3.5">
         <div>
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+          <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100">
               <Star size={14} className="fill-current" />
             </span>
             Reputation
@@ -73,7 +73,7 @@ export default function ReputationPanel({
 
       <div className="grid flex-1 grid-cols-1 divide-y divide-slate-200 md:grid-cols-2 md:divide-x md:divide-y-0">
         {/* Google reviews */}
-        <div className="px-4 py-2.5">
+        <div className="px-5 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Google Business
           </p>
@@ -107,7 +107,7 @@ export default function ReputationPanel({
         </div>
 
         {/* Internal feedback */}
-        <div className="px-4 py-2.5">
+        <div className="px-5 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Internal feedback
           </p>
@@ -169,7 +169,7 @@ function Pill({
     red: "bg-red-50 text-red-700",
     emerald: "bg-emerald-50 text-emerald-700",
     indigo: "bg-indigo-50 text-indigo-700",
-    slate: "bg-slate-100 text-slate-600",
+    slate: "bg-slate-50 text-slate-600 ring-1 ring-inset ring-slate-200",
   };
   return (
     <span

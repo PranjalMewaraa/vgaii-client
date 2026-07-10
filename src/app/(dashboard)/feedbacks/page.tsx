@@ -70,16 +70,16 @@ function FeedbacksPageInner() {
   const [tab, setTab] = useState<Tab>("internal");
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header>
-        <h1 className="text-lg font-bold text-slate-900">Feedbacks</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Feedbacks</h1>
+        <p className="mt-1 text-sm text-slate-500">
           Internal post-visit feedback alongside public reviews from your
           Google Business listing.
         </p>
       </header>
 
-      <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs">
+      <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs shadow-sm">
         <TabButton
           active={tab === "internal"}
           onClick={() => setTab("internal")}
@@ -162,10 +162,10 @@ function InternalFeedbacks() {
   const openCount = rows.filter(r => r.status === "open").length;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-2.5">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3.5">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             All Feedbacks
           </h2>
           <p className="text-xs text-slate-500">
@@ -173,7 +173,7 @@ function InternalFeedbacks() {
           </p>
         </div>
 
-        <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-xs">
+        <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-xs shadow-sm">
           {(["all", "open", "resolved"] as const).map(f => (
             <button
               key={f}
@@ -196,14 +196,14 @@ function InternalFeedbacks() {
       ) : visible.length === 0 ? (
         <p className="px-4 py-3 text-sm text-slate-500">No feedback yet.</p>
       ) : (
-        <ul className="divide-y divide-slate-200">
+        <ul className="divide-y divide-slate-100">
           {visible.map(f => {
             const date = f.submittedAt || f.createdAt;
             const ratingTone =
               f.rating === 1 ? "text-red-600" : "text-amber-600";
 
             return (
-              <li key={f.id} className="px-4 py-3">
+              <li key={f.id} className="px-5 py-4 transition-colors hover:bg-slate-50/70">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -257,7 +257,7 @@ function InternalFeedbacks() {
                       type="button"
                       onClick={() => resolve(f.id)}
                       disabled={busyId === f.id}
-                      className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                      className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
                     >
                       {busyId === f.id ? "Resolving…" : "Mark resolved"}
                     </button>
@@ -368,7 +368,7 @@ function GoogleReviews() {
 
   if (!data.placeIdSet) {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-sm">
         <p className="inline-flex items-center gap-2 text-sm font-semibold text-amber-900">
           <AlertCircle size={14} />
           Google Place ID not set
@@ -397,11 +397,11 @@ function GoogleReviews() {
         data.reviews.filter(r => typeof r.rating === "number").length;
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <div>
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+          <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100">
               <Globe size={14} />
             </span>
             Google reviews
@@ -427,7 +427,7 @@ function GoogleReviews() {
           type="button"
           onClick={refresh}
           disabled={refreshing}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
         >
           <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Refreshing…" : "Refresh"}
@@ -454,7 +454,7 @@ function GoogleReviews() {
       )}
 
       {data.reviews.length > 0 && (
-        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs">
+        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs shadow-sm">
           {(["all", "5", "4", "3", "2", "1"] as const).map(f => {
             const count =
               f === "all"
@@ -479,11 +479,11 @@ function GoogleReviews() {
       )}
 
       {data.reviews.length === 0 ? null : visible.length === 0 ? (
-        <p className="rounded-lg border border-slate-200 bg-white px-5 py-6 text-sm text-slate-500">
+        <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
           No reviews match this filter.
         </p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-4">
           {visible.map(r => (
             <ReviewCard key={r.id} review={r} />
           ))}
@@ -496,7 +496,7 @@ function GoogleReviews() {
 function ReviewCard({ review }: { review: GoogleReview }) {
   const initial = (review.reviewerName ?? "?").charAt(0).toUpperCase();
   return (
-    <li className="rounded-lg border border-slate-200 bg-white p-4">
+    <li className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start gap-3">
         {review.reviewerPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element

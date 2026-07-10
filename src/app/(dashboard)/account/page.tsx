@@ -67,20 +67,20 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header>
-        <h1 className="text-lg font-bold text-slate-900">Account</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Account</h1>
+        <p className="mt-1 text-sm text-slate-500">
           Manage your sign-in details. For role or module access, ask your
           admin.
         </p>
       </header>
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">Profile</h2>
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-5 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">Profile</h2>
         </div>
-        <dl className="grid grid-cols-1 gap-4 px-4 py-3 sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
           <Row label="Name" value={user?.name ?? "—"} />
           <Row label="Email" value={user?.email ?? "—"} />
           <Row label="Role" value={user?.role ?? "—"} />
@@ -95,14 +95,14 @@ export default function AccountPage() {
         </dl>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-5 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Change password
           </h2>
           <p className="text-xs text-slate-500">{passwordPolicyDescription}</p>
         </div>
-        <form onSubmit={submit} className="space-y-3 px-4 py-3">
+        <form onSubmit={submit} className="space-y-3 p-5">
           <Field
             label="Current password"
             type="password"
@@ -128,12 +128,12 @@ export default function AccountPage() {
             required
           />
           {error && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </p>
           )}
           {success && (
-            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
               Password changed.
             </p>
           )}
@@ -146,7 +146,7 @@ export default function AccountPage() {
                 !newPassword ||
                 !confirmPassword
               }
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
             >
               {submitting ? "Updating…" : "Update password"}
             </button>
@@ -203,15 +203,15 @@ function ChangeEmailSection() {
   };
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-4 py-2.5">
-        <h2 className="text-base font-semibold text-slate-900">Change email</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-5 py-3.5">
+        <h2 className="text-sm font-semibold tracking-tight text-slate-900">Change email</h2>
         <p className="text-xs text-slate-500">
           Current: <span className="font-medium">{user?.email ?? "—"}</span>.
           You&apos;ll sign in with the new email next time.
         </p>
       </div>
-      <form onSubmit={submit} className="space-y-3 px-4 py-3">
+      <form onSubmit={submit} className="space-y-3 p-5">
         <Field
           label="New email"
           type="email"
@@ -229,12 +229,12 @@ function ChangeEmailSection() {
           required
         />
         {error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </p>
         )}
         {success && (
-          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             Email updated.
           </p>
         )}
@@ -242,7 +242,7 @@ function ChangeEmailSection() {
           <button
             type="submit"
             disabled={submitting || !newEmail || !currentPassword}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             {submitting ? "Updating…" : "Update email"}
           </button>
@@ -324,9 +324,9 @@ function OnboardingControls() {
   };
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-4 py-2.5">
-        <h2 className="text-base font-semibold text-slate-900">
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-5 py-3.5">
+        <h2 className="text-sm font-semibold tracking-tight text-slate-900">
           Onboarding tour
         </h2>
         <p className="text-xs text-slate-500">
@@ -334,12 +334,12 @@ function OnboardingControls() {
           behind from a tour you didn&apos;t finish.
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 p-5">
         <button
           type="button"
           onClick={restart}
           disabled={busy !== null}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
         >
           <Sparkles size={12} />
           {busy === "restart" ? "Restarting…" : "Restart tour"}
@@ -349,7 +349,7 @@ function OnboardingControls() {
             type="button"
             onClick={clearDemo}
             disabled={busy !== null}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-700 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
           >
             <Trash2 size={12} />
             {busy === "clear" ? "Clearing…" : "Clear demo data"}
@@ -398,7 +398,7 @@ function Field({
         onChange={e => onChange(e.target.value)}
         autoComplete={autoComplete}
         required={required}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
       />
     </label>
   );

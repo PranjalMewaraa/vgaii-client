@@ -19,36 +19,36 @@ const ACTIONS: Action[] = [
     href: "/leads?add=1",
     label: "Add Lead",
     icon: UserPlus,
-    iconClass: "bg-indigo-100 text-indigo-600",
+    iconClass: "bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100",
     hoverClass: "hover:border-indigo-200 hover:bg-indigo-50",
   },
   {
     href: "/patients?add=1",
     label: "Add Patient",
     icon: Users,
-    iconClass: "bg-emerald-100 text-emerald-600",
+    iconClass: "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100",
     hoverClass: "hover:border-emerald-200 hover:bg-emerald-50",
   },
   {
     href: "/appointments?add=1",
     label: "New Appointment",
     icon: CalendarPlus,
-    iconClass: "bg-sky-100 text-sky-600",
+    iconClass: "bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-100",
     hoverClass: "hover:border-sky-200 hover:bg-sky-50",
   },
   {
     href: "/reports",
     label: "View Reports",
     icon: BarChart3,
-    iconClass: "bg-amber-100 text-amber-600",
+    iconClass: "bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100",
     hoverClass: "hover:border-amber-200 hover:bg-amber-50",
   },
 ];
 
 export default function QuickActionsCard() {
   return (
-    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white px-4 py-3">
-      <h2 className="text-base font-semibold text-slate-900">Quick Actions</h2>
+    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-sm font-semibold tracking-tight text-slate-900">Quick Actions</h2>
       <div className="mt-3 grid flex-1 grid-cols-2 gap-2">
         {ACTIONS.map(a => {
           const Icon = a.icon;
@@ -56,7 +56,7 @@ export default function QuickActionsCard() {
             <Link
               key={a.href}
               href={a.href}
-              className={`flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-4 text-sm font-medium text-slate-700 transition ${a.hoverClass}`}
+              className={`flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-4 text-sm font-medium text-slate-700 shadow-sm transition ${a.hoverClass}`}
             >
               <span
                 className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${a.iconClass}`}

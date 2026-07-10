@@ -111,11 +111,11 @@ function LeadsPageInner() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Leads</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Leads</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Early-funnel and dropped contacts. Once a lead is{" "}
             <code className="rounded bg-slate-100 px-1">qualified</code>, they
             move to the Patients tab.
@@ -125,7 +125,7 @@ function LeadsPageInner() {
           type="button"
           onClick={() => setAddOpen(true)}
           data-tour="leads-add-btn"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
         >
           + Add lead
         </button>
@@ -140,8 +140,8 @@ function LeadsPageInner() {
         }}
       />
 
-      <div className="grid gap-3 lg:grid-cols-3">
-        <div className="grid grid-cols-2 gap-3 lg:col-span-2">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
           <StatCard
             title="Total Leads"
             value={stats.total}
@@ -172,7 +172,7 @@ function LeadsPageInner() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block flex-1 min-w-[180px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -182,7 +182,7 @@ function LeadsPageInner() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Name or phone…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
           <label className="block">
@@ -192,7 +192,7 @@ function LeadsPageInner() {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
               <option value="">All statuses</option>
               {LEAD_STATUSES.filter(
@@ -215,7 +215,7 @@ function LeadsPageInner() {
             <select
               value={sourceFilter}
               onChange={e => setSourceFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
               <option value="">All sources</option>
               {sources.map(s => (
@@ -238,31 +238,31 @@ function LeadsPageInner() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">All Leads</h2>
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">All Leads</h2>
           <span className="text-xs text-slate-500">
             {visible.length} of {leads.length}
           </span>
         </div>
 
         {isLoading ? (
-          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">
+          <p className="px-5 py-4 text-sm text-slate-500">
             No leads match these filters.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-2 text-left">Name</th>
-                  <th className="px-4 py-2 text-left">Phone</th>
-                  <th className="px-4 py-2 text-left">Source</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-right">Created</th>
-                  <th className="px-2 py-2" aria-label="Actions" />
+              <thead className="bg-slate-50/70">
+                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-3 text-left">Name</th>
+                  <th className="px-4 py-3 text-left">Phone</th>
+                  <th className="px-4 py-3 text-left">Source</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-right">Created</th>
+                  <th className="px-2 py-3" aria-label="Actions" />
                 </tr>
               </thead>
               <tbody>
@@ -270,9 +270,9 @@ function LeadsPageInner() {
                   <tr
                     key={lead.id}
                     onClick={() => router.push(`/leads/${lead.id}`)}
-                    className="cursor-pointer border-t border-slate-200 hover:bg-slate-50"
+                    className="cursor-pointer border-t border-slate-100 transition-colors hover:bg-slate-50/70"
                   >
-                    <td className="px-4 py-2.5 font-medium text-slate-900">
+                    <td className="px-4 py-3 font-medium text-slate-900">
                       {lead.name}
                       {typeof lead.outcomeRating === "number" && (
                         <span className="ml-2 text-xs text-amber-600">
@@ -280,27 +280,27 @@ function LeadsPageInner() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-700">{lead.phone}</td>
-                    <td className="px-4 py-2.5 text-slate-600">
+                    <td className="px-4 py-3 text-slate-700">{lead.phone}</td>
+                    <td className="px-4 py-3 text-slate-600">
                       {lead.source || "—"}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-4 py-3">
                       <StatusPill status={lead.status} />
                     </td>
-                    <td className="px-4 py-2.5 text-right text-xs text-slate-500">
+                    <td className="px-4 py-3 text-right text-xs text-slate-500">
                       {lead.createdAt
                         ? new Date(lead.createdAt).toLocaleDateString()
                         : "—"}
                     </td>
                     <td
-                      className="px-2 py-2.5 text-right"
+                      className="px-2 py-3 text-right"
                       onClick={e => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}`)}
-                          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-indigo-600"
                           aria-label={`View ${lead.name}`}
                           title="View"
                         >
@@ -309,7 +309,7 @@ function LeadsPageInner() {
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}?edit=1`)}
-                          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-indigo-600"
                           aria-label={`Edit ${lead.name}`}
                           title="Edit"
                         >

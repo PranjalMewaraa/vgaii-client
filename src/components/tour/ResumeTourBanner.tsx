@@ -60,14 +60,14 @@ export default function ResumeTourBanner() {
         <button
           type="button"
           onClick={handleResume}
-          className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
+          className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
         >
           Resume tour
         </button>
         <button
           type="button"
           onClick={handleSkip}
-          className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
+          className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-700 shadow-sm transition-colors hover:bg-indigo-100"
         >
           <X size={12} />
           Skip & clean up

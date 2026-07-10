@@ -59,11 +59,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Dashboard</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
             Overview of your leads, patients, and reputation.
           </p>
         </div>
@@ -71,9 +73,9 @@ export default function Dashboard() {
           type="button"
           onClick={() => mutate()}
           disabled={isLoading}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60"
         >
-          <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
+          <RefreshCw size={13} className={isLoading ? "animate-spin" : ""} />
           Refresh
         </button>
       </header>
@@ -81,7 +83,7 @@ export default function Dashboard() {
       {/* Row 1: GMB · Quick Actions · Overview. On tablet (md) the GMB
           card spans the full row and Quick Actions / Overview share the
           row below. On lg+ they all sit together. */}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="md:col-span-2">
           <BusinessInfoCard
             businessInfo={data.businessInfo}
@@ -104,7 +106,7 @@ export default function Dashboard() {
       </div>
 
       {/* Row 2: Reputation · Next appointment */}
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         <div className="md:col-span-2">
           <ReputationPanel
             businessInfo={data.businessInfo}
@@ -117,7 +119,7 @@ export default function Dashboard() {
       </div>
 
       {/* Row 3: leads trend + subscription */}
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         <div className="md:col-span-2">
           <LeadsTrendChart data={data.weeklyLeads ?? []} />
         </div>

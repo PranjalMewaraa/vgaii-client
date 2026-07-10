@@ -125,11 +125,11 @@ function AdminClientsPageInner() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Clients</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Clients</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Every client on the platform with their team, integrations, and
             webhooks. Click a row to expand. Use Impersonate to view the
             panel as that user.
@@ -137,7 +137,7 @@ function AdminClientsPageInner() {
         </div>
         <Link
           href="/admin/clients/new"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
         >
           <Plus size={14} />
           Onboard new clinic
@@ -145,16 +145,16 @@ function AdminClientsPageInner() {
       </header>
 
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       )}
 
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-5 py-3.5">
+          <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
               <Building2 size={14} />
             </span>
             All Clients
@@ -165,11 +165,11 @@ function AdminClientsPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
         ) : clients.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">No clients yet.</p>
+          <p className="px-5 py-4 text-sm text-slate-500">No clients yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-200">
+          <ul className="divide-y divide-slate-100">
             {clients.map(c => {
               const isOpen = expanded.has(c.id);
               const subStyle =
@@ -180,7 +180,7 @@ function AdminClientsPageInner() {
                   <button
                     type="button"
                     onClick={() => toggle(c.id)}
-                    className="flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-between gap-4 px-5 py-3 text-left transition-colors hover:bg-slate-50/70"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -250,7 +250,7 @@ function AdminClientsPageInner() {
                   </button>
 
                   {isOpen && (
-                    <div className="space-y-3 bg-slate-50/60 px-6 pb-5 pt-1">
+                    <div className="space-y-4 bg-slate-50/60 px-6 pb-5 pt-1">
                       <ClientAdminBlock
                         client={c}
                         busyId={busyId}
@@ -312,7 +312,7 @@ function ClientAdminBlock({
   onUpdated: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -337,7 +337,7 @@ function ClientAdminBlock({
             type="button"
             onClick={() => onImpersonate(client.admin!.id)}
             disabled={busyId === client.admin.id}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             <UserRound size={12} />
             {busyId === client.admin.id ? "Switching…" : "Impersonate"}
@@ -367,7 +367,7 @@ function ClientStaffBlock({
   onUpdated: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Users size={11} />
@@ -377,7 +377,7 @@ function ClientStaffBlock({
       {staff.length === 0 ? (
         <p className="px-4 py-3 text-sm text-slate-500">No staff yet.</p>
       ) : (
-        <ul className="divide-y divide-slate-200">
+        <ul className="divide-y divide-slate-100">
           {staff.map(s => (
             <li
               key={s.id}
@@ -405,7 +405,7 @@ function ClientStaffBlock({
                 type="button"
                 onClick={() => onImpersonate(s.id)}
                 disabled={busyId === s.id}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
               >
                 <UserRound size={12} />
                 {busyId === s.id ? "Switching…" : "Impersonate"}
@@ -518,7 +518,7 @@ function UserSecurityActions({
         <button
           type="button"
           onClick={() => open("password")}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
         >
           <KeyRound size={11} />
           Reset password
@@ -526,7 +526,7 @@ function UserSecurityActions({
         <button
           type="button"
           onClick={() => open("email")}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
         >
           <Pencil size={11} />
           Change email
@@ -545,14 +545,14 @@ function UserSecurityActions({
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="≥8 chars, letters + a digit"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
           <button
             type="button"
             onClick={resetPassword}
             disabled={busy || password.length < 8}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             {busy ? "Saving…" : "Set password"}
           </button>
@@ -570,14 +570,14 @@ function UserSecurityActions({
               value={newEmail}
               onChange={e => setNewEmail(e.target.value)}
               placeholder="user@example.com"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
           <button
             type="button"
             onClick={changeEmail}
             disabled={busy || !newEmail.trim()}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             {busy ? "Saving…" : "Save email"}
           </button>
@@ -648,7 +648,7 @@ function ClientIntegrationsBlock({
   };
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Plug size={11} />
@@ -689,7 +689,7 @@ function ClientIntegrationsBlock({
               <button
                 type="button"
                 onClick={cancel}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
               >
                 Cancel
               </button>
@@ -697,7 +697,7 @@ function ClientIntegrationsBlock({
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
               >
                 <Check size={12} />
                 {saving ? "Saving…" : "Save"}
@@ -781,7 +781,7 @@ function ClientWebhooksBlock({
   };
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Webhook size={11} />
@@ -791,7 +791,7 @@ function ClientWebhooksBlock({
           type="button"
           onClick={rotate}
           disabled={rotating}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
         >
           <RotateCcw size={12} />
           {rotating ? "Rotating…" : "Rotate key"}
@@ -984,7 +984,7 @@ function WebhookRow({
   const display = mode === "query" ? queryUrl : url;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -1158,7 +1158,7 @@ function CopyButton({ value }: { value: string }) {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copied" : "Copy"}
@@ -1197,7 +1197,7 @@ function Field({
         required={required}
         minLength={minLength}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
       />
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </label>
@@ -1228,13 +1228,13 @@ function PlaceIdField({
             value={value}
             onChange={e => onChange(e.target.value)}
             placeholder="ChIJ…"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           />
           <button
             type="button"
             onClick={() => setOpen(true)}
             title="Search a business and grab its Place ID"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
           >
             <MapPin size={12} />
             Locate

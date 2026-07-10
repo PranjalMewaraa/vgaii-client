@@ -86,32 +86,32 @@ function Form({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-6 backdrop-blur-sm"
       onClick={onClose}
     >
       <form
         onClick={e => e.stopPropagation()}
         onSubmit={submit}
-        className="w-full max-w-md max-h-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+        className="w-full max-w-md max-h-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Add lead</h2>
-            <p className="text-xs text-slate-500">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">Add lead</h2>
+            <p className="mt-1 text-xs text-slate-500">
               New leads start in the <code className="rounded bg-slate-100 px-1">new</code> status.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
             aria-label="Close"
           >
             ✕
           </button>
         </div>
 
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-4">
           <label className="block">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Name *
@@ -120,7 +120,7 @@ function Form({
               value={name}
               onChange={e => setName(e.target.value)}
               autoFocus
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
           <label className="block">
@@ -131,7 +131,7 @@ function Form({
               value={phone}
               onChange={e => setPhone(e.target.value)}
               inputMode="tel"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
           <label className="block">
@@ -141,7 +141,7 @@ function Form({
             <input
               value={area}
               onChange={e => setArea(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
           <label className="block">
@@ -152,13 +152,13 @@ function Form({
               value={source}
               onChange={e => setSource(e.target.value)}
               placeholder="walk-in, referral, instagram…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
           </label>
         </div>
 
         {error && (
-          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+          <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
             {error}
           </p>
         )}
@@ -167,14 +167,14 @@ function Form({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             {busy ? "Adding…" : "Add lead"}
           </button>

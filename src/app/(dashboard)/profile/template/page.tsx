@@ -126,11 +126,11 @@ function ProfileTemplatePageInner() {
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Profile</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Profile</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Choose the visual style of your public landing page. Your
             content (text, images, services) carries over between styles.
           </p>
@@ -140,7 +140,7 @@ function ProfileTemplatePageInner() {
             href={previewHref}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Preview ↗
           </a>
@@ -150,29 +150,29 @@ function ProfileTemplatePageInner() {
       <ProfileSubNav />
 
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       )}
       {savedTick > 0 && !error && (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           Template switched to <strong>{labelFor(profile.template)}</strong>.
           Open the preview to see it live.
         </p>
       )}
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">Template</h2>
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-5 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">Template</h2>
           <p className="text-xs text-slate-500">
             Tap a card to switch. Saves immediately — no separate Save
             button.
           </p>
         </div>
-        <div className="px-4 py-3">
+        <div className="p-5">
           <div
             data-tour="profile-templates"
-            className="grid grid-cols-1 gap-3 md:grid-cols-3"
+            className="grid grid-cols-1 gap-4 md:grid-cols-3"
           >
             {TEMPLATE_OPTIONS.map(opt => {
               const isActive = profile.template === opt.id;
@@ -184,14 +184,14 @@ function ProfileTemplatePageInner() {
                   onClick={() => pickTemplate(opt.id)}
                   disabled={isSaving}
                   aria-pressed={isActive}
-                  className={`group flex flex-col gap-3 rounded-xl border-2 p-4 text-left transition disabled:cursor-wait ${
+                  className={`group flex flex-col gap-3 rounded-2xl border-2 p-4 text-left shadow-sm transition hover:shadow-md disabled:cursor-wait ${
                     isActive
                       ? "border-indigo-600 ring-2 ring-indigo-100"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-900">
+                    <span className="text-sm font-semibold tracking-tight text-slate-900">
                       {opt.label}
                     </span>
                     <div className="flex items-center gap-1">

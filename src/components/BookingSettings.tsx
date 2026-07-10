@@ -56,7 +56,7 @@ export default function BookingSettings() {
 
   if (loading) {
     return (
-      <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+      <section className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 shadow-sm">
         Loading booking settings…
       </section>
     );
@@ -101,11 +101,11 @@ export default function BookingSettings() {
   };
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">Booking</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">Booking</h2>
+          <p className="mt-1 text-sm text-slate-500">
             Self-hosted appointment slots. When on, staff book patients
             straight into your available slots.
           </p>
@@ -121,7 +121,7 @@ export default function BookingSettings() {
         </label>
       </div>
 
-      <div className="space-y-4 px-4 py-3">
+      <div className="space-y-5 px-5 py-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Timezone">
             <select
@@ -173,7 +173,7 @@ export default function BookingSettings() {
         </div>
 
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Working hours
           </p>
           <div className="mt-2 space-y-2">
@@ -194,7 +194,7 @@ export default function BookingSettings() {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-2">
+      <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50/70 px-5 py-3.5">
         <span className="text-xs text-slate-500">
           {error ? null : savedAt ? "Saved." : "Changes apply after save."}
         </span>
@@ -202,13 +202,13 @@ export default function BookingSettings() {
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save booking settings"}
         </button>
       </div>
       {error && (
-        <p className="border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <p className="border-t border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
           {error}
         </p>
       )}
@@ -231,7 +231,7 @@ function DayRow({
   const add = () => onChange([...ranges, { open: "10:00", close: "13:00" }]);
 
   return (
-    <div className="flex flex-wrap items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+    <div className="flex flex-wrap items-start gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 shadow-sm">
       <span className="w-24 pt-1.5 text-sm font-medium text-slate-700">
         {DAY_LABEL[day]}
       </span>
@@ -242,7 +242,7 @@ function DayRow({
         {ranges.map((r, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1"
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-sm"
           >
             <input
               type="time"
@@ -260,7 +260,7 @@ function DayRow({
             <button
               type="button"
               onClick={() => remove(i)}
-              className="ml-1 text-slate-400 hover:text-red-600"
+              className="ml-1 text-slate-400 transition-colors hover:text-red-600"
               aria-label="Remove range"
             >
               ✕
@@ -270,7 +270,7 @@ function DayRow({
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
+          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-indigo-600 shadow-sm transition-colors hover:bg-indigo-50"
         >
           + Add
         </button>
@@ -288,14 +288,14 @@ function BlackoutEditor({
 }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         Blackout dates (fully closed)
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {dates.map((d, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1"
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-sm"
           >
             <input
               type="date"
@@ -308,7 +308,7 @@ function BlackoutEditor({
             <button
               type="button"
               onClick={() => onChange(dates.filter((_, idx) => idx !== i))}
-              className="text-slate-400 hover:text-red-600"
+              className="text-slate-400 transition-colors hover:text-red-600"
               aria-label="Remove date"
             >
               ✕
@@ -322,7 +322,7 @@ function BlackoutEditor({
             const v = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
             onChange([...dates, v]);
           }}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
+          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-indigo-600 shadow-sm transition-colors hover:bg-indigo-50"
         >
           + Add date
         </button>
@@ -332,7 +332,7 @@ function BlackoutEditor({
 }
 
 const selectCls =
-  "mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
+  "mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
 
 function Field({
   label,
@@ -343,7 +343,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </span>
       {children}

@@ -14,11 +14,11 @@ const KIND_LABELS: Record<AttachmentKind, string> = {
 };
 
 const KIND_BADGE: Record<AttachmentKind, string> = {
-  prescription: "bg-indigo-100 text-indigo-700",
-  lab_report: "bg-emerald-100 text-emerald-700",
-  scan: "bg-violet-100 text-violet-700",
-  xray: "bg-amber-100 text-amber-700",
-  other: "bg-slate-100 text-slate-700",
+  prescription: "bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-100",
+  lab_report: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-100",
+  scan: "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-100",
+  xray: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-100",
+  other: "bg-slate-50 text-slate-600 ring-1 ring-inset ring-slate-200",
 };
 
 const ALLOWED_MIME = [
@@ -72,8 +72,8 @@ const isImage = (mime: string) => mime.startsWith("image/");
 
 const FileGlyph = ({ mime }: { mime: string }) => (
   <span
-    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-      isImage(mime) ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"
+    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ${
+      isImage(mime) ? "bg-violet-50 text-violet-700 ring-violet-100" : "bg-slate-50 text-slate-600 ring-slate-200"
     }`}
     aria-hidden
   >
@@ -296,7 +296,7 @@ export default function AttachmentsSection({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+    <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Records {list.length > 0 ? `(${list.length})` : ""}
@@ -307,7 +307,7 @@ export default function AttachmentsSection({
             <select
               value={defaultKind}
               onChange={e => setDefaultKind(e.target.value as AttachmentKind)}
-              className="rounded border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 outline-none focus:border-indigo-500"
+              className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             >
               {(Object.keys(KIND_LABELS) as AttachmentKind[]).map(k => (
                 <option key={k} value={k}>
@@ -322,7 +322,7 @@ export default function AttachmentsSection({
       {loading ? (
         <p className="mt-2 text-xs text-slate-500">Loading…</p>
       ) : loadError ? (
-        <p className="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700">
+        <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
           {loadError}
         </p>
       ) : list.length === 0 && !canEdit ? null : list.length === 0 ? (
@@ -366,7 +366,7 @@ export default function AttachmentsSection({
                 <button
                   type="button"
                   onClick={() => deleteAttachment(a.id, a.filename)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1 text-[11px] font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50"
                   aria-label={`Delete ${a.filename}`}
                 >
                   <Trash2 size={12} />
@@ -396,10 +396,10 @@ export default function AttachmentsSection({
                 fileInputRef.current?.click();
               }
             }}
-            className={`mt-3 cursor-pointer rounded-lg border-2 border-dashed px-3 py-5 text-center text-xs transition ${
+            className={`mt-4 cursor-pointer rounded-xl border-2 border-dashed px-3 py-6 text-center text-xs transition ${
               dragActive
                 ? "border-indigo-500 bg-indigo-50"
-                : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100"
+                : "border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-100"
             }`}
           >
             <Upload
@@ -410,7 +410,7 @@ export default function AttachmentsSection({
             <p className="font-medium text-slate-700">
               Drop multiple files here, or
             </p>
-            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
+            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors">
               <Upload size={12} />
               Choose files
             </span>
@@ -433,7 +433,7 @@ export default function AttachmentsSection({
               {uploads.map(u => (
                 <li
                   key={u.id}
-                  className="flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-[11px]"
+                  className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-[11px] shadow-sm"
                 >
                   <span className="flex-1 truncate text-slate-700">
                     {u.file.name}
@@ -459,7 +459,7 @@ export default function AttachmentsSection({
                     <button
                       type="button"
                       onClick={() => dismissUpload(u.id)}
-                      className="text-slate-400 hover:text-slate-600"
+                      className="text-slate-400 transition-colors hover:text-slate-600"
                       aria-label="Dismiss"
                     >
                       <X size={12} />

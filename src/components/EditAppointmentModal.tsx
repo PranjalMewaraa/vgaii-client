@@ -140,18 +140,18 @@ function Form({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-6 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+        className="flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
               {mode === "visit" ? "Mark visited" : "Edit appointment"}
             </h2>
             <p className="mt-0.5 inline-flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -163,16 +163,16 @@ function Form({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
             aria-label="Close"
           >
             ✕
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto px-4 py-4">
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="flex-1 overflow-auto px-5 py-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <label className="block">
                 <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Date &amp; time
@@ -181,7 +181,7 @@ function Form({
                   type="datetime-local"
                   value={date}
                   onChange={e => setDate(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 />
               </label>
               <label className="block">
@@ -191,7 +191,7 @@ function Form({
                 <select
                   value={status}
                   onChange={e => setStatus(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 >
                   <option value="scheduled">Scheduled</option>
                   <option value="completed">Visited</option>
@@ -210,7 +210,7 @@ function Form({
                 onChange={e => setDiagnosis(e.target.value)}
                 rows={2}
                 placeholder="What was diagnosed during this visit"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
 
@@ -225,7 +225,7 @@ function Form({
                 placeholder={
                   "Amoxicillin 500mg — 3 times a day for 5 days\nIbuprofen 400mg — as needed"
                 }
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
 
@@ -237,7 +237,7 @@ function Form({
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 rows={2}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
             </label>
 
@@ -245,7 +245,7 @@ function Form({
               <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                 Vitals (optional)
               </p>
-              <div className="mt-1 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div className="mt-1 grid grid-cols-2 gap-4 md:grid-cols-4">
                 <VitalInput label="Weight (kg)" value={weight} onChange={setWeight} />
                 <VitalInput label="Sugar (mg/dL)" value={sugar} onChange={setSugar} />
                 <VitalInput label="BP Systolic" value={bpSys} onChange={setBpSys} placeholder="120" />
@@ -263,11 +263,11 @@ function Form({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Cancel
           </button>
@@ -275,7 +275,7 @@ function Form({
             type="button"
             onClick={save}
             disabled={busy}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             {busy
               ? "Saving…"
@@ -310,7 +310,7 @@ function VitalInput({
         onChange={e => onChange(e.target.value)}
         inputMode="decimal"
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
       />
     </label>
   );

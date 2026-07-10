@@ -37,7 +37,7 @@ export default function ImpersonationBanner() {
       <button
         type="button"
         onClick={stop}
-        className="rounded-md bg-amber-900 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-800"
+        className="rounded-md bg-amber-900 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-800"
       >
         Stop impersonating
       </button>

@@ -9,11 +9,11 @@ type StatCardProps = {
 };
 
 const ICON_BG: Record<NonNullable<StatCardProps["color"]>, string> = {
-  green: "bg-emerald-100 text-emerald-600",
-  red: "bg-red-100 text-red-600",
-  amber: "bg-amber-100 text-amber-600",
-  indigo: "bg-indigo-100 text-indigo-600",
-  sky: "bg-sky-100 text-sky-600",
+  green: "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100",
+  red: "bg-red-50 text-red-600 ring-1 ring-inset ring-red-100",
+  amber: "bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100",
+  indigo: "bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100",
+  sky: "bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-100",
 };
 
 export default function StatCard({
@@ -24,24 +24,26 @@ export default function StatCard({
   hint,
 }: StatCardProps) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="group flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
       {Icon && (
         <span
-          className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${
-            color ? ICON_BG[color] : "bg-slate-100 text-slate-500"
+          className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+            color
+              ? ICON_BG[color]
+              : "bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-100"
           }`}
         >
-          <Icon size={20} />
+          <Icon size={20} strokeWidth={2} />
         </span>
       )}
       <div className="min-w-0">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           {title}
         </p>
-        <p className="mt-0.5 text-2xl font-bold leading-tight text-slate-900">
+        <p className="mt-1 text-2xl font-semibold leading-none tracking-tight text-slate-900">
           {value}
         </p>
-        {hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}
+        {hint && <p className="mt-1.5 text-xs text-slate-400">{hint}</p>}
       </div>
     </div>
   );

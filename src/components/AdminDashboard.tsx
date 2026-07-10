@@ -126,27 +126,27 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Platform overview
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500">
             Aggregate health across every client on the platform.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/activity"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             <Activity size={14} />
             Activity log
           </Link>
           <Link
             href="/admin/clients"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
           >
             <Plus size={14} />
             New client
@@ -290,13 +290,13 @@ function SubscriptionAttention({ rows }: { rows: AttentionRow[] }) {
   const expiredCount = rows.filter(r => r.severity === "expired").length;
   const weekCount = rows.filter(r => r.severity === "this_week").length;
   return (
-    <section className="rounded-lg border border-amber-200 bg-amber-50/60 p-4">
+    <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100">
           <AlertCircle size={14} />
         </span>
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Subscriptions needing attention
           </h2>
           <p className="text-xs text-slate-600">
@@ -310,7 +310,7 @@ function SubscriptionAttention({ rows }: { rows: AttentionRow[] }) {
           <li key={row.id}>
             <Link
               href={`/admin/clients/${row.id}`}
-              className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm transition hover:brightness-95 ${SEVERITY_TONE[row.severity]}`}
+              className={`flex items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-sm transition hover:brightness-95 ${SEVERITY_TONE[row.severity]}`}
             >
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">
@@ -333,13 +333,13 @@ function SubscriptionAttention({ rows }: { rows: AttentionRow[] }) {
 
 function TopClients({ rows }: { rows: TopClientRow[] }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
           <TrendingUp size={14} />
         </span>
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Top clients this week
           </h2>
           <p className="text-xs text-slate-500">
@@ -348,7 +348,7 @@ function TopClients({ rows }: { rows: TopClientRow[] }) {
         </div>
       </div>
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-slate-200 px-3 py-6 text-center text-sm text-slate-500">
+        <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
           No leads recorded in the last 7 days.
         </p>
       ) : (
@@ -357,7 +357,7 @@ function TopClients({ rows }: { rows: TopClientRow[] }) {
             <li key={row.clientId}>
               <Link
                 href={`/admin/clients/${row.clientId}`}
-                className="flex items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 hover:bg-slate-50"
+                className="flex items-center gap-3 rounded-lg border border-slate-100 px-3.5 py-2.5 transition-colors hover:bg-slate-50"
               >
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
                   {i + 1}
@@ -382,14 +382,14 @@ function TopClients({ rows }: { rows: TopClientRow[] }) {
 
 function RecentActivity({ entries }: { entries: ActivityEntry[] | null }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-violet-50 text-violet-600 ring-1 ring-inset ring-violet-100">
             <Activity size={14} />
           </span>
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">
+            <h2 className="text-sm font-semibold tracking-tight text-slate-900">
               Recent activity
             </h2>
             <p className="text-xs text-slate-500">
@@ -399,7 +399,7 @@ function RecentActivity({ entries }: { entries: ActivityEntry[] | null }) {
         </div>
         <Link
           href="/activity"
-          className="text-xs font-medium text-indigo-600 hover:underline"
+          className="text-xs font-medium text-indigo-600 transition-colors hover:underline"
         >
           View all →
         </Link>
@@ -407,7 +407,7 @@ function RecentActivity({ entries }: { entries: ActivityEntry[] | null }) {
       {entries === null ? (
         <p className="text-sm text-slate-500">Loading…</p>
       ) : entries.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-slate-200 px-3 py-6 text-center text-sm text-slate-500">
+        <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
           No activity yet.
         </p>
       ) : (
@@ -415,7 +415,7 @@ function RecentActivity({ entries }: { entries: ActivityEntry[] | null }) {
           {entries.map(entry => (
             <li
               key={entry.id}
-              className="flex items-start gap-3 rounded-lg px-2 py-2 hover:bg-slate-50"
+              className="flex items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-slate-50"
             >
               <span
                 className={`mt-0.5 inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${ACTOR_BADGE[entry.actorType]}`}
@@ -456,7 +456,7 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <h2 className="mb-3 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {Icon && <Icon size={12} />}
         {title}
       </h2>

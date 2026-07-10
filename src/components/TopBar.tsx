@@ -65,49 +65,51 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
   const roleLabel = user?.role ? ROLE_LABELS[user.role] ?? user.role : "";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-2 md:gap-4 md:px-6">
+    <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-md md:gap-4 md:px-6 lg:px-8">
       <button
         type="button"
         onClick={onMenuClick}
-        className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 md:hidden"
+        className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 md:hidden"
         aria-label="Open menu"
       >
         <Menu size={18} />
       </button>
 
       <div className="min-w-0 flex-1 md:flex-initial">
-        <h1 className="truncate text-base font-bold text-slate-900 lg:text-lg">
+        <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900">
           {title}
         </h1>
       </div>
 
       {user && user.role !== "SUPER_ADMIN" && (
-        <div className="hidden flex-1 md:flex">
+        <div className="hidden flex-1 justify-center md:flex">
           <GlobalSearch />
         </div>
       )}
 
       {user && (
-        <div className="ml-auto flex items-center gap-3">
-          <span className="hidden text-sm text-slate-500 sm:block">
-            {roleLabel}
-          </span>
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          {roleLabel && (
+            <span className="hidden rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 sm:block">
+              {roleLabel}
+            </span>
+          )}
           <Link
             href="/account"
             title="Account & password"
-            className="flex items-center gap-2 rounded-full p-0.5 transition hover:bg-slate-100"
+            className="flex items-center gap-2 rounded-full py-0.5 pl-0.5 pr-1 transition-colors hover:bg-slate-100 sm:pr-2.5"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white shadow-sm shadow-indigo-600/30">
               {initial}
             </span>
-            <span className="hidden pr-2 text-sm font-medium text-slate-700 sm:block">
+            <span className="hidden max-w-[140px] truncate text-sm font-medium text-slate-700 sm:block">
               {displayName}
             </span>
           </Link>
           <button
             type="button"
             onClick={logout}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 sm:px-3"
           >
             <LogOut size={14} />
             <span className="hidden sm:inline">Logout</span>

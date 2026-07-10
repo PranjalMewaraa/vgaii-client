@@ -310,7 +310,7 @@ function PatientDetailPageInner({
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <Link
         href="/patients"
         className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline"
@@ -322,17 +322,17 @@ function PatientDetailPageInner({
       {/* HEADER: identity + primary CTA */}
       <div
         data-tour="patient-header"
-        className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3"
+        className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
       >
         <div className="flex min-w-0 items-center gap-4">
           <div
-            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-bold text-white ${avatarBg}`}
+            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-semibold text-white ${avatarBg}`}
           >
             {initials || "?"}
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate text-xl font-bold text-slate-900">
+              <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-900">
                 {lead.name}
               </h1>
               <span
@@ -357,7 +357,7 @@ function PatientDetailPageInner({
           <button
             type="button"
             onClick={() => setEditProfileOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
             aria-label="Edit patient profile"
             title="Edit patient profile"
           >
@@ -375,7 +375,7 @@ function PatientDetailPageInner({
               });
               router.push(`/finances?${params.toString()}`);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3.5 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-50"
           >
             <CreditCard size={14} />
             Record payment
@@ -383,7 +383,7 @@ function PatientDetailPageInner({
           <button
             type="button"
             onClick={() => setBookingOpen(true)}
-            className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
           >
             + Schedule appointment
           </button>
@@ -393,7 +393,7 @@ function PatientDetailPageInner({
       {/* TAB NAV */}
       <div
         data-tour="patient-tabs"
-        className="rounded-lg border border-slate-200 bg-white"
+        className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
       >
         <div className="flex border-b border-slate-200">
           {TAB_DEFS.map(({ key, label }) => {
@@ -417,11 +417,11 @@ function PatientDetailPageInner({
       </div>
 
       {tab === "overview" && (
-        <div className="grid gap-3 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3">
           {/* LEFT COLUMN — Contact + Notes */}
-          <div className="space-y-3 lg:col-span-1">
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-              <p className="text-base font-semibold text-slate-900">Contact</p>
+          <div className="space-y-4 lg:col-span-1">
+            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+              <p className="text-sm font-semibold tracking-tight text-slate-900">Contact</p>
               <dl className="mt-3 space-y-2 text-sm">
                 <ContactRow
                   icon={<Phone size={14} />}
@@ -475,9 +475,9 @@ function PatientDetailPageInner({
               )}
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-sm font-semibold tracking-tight text-slate-900">
                   Patient notes
                 </p>
                 {dirtyNotes && (
@@ -488,7 +488,7 @@ function PatientDetailPageInner({
                 value={notesDraft}
                 onChange={e => setNotesDraft(e.target.value)}
                 rows={6}
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 placeholder="Allergies, chronic conditions, preferences, follow-up reminders…"
               />
               <div className="mt-2 flex justify-end">
@@ -496,7 +496,7 @@ function PatientDetailPageInner({
                   type="button"
                   onClick={saveNotes}
                   disabled={!dirtyNotes || savingNotes}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
                 >
                   {savingNotes ? "Saving…" : "Save notes"}
                 </button>
@@ -515,13 +515,13 @@ function PatientDetailPageInner({
       )}
 
       {tab === "appointments" && (
-        <div className="space-y-3">
+        <div className="space-y-5">
           <section>
             <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Upcoming ({upcoming.length})
             </h2>
             {upcoming.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
                 No upcoming appointments.
               </div>
             ) : (
@@ -538,7 +538,7 @@ function PatientDetailPageInner({
               Past ({past.length})
             </h2>
             {past.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
                 No past appointments yet.
               </div>
             ) : (
@@ -553,7 +553,7 @@ function PatientDetailPageInner({
       )}
 
       {tab === "medical-history" && (
-        <div className="space-y-3">
+        <div className="space-y-5">
           <MedicalHistory
             appointments={past.filter(a => a.status === "completed")}
             apptCardProps={apptCardProps}
@@ -564,10 +564,10 @@ function PatientDetailPageInner({
               <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Feedback ({feedbacks.length})
               </h2>
-              <div className="rounded-lg border border-slate-200 bg-white">
-                <ul className="divide-y divide-slate-200">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <ul className="divide-y divide-slate-100">
                   {feedbacks.map(f => (
-                    <li key={f.id} className="px-4 py-2">
+                    <li key={f.id} className="px-5 py-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-slate-800">
@@ -646,9 +646,9 @@ function PatientDetailPageInner({
             onClick={e => e.stopPropagation()}
             className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
-            <div className="flex items-start justify-between border-b border-slate-200 px-4 py-2.5">
+            <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
               <div>
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-sm font-semibold tracking-tight text-slate-900">
                   Schedule appointment
                 </p>
                 <p className="text-xs text-slate-500">
@@ -665,13 +665,13 @@ function PatientDetailPageInner({
                   setBookingOpen(false);
                   load();
                 }}
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-500 hover:bg-slate-50"
+                className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Close"
               >
                 ✕
               </button>
             </div>
-            <div className="flex-1 overflow-auto px-4 py-3">
+            <div className="flex-1 overflow-auto px-5 py-4">
               <SlotBookingPane
                 leadId={lead.id}
                 name={lead.name}
@@ -808,7 +808,7 @@ function AppointmentCard({
 
   return (
     <article
-      className={`rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-2.5 ${stripe}`}
+      className={`rounded-2xl border border-slate-200 border-l-4 bg-white px-5 py-4 shadow-sm ${stripe}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <button
@@ -845,7 +845,7 @@ function AppointmentCard({
               <button
                 type="button"
                 onClick={onMarkVisited}
-                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
               >
                 Mark visited
               </button>
@@ -853,7 +853,7 @@ function AppointmentCard({
                 type="button"
                 onClick={onNoShow}
                 disabled={busy}
-                className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
               >
                 No show
               </button>
@@ -862,7 +862,7 @@ function AppointmentCard({
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Edit
           </button>
@@ -870,7 +870,7 @@ function AppointmentCard({
             type="button"
             onClick={onDelete}
             disabled={busy}
-            className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+            className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
           >
             {busy ? "…" : "Delete"}
           </button>
@@ -956,20 +956,20 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
   }, [payments]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Payment history ({payments.length})
         </h2>
         <Link
           href={`/finances?tab=payment&leadId=${encodeURIComponent(lead.id)}&name=${encodeURIComponent(lead.name)}&phone=${encodeURIComponent(lead.phone)}`}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+          className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
         >
           + Record payment
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         <SummaryTile
           label="Collected"
           value={formatRupees(totals.collected)}
@@ -989,29 +989,29 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
         />
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {isLoading ? (
-          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
         ) : payments.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">
+          <p className="px-5 py-4 text-sm text-slate-500">
             No payments recorded for this patient yet.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-2 text-left">Date</th>
-                  <th className="px-4 py-2 text-left">Items</th>
-                  <th className="px-4 py-2 text-left">Method</th>
-                  <th className="px-4 py-2 text-left">Collected by</th>
-                  <th className="px-4 py-2 text-right">Final</th>
+              <thead className="bg-slate-50/70">
+                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-3 text-left">Date</th>
+                  <th className="px-4 py-3 text-left">Items</th>
+                  <th className="px-4 py-3 text-left">Method</th>
+                  <th className="px-4 py-3 text-left">Collected by</th>
+                  <th className="px-4 py-3 text-right">Final</th>
                 </tr>
               </thead>
               <tbody>
                 {payments.map(p => (
-                  <tr key={p.id} className="border-t border-slate-200">
-                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                  <tr key={p.id} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
+                    <td className="px-4 py-3 text-xs text-slate-500">
                       {new Date(p.createdAt).toLocaleString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -1020,7 +1020,7 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-700">
+                    <td className="px-4 py-3 text-slate-700">
                       <span>{p.items.map(i => i.title).join(" + ")}</span>
                       {p.discount > 0 && (
                         <span className="ml-1 text-[11px] text-slate-500">
@@ -1028,15 +1028,15 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5">
-                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600">
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">
                         {p.paymentMethod}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                    <td className="px-4 py-3 text-xs text-slate-500">
                       {p.collectedBy?.name ?? p.collectedBy?.email ?? "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-medium text-slate-900">
+                    <td className="px-4 py-3 text-right font-medium text-slate-900">
                       {formatRupees(p.finalAmount)}
                     </td>
                   </tr>
@@ -1067,11 +1067,11 @@ function SummaryTile({
     slate: "text-slate-900",
   };
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </p>
-      <p className={`mt-0.5 text-xl font-bold leading-tight ${toneClass[tone]}`}>
+      <p className={`mt-0.5 text-xl font-semibold tracking-tight leading-tight ${toneClass[tone]}`}>
         {value}
       </p>
       {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
@@ -1128,7 +1128,7 @@ function MedicalHistory({
         <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Medical history
         </h2>
-        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
           No past visits yet. After the first appointment is completed, its
           diagnosis and medicines will appear here.
         </div>
@@ -1137,12 +1137,12 @@ function MedicalHistory({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <section data-tour="vitals-trend">
         <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Vitals trend
         </h2>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           <VitalsTrendChart
             title="Weight"
             unit="kg"
@@ -1293,14 +1293,14 @@ function DirectAppointmentView({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <Link href="/patients" className="text-sm text-indigo-600 hover:underline">
         ← Back to patients
       </Link>
 
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <div className="mb-3 flex items-center gap-2">
-          <h1 className="text-base font-bold text-slate-900">
+          <h1 className="text-base font-semibold tracking-tight text-slate-900">
             {a.name || "Unnamed"}
           </h1>
           <StatusPill status="direct" />
@@ -1318,9 +1318,9 @@ function DirectAppointmentView({
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="border-b border-slate-200 px-5 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Link to existing patient
           </h2>
           <p className="text-xs text-slate-500">
@@ -1332,12 +1332,12 @@ function DirectAppointmentView({
             if it isn&apos;t already.
           </p>
         </div>
-        <div className="px-4 py-3">
+        <div className="px-5 py-4">
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Name or phone…"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           />
           {error && (
             <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -1351,11 +1351,11 @@ function DirectAppointmentView({
             <p className="mt-3 text-xs text-slate-500">No matches.</p>
           )}
           {results.length > 0 && (
-            <ul className="mt-3 divide-y divide-slate-200 rounded-lg border border-slate-200">
+            <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               {results.map(r => (
                 <li
                   key={r.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3"
+                  className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-slate-50/70"
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-slate-900">
@@ -1370,7 +1370,7 @@ function DirectAppointmentView({
                     type="button"
                     onClick={() => link(r.id)}
                     disabled={linking === r.id}
-                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                    className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
                   >
                     {linking === r.id ? "Linking…" : "Link"}
                   </button>

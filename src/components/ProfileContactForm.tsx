@@ -37,7 +37,7 @@ const VARIANTS: Record<ContactFormVariant, VariantClasses> = {
     label:
       "block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2",
     input:
-      "block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-sm placeholder:text-slate-400 transition-all focus:border-sky-600 focus:ring-1 focus:ring-sky-600",
+      "block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-sm shadow-sm placeholder:text-slate-400 transition-all focus:border-sky-600 focus:ring-1 focus:ring-sky-600",
     successHeading: "text-base font-semibold text-slate-900",
     successLink: "mt-4 text-sm font-medium text-slate-900 hover:underline",
     button:
@@ -48,7 +48,7 @@ const VARIANTS: Record<ContactFormVariant, VariantClasses> = {
     card: "rounded-xl bg-white p-8 text-stone-800 shadow-xl",
     label: "block text-xs font-bold uppercase text-stone-500 mb-1",
     input:
-      "block w-full rounded border border-stone-200 bg-stone-50 px-4 py-3 text-sm transition focus:border-teal-700 focus:bg-white focus:outline-none",
+      "block w-full rounded border border-stone-200 bg-stone-50 px-4 py-3 text-sm shadow-sm transition focus:border-teal-700 focus:bg-white focus:outline-none",
     successHeading: "text-base font-semibold text-teal-700",
     successLink: "mt-4 text-sm font-medium text-teal-700 hover:underline",
     button:

@@ -187,7 +187,7 @@ function LeadDetailPageInner({
   const showBookingAction = status === "qualified";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <button
         type="button"
         onClick={() => router.push("/leads")}
@@ -197,11 +197,11 @@ function LeadDetailPageInner({
       </button>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-base font-bold text-slate-900">{lead.name}</h1>
+                <h1 className="text-base font-semibold tracking-tight text-slate-900">{lead.name}</h1>
                 <StatusPill status={status} />
               </div>
               <p className="text-sm text-slate-600">{lead.phone}</p>
@@ -220,7 +220,7 @@ function LeadDetailPageInner({
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Next step
           </p>
@@ -238,7 +238,7 @@ function LeadDetailPageInner({
                   type="button"
                   onClick={() => setBookingOpen(o => !o)}
                   disabled={busy}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
                 >
                   {bookingOpen ? "Hide booking" : "Book appointment"}
                 </button>
@@ -257,8 +257,8 @@ function LeadDetailPageInner({
                     disabled={busy}
                     className={
                       isRetry
-                        ? "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-                        : "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                        ? "rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
+                        : "rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
                     }
                   >
                     {TRANSITION_LABELS[next] ?? STATUS_LABELS[next]}
@@ -282,7 +282,7 @@ function LeadDetailPageInner({
       </div>
 
       {showBookingAction && bookingOpen && (
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Book appointment
@@ -316,7 +316,7 @@ function LeadDetailPageInner({
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           Internal notes
         </p>
@@ -324,7 +324,7 @@ function LeadDetailPageInner({
           value={notesDraft}
           onChange={e => setNotesDraft(e.target.value)}
           rows={4}
-          className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           placeholder="Track call attempts, customer preferences, follow-ups…"
         />
         <div className="mt-2 flex justify-end">
@@ -332,7 +332,7 @@ function LeadDetailPageInner({
             type="button"
             onClick={saveNotes}
             disabled={!dirtyNotes || savingNotes}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             {savingNotes ? "Saving…" : "Save notes"}
           </button>

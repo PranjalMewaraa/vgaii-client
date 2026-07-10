@@ -4,21 +4,21 @@ type StatusPillProps = {
 
 const STYLES: Record<string, string> = {
   // lead statuses
-  new: "bg-slate-100 text-slate-700",
-  contacted: "bg-sky-100 text-sky-700",
-  qualified: "bg-indigo-100 text-indigo-700",
-  appointment_booked: "bg-amber-100 text-amber-700",
-  visited: "bg-emerald-100 text-emerald-700",
-  lost: "bg-red-100 text-red-700",
+  new: "bg-slate-50 text-slate-600 ring-slate-200",
+  contacted: "bg-sky-50 text-sky-700 ring-sky-200",
+  qualified: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  appointment_booked: "bg-amber-50 text-amber-700 ring-amber-200",
+  visited: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  lost: "bg-red-50 text-red-700 ring-red-200",
   // appointment statuses
-  scheduled: "bg-sky-100 text-sky-700",
-  completed: "bg-emerald-100 text-emerald-700",
-  no_show: "bg-red-100 text-red-700",
-  cancelled: "bg-slate-100 text-slate-500",
+  scheduled: "bg-sky-50 text-sky-700 ring-sky-200",
+  completed: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  no_show: "bg-red-50 text-red-700 ring-red-200",
+  cancelled: "bg-slate-50 text-slate-500 ring-slate-200",
   // misc
-  direct: "bg-violet-100 text-violet-700",
-  open: "bg-amber-100 text-amber-700",
-  resolved: "bg-emerald-100 text-emerald-700",
+  direct: "bg-violet-50 text-violet-700 ring-violet-200",
+  open: "bg-amber-50 text-amber-700 ring-amber-200",
+  resolved: "bg-emerald-50 text-emerald-700 ring-emerald-200",
 };
 
 const LABELS: Record<string, string> = {
@@ -29,12 +29,12 @@ const LABELS: Record<string, string> = {
 
 export default function StatusPill({ status }: StatusPillProps) {
   if (!status) return null;
-  const cls = STYLES[status] ?? "bg-slate-100 text-slate-700";
+  const cls = STYLES[status] ?? "bg-slate-50 text-slate-600 ring-slate-200";
   const label = LABELS[status] ?? status.replace(/_/g, " ");
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider ${cls}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1 ring-inset ${cls}`}
     >
       {label}
     </span>

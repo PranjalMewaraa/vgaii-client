@@ -82,15 +82,15 @@ function FinancesPageInner() {
   const visibleTabs = TABS.filter(t => !t.adminOnly || isAdmin);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <header>
-        <h1 className="text-lg font-bold text-slate-900">Finances</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Finances</h1>
+        <p className="mt-1 text-sm text-slate-500">
           Day-to-day patient payments, clinic expenses, and reports.
         </p>
       </header>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex overflow-x-auto border-b border-slate-200">
           {visibleTabs.map(t => {
             const isActive = tab === t.key;
@@ -123,8 +123,8 @@ function FinancesPageInner() {
       {tab === "summary" && <DailySummaryTab />}
       {tab === "reports" && <ReportsTab />}
       {tab === "presets" && isAdmin && (
-        <div className="space-y-3">
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm">
+        <div className="space-y-5">
+          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm shadow-sm">
             <button
               type="button"
               onClick={() => setPresetSubTab("earning")}

@@ -241,19 +241,19 @@ function ModalContents({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
+        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
-            <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+            <h2 className="inline-flex items-center gap-2 text-base font-semibold tracking-tight text-slate-900">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
                 <MapPin size={14} />
               </span>
               Find a Place ID
@@ -266,14 +266,14 @@ function ModalContents({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50"
+            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
             aria-label="Close"
           >
             <X size={14} />
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
           {error && (
             <p className="inline-flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
@@ -290,7 +290,7 @@ function ModalContents({
           )}
 
           {place && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-sm">
               <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
                 <Check size={12} />
                 Selected
@@ -307,7 +307,7 @@ function ModalContents({
                 Place ID
               </p>
               <div className="mt-1 flex items-stretch gap-2">
-                <code className="flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs text-slate-800">
+                <code className="flex-1 truncate rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-xs text-slate-800 shadow-sm">
                   {place.id}
                 </code>
                 <CopyButton value={place.id} />
@@ -342,7 +342,7 @@ function ModalContents({
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-1">
+          <div className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
             <div
               ref={mapDivRef}
               className="w-full overflow-hidden rounded-lg"
@@ -357,7 +357,7 @@ function ModalContents({
               href={`https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(place.id)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 transition-colors hover:underline"
             >
               <ExternalLink size={12} />
               Open in Maps
@@ -371,7 +371,7 @@ function ModalContents({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
               Cancel
             </button>
@@ -384,7 +384,7 @@ function ModalContents({
                   onClose();
                 }
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Check size={12} />
               Use this Place ID
@@ -425,7 +425,7 @@ function CopyButton({ value }: { value: string }) {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copied" : "Copy"}
