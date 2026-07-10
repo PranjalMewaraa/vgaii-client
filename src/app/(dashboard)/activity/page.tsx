@@ -19,7 +19,7 @@ type Entry = {
 };
 
 const ACTOR_BADGE: Record<string, string> = {
-  user: "bg-blue-100 text-blue-700",
+  user: "bg-green-100 text-green-700",
   webhook: "bg-amber-100 text-amber-700",
   public: "bg-sky-100 text-sky-700",
   system: "bg-slate-100 text-slate-700",
@@ -128,7 +128,7 @@ function ActivityPageInner() {
             <select
               value={entityType}
               onChange={e => setEntityType(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All entities</option>
               <option value="Lead">Leads / Patients</option>
@@ -146,14 +146,14 @@ function ActivityPageInner() {
               value={actionFilter}
               onChange={e => setActionFilter(e.target.value)}
               placeholder="e.g. lead.status.changed"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           {filtersActive && (
             <button
               type="button"
               onClick={clear}
-              className="text-xs text-blue-600 transition-colors hover:underline"
+              className="text-xs text-green-600 transition-colors hover:underline"
             >
               Clear filters
             </button>

@@ -52,7 +52,7 @@ export const TEMPLATE_OPTIONS: TemplateOption[] = [
           <br />
           <span className="font-semibold text-sky-600">for your heart.</span>
         </p>
-        <div className="mt-2 inline-block rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
+        <div className="mt-2 inline-block rounded-full bg-[#1f3d2b] px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
           Book Appointment
         </div>
       </div>

@@ -54,7 +54,7 @@ export default function PremiumTemplate({
                 href={cta}
                 target={ctaIsExternal ? "_blank" : undefined}
                 rel={ctaIsExternal ? "noreferrer" : undefined}
-                className="rounded-full bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all duration-300 hover:bg-slate-700 hover:shadow active:scale-95"
+                className="rounded-full bg-[#1f3d2b] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all duration-300 hover:bg-slate-700 hover:shadow active:scale-95"
               >
                 Book Appointment
               </a>
@@ -84,7 +84,7 @@ export default function PremiumTemplate({
                     href={cta}
                     target={ctaIsExternal ? "_blank" : undefined}
                     rel={ctaIsExternal ? "noreferrer" : undefined}
-                    className="flex items-center justify-center rounded-full bg-slate-900 px-8 py-4 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-slate-700"
+                    className="flex items-center justify-center rounded-full bg-[#1f3d2b] px-8 py-4 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-slate-700"
                   >
                     Schedule Consultation
                   </a>

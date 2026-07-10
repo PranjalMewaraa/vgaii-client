@@ -147,7 +147,7 @@ function SectionTab({
       onClick={onClick}
       className={`flex-1 border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
         active
-          ? "border-blue-600 text-blue-700"
+          ? "border-green-600 text-green-700"
           : "border-transparent text-slate-500 hover:text-slate-700"
       }`}
     >
@@ -273,7 +273,7 @@ function PaymentsReport() {
               <select
                 value={method}
                 onChange={e => setMethod(e.target.value as typeof method)}
-                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 <option value="">All</option>
                 {PAYMENT_METHODS.map(m => (
@@ -291,7 +291,7 @@ function PaymentsReport() {
                 <select
                   value={staff}
                   onChange={e => setStaff(e.target.value)}
-                  className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 >
                   <option value="">Anyone</option>
                   {staffOptions.map(s => (
@@ -461,7 +461,7 @@ function ExpensesReport() {
             <select
               value={category}
               onChange={e => setCategory(e.target.value as typeof category)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All</option>
               {EXPENSE_CATEGORIES.map(c => (
@@ -595,7 +595,7 @@ function FilterBar({
             onClick={() => setPreset(p)}
             className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
               preset === p
-                ? "bg-blue-600 text-white shadow-sm"
+                ? "bg-green-600 text-white shadow-sm"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -625,7 +625,7 @@ function FilterBar({
                 type="date"
                 value={customFrom}
                 onChange={e => setCustomFrom(e.target.value)}
-                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
@@ -636,7 +636,7 @@ function FilterBar({
                 type="date"
                 value={customTo}
                 onChange={e => setCustomTo(e.target.value)}
-                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           </>
@@ -662,7 +662,7 @@ function SummaryTile({
     emerald: "text-emerald-700",
     amber: "text-amber-700",
     rose: "text-rose-700",
-    indigo: "text-blue-700",
+    indigo: "text-green-700",
     slate: "text-slate-900",
   };
   return (

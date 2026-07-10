@@ -126,7 +126,7 @@ function LeadsPageInner() {
           type="button"
           onClick={() => setAddOpen(true)}
           data-tour="leads-add-btn"
-          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
         >
           + Add lead
         </button>
@@ -183,7 +183,7 @@ function LeadsPageInner() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Name or phone…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
@@ -193,7 +193,7 @@ function LeadsPageInner() {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All statuses</option>
               {LEAD_STATUSES.filter(
@@ -216,7 +216,7 @@ function LeadsPageInner() {
             <select
               value={sourceFilter}
               onChange={e => setSourceFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All sources</option>
               {sources.map(s => (
@@ -231,7 +231,7 @@ function LeadsPageInner() {
             <button
               type="button"
               onClick={clearFilters}
-              className="ml-auto text-xs text-blue-600 hover:underline"
+              className="ml-auto text-xs text-green-600 hover:underline"
             >
               Clear filters
             </button>
@@ -306,7 +306,7 @@ function LeadsPageInner() {
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}`)}
-                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                           aria-label={`View ${lead.name}`}
                           title="View"
                         >
@@ -315,7 +315,7 @@ function LeadsPageInner() {
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}?edit=1`)}
-                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                           aria-label={`Edit ${lead.name}`}
                           title="Edit"
                         >

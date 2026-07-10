@@ -51,23 +51,23 @@ export default function ResumeTourBanner() {
   if (dismissed || !data?.resumable) return null;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-900">
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-green-200 bg-green-50 px-4 py-2 text-sm text-green-900">
       <p className="inline-flex items-center gap-2">
-        <Sparkles size={14} className="text-blue-600" />
+        <Sparkles size={14} className="text-green-600" />
         You started a tour but didn&apos;t finish — want to pick it back up?
       </p>
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={handleResume}
-          className="rounded-lg bg-slate-900 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+          className="rounded-lg bg-[#1f3d2b] px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
         >
           Resume tour
         </button>
         <button
           type="button"
           onClick={handleSkip}
-          className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 shadow-sm transition-colors hover:bg-blue-100"
+          className="inline-flex items-center gap-1 rounded-lg border border-green-200 bg-white px-3 py-1 text-xs font-medium text-green-700 shadow-sm transition-colors hover:bg-green-100"
         >
           <X size={12} />
           Skip & clean up

@@ -206,7 +206,7 @@ export default function GlobalSearch() {
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Search patients, appointments…"
-          className="w-full rounded-xl border border-transparent bg-slate-100 px-10 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+          className="w-full rounded-xl border border-transparent bg-slate-100 px-10 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100"
         />
         <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
           <Search size={16} />
@@ -233,7 +233,7 @@ export default function GlobalSearch() {
                     onClick={() => navigate(hit)}
                     onMouseEnter={() => setActiveIdx(i)}
                     className={`flex w-full items-start gap-3 px-4 py-2.5 text-left transition-colors ${
-                      i === activeIdx ? "bg-blue-50" : "hover:bg-slate-50"
+                      i === activeIdx ? "bg-green-50" : "hover:bg-slate-50"
                     }`}
                   >
                     <span

@@ -65,7 +65,7 @@ const PRESET_LABELS: Record<Preset, string> = {
 const FUNNEL_STAGES: Array<{ key: keyof Funnel; label: string; color: string }> = [
   { key: "new", label: "New", color: "bg-slate-500" },
   { key: "contacted", label: "Contacted", color: "bg-sky-500" },
-  { key: "qualified", label: "Qualified", color: "bg-blue-500" },
+  { key: "qualified", label: "Qualified", color: "bg-green-500" },
   { key: "appointment_booked", label: "Booked", color: "bg-violet-500" },
   { key: "visited", label: "Visited", color: "bg-emerald-500" },
 ];
@@ -175,7 +175,7 @@ export default function ReportsPanel() {
                 onClick={() => setPreset(p)}
                 className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
                   preset === p
-                    ? "bg-blue-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -187,7 +187,7 @@ export default function ReportsPanel() {
             onClick={() => setPreset("custom")}
             className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
               preset === "custom"
-                ? "bg-blue-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -206,7 +206,7 @@ export default function ReportsPanel() {
               type="date"
               value={fromCustom}
               onChange={e => setFromCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
@@ -217,7 +217,7 @@ export default function ReportsPanel() {
               type="date"
               value={toCustom}
               onChange={e => setToCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </div>
@@ -324,7 +324,7 @@ export default function ReportsPanel() {
                     <td className="px-4 py-3 text-right text-slate-500">
                       {s.lost}
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-blue-700">
+                    <td className="px-4 py-3 text-right font-semibold text-green-700">
                       {pct(s.visited, s.total)}
                     </td>
                   </tr>
@@ -354,7 +354,7 @@ export default function ReportsPanel() {
                 onClick={() => setRatingsSource("internal")}
                 className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
                   ratingsSource === "internal"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
@@ -365,7 +365,7 @@ export default function ReportsPanel() {
                 onClick={() => setRatingsSource("google")}
                 className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
                   ratingsSource === "google"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
@@ -470,7 +470,7 @@ export default function ReportsPanel() {
           Leads captured and appointments dated for each day in the range.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-          <Legend swatch="bg-blue-500" label="Leads" />
+          <Legend swatch="bg-green-500" label="Leads" />
           <Legend swatch="bg-emerald-500" label="Appointments" />
         </div>
         <div className="mt-4 flex items-end gap-1 overflow-x-auto pb-2">
@@ -485,7 +485,7 @@ export default function ReportsPanel() {
               >
                 <div className="flex h-32 items-end gap-0.5">
                   <div
-                    className="w-1.5 rounded-t bg-blue-500"
+                    className="w-1.5 rounded-t bg-green-500"
                     style={{ height: `${Math.max(leadsHeight, d.leads > 0 ? 4 : 0)}%` }}
                   />
                   <div

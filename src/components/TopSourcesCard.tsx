@@ -9,7 +9,7 @@ type SourceEntry = {
 };
 
 // Fixed palette for up to 4 slices. The 5th+ slices roll into "Other".
-const PALETTE = ["#2563eb", "#10b981", "#f59e0b", "#0ea5e9", "#94a3b8"];
+const PALETTE = ["#16a34a", "#10b981", "#f59e0b", "#0ea5e9", "#94a3b8"];
 
 const TITLE_CASE = (s: string) =>
   s

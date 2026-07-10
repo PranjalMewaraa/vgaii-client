@@ -102,7 +102,7 @@ function FinancesPageInner() {
                 data-tour={t.key === "payment" ? "payments-tab" : undefined}
                 className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition md:flex-1 ${
                   isActive
-                    ? "border-blue-600 text-blue-700"
+                    ? "border-green-600 text-green-700"
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -130,7 +130,7 @@ function FinancesPageInner() {
               onClick={() => setPresetSubTab("earning")}
               className={`rounded-md px-3 py-1.5 font-medium transition ${
                 presetSubTab === "earning"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-green-600 text-white"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >
@@ -141,7 +141,7 @@ function FinancesPageInner() {
               onClick={() => setPresetSubTab("expense")}
               className={`rounded-md px-3 py-1.5 font-medium transition ${
                 presetSubTab === "expense"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-green-600 text-white"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
             >

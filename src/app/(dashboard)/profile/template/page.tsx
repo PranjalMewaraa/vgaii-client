@@ -186,7 +186,7 @@ function ProfileTemplatePageInner() {
                   aria-pressed={isActive}
                   className={`group flex flex-col gap-3 rounded-2xl border-2 p-4 text-left shadow-sm transition hover:shadow-md disabled:cursor-wait ${
                     isActive
-                      ? "border-blue-600 ring-2 ring-blue-100"
+                      ? "border-green-600 ring-2 ring-green-100"
                       : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
@@ -212,7 +212,7 @@ function ProfileTemplatePageInner() {
                   <p className="text-xs text-slate-500">{opt.description}</p>
                   <span
                     className={`mt-auto inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider ${
-                      isActive ? "text-blue-600" : "text-slate-400"
+                      isActive ? "text-green-600" : "text-slate-400"
                     }`}
                   >
                     {isSaving

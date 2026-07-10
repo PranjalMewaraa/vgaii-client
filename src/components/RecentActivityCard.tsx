@@ -21,7 +21,7 @@ type Response = {
 // colors; everything else falls through to slate.
 const dotTone = (action: string): string => {
   if (/resolved|completed|visited/.test(action)) return "bg-emerald-500";
-  if (/created|booked|added/.test(action)) return "bg-blue-500";
+  if (/created|booked|added/.test(action)) return "bg-green-500";
   if (/deleted|removed|cancelled|expired|no_show/.test(action))
     return "bg-red-500";
   return "bg-slate-400";
@@ -50,7 +50,7 @@ export default function RecentActivityCard() {
         </div>
         <Link
           href="/activity"
-          className="text-xs font-medium text-blue-600 hover:underline"
+          className="text-xs font-medium text-green-600 hover:underline"
         >
           View all activity →
         </Link>

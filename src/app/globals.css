@@ -1,9 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  /* Cool neutral canvas — matches the reference clinic dashboard. */
-  --background: #f6f7f9;
+  /* Soft green-tinted canvas — matches the emitly reference shell. */
+  --background: #f2f6f2;
   --foreground: #0f172a;
+  /* Brand greens */
+  --brand: #1f3d2b;
+  --brand-hover: #16301f;
 }
 
 @theme inline {
@@ -62,7 +65,7 @@ td {
 
 /* Consistent, accessible focus ring across custom controls. */
 :focus-visible {
-  outline: 2px solid rgb(37 99 235 / 0.55);
+  outline: 2px solid rgb(22 163 74 / 0.55);
   outline-offset: 2px;
 }
 

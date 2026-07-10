@@ -17,7 +17,7 @@ import { formatRupees } from "@/lib/currency";
 // chart bars and the corresponding tile read as one widget.
 const METHOD_COLORS: Record<string, string> = {
   cash: "#10b981",
-  upi: "#2563eb",
+  upi: "#16a34a",
   card: "#0ea5e9",
   mixed: "#8b5cf6",
   pending: "#f59e0b",

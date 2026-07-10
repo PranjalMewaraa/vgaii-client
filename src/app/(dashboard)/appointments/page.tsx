@@ -41,7 +41,7 @@ const AVATAR_TONES = [
   "bg-amber-100 text-amber-700",
   "bg-emerald-100 text-emerald-700",
   "bg-sky-100 text-sky-700",
-  "bg-blue-100 text-blue-700",
+  "bg-green-100 text-green-700",
   "bg-violet-100 text-violet-700",
 ];
 const avatarTone = (name?: string) => {
@@ -397,7 +397,7 @@ function AppointmentsPageInner() {
             setAddOpen(true);
           }}
           data-tour="appointments-add-btn"
-          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
         >
           + Add appointment
         </button>
@@ -468,7 +468,7 @@ function AppointmentsPageInner() {
                 }}
                 className={`flex flex-1 items-center justify-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
                   isActive
-                    ? "border-blue-600 text-blue-700"
+                    ? "border-green-600 text-green-700"
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -489,7 +489,7 @@ function AppointmentsPageInner() {
                 onClick={() => setPreset(p)}
                 className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
                   !specificDate && activePreset === p
-                    ? "bg-blue-600 text-white shadow-sm"
+                    ? "bg-green-600 text-white shadow-sm"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -504,7 +504,7 @@ function AppointmentsPageInner() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="🔍  Search by name, phone or email…"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="inline-flex items-center gap-2 text-xs text-slate-500">
@@ -513,14 +513,14 @@ function AppointmentsPageInner() {
                 type="date"
                 value={specificDate}
                 onChange={e => setSpecificDate(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             {filtersActive && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="text-xs text-blue-600 hover:underline"
+                className="text-xs text-green-600 hover:underline"
               >
                 Clear filters
               </button>
@@ -664,7 +664,7 @@ function AppointmentsPageInner() {
                             onClick={() =>
                               setEditTarget({ appointment: a, mode: "edit" })
                             }
-                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
+                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                             aria-label={`View ${a.name ?? "appointment"}`}
                             title="View"
                           >
@@ -675,7 +675,7 @@ function AppointmentsPageInner() {
                             onClick={() =>
                               setEditTarget({ appointment: a, mode: "edit" })
                             }
-                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-blue-600"
+                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                             aria-label={`Edit ${a.name ?? "appointment"}`}
                             title="Edit"
                           >
@@ -698,7 +698,7 @@ function AppointmentsPageInner() {
               <select
                 value={rowsPerPage}
                 onChange={e => setRowsPerPage(Number(e.target.value))}
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 {[10, 25, 50, 100].map(n => (
                   <option key={n} value={n}>
@@ -720,7 +720,7 @@ function AppointmentsPageInner() {
               >
                 ‹ Previous
               </button>
-              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-slate-900 px-2 text-xs font-semibold text-white">
+              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-[#1f3d2b] px-2 text-xs font-semibold text-white">
                 {safePage}
               </span>
               <button
@@ -937,7 +937,7 @@ function CalendarWeekGrid({
                 <div
                   key={i}
                   className={`border-r border-slate-200 px-2 py-2 text-center text-xs ${
-                    isToday ? "bg-blue-50" : ""
+                    isToday ? "bg-green-50" : ""
                   }`}
                 >
                   <div className="font-semibold text-slate-700">
@@ -945,7 +945,7 @@ function CalendarWeekGrid({
                   </div>
                   <div
                     className={`mt-0.5 ${
-                      isToday ? "font-bold text-blue-700" : "text-slate-500"
+                      isToday ? "font-bold text-green-700" : "text-slate-500"
                     }`}
                   >
                     {d.getDate()}
@@ -998,7 +998,7 @@ function CalendarWeekGrid({
                     );
                   }}
                   className={`relative cursor-pointer border-r border-slate-200 ${
-                    isToday ? "bg-blue-50/30" : ""
+                    isToday ? "bg-green-50/30" : ""
                   }`}
                   style={{ height: WEEK_GRID_HOURS * HOUR_PX }}
                 >

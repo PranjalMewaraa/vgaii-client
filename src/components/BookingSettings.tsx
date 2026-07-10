@@ -115,7 +115,7 @@ export default function BookingSettings() {
             type="checkbox"
             checked={cfg.enabled}
             onChange={e => patch({ enabled: e.target.checked })}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
           />
           <span>{cfg.enabled ? "Enabled" : "Disabled"}</span>
         </label>
@@ -202,7 +202,7 @@ export default function BookingSettings() {
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
+          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save booking settings"}
         </button>
@@ -270,7 +270,7 @@ function DayRow({
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
+          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50"
         >
           + Add
         </button>
@@ -322,7 +322,7 @@ function BlackoutEditor({
             const v = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
             onChange([...dates, v]);
           }}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
+          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50"
         >
           + Add date
         </button>
@@ -332,7 +332,7 @@ function BlackoutEditor({
 }
 
 const selectCls =
-  "mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+  "mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100";
 
 function Field({
   label,

@@ -12,7 +12,7 @@ const ICON_BG: Record<NonNullable<StatCardProps["color"]>, string> = {
   green: "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100",
   red: "bg-red-50 text-red-600 ring-1 ring-inset ring-red-100",
   amber: "bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100",
-  indigo: "bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100",
+  indigo: "bg-green-50 text-green-600 ring-1 ring-inset ring-green-100",
   sky: "bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-100",
 };
 

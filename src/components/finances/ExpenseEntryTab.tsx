@@ -63,8 +63,8 @@ const METHOD_DEFS: Array<{
     key: "upi",
     label: "UPI",
     icon: Smartphone,
-    className: "border-blue-200 bg-white text-blue-700 hover:bg-blue-50",
-    activeClass: "border-blue-500 bg-blue-600 text-white shadow-sm",
+    className: "border-green-200 bg-white text-green-700 hover:bg-green-50",
+    activeClass: "border-green-500 bg-green-600 text-white shadow-sm",
   },
   {
     key: "card",
@@ -162,7 +162,7 @@ export default function ExpenseEntryTab() {
                     key={p.id}
                     type="button"
                     onClick={() => applyPreset(p)}
-                    className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+                    className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-white px-3 py-1.5 text-sm font-medium text-green-700 transition hover:bg-green-50"
                   >
                     <Plus size={12} />
                     <span>{p.title}</span>
@@ -183,7 +183,7 @@ export default function ExpenseEntryTab() {
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as ExpenseCategory)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 {EXPENSE_CATEGORIES.map(c => (
                   <option key={c} value={c}>
@@ -201,7 +201,7 @@ export default function ExpenseEntryTab() {
                 onChange={e => setAmountInput(e.target.value)}
                 inputMode="numeric"
                 placeholder="0"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           </div>
@@ -240,7 +240,7 @@ export default function ExpenseEntryTab() {
               onChange={e => setNotes(e.target.value)}
               rows={2}
               placeholder="Vendor, invoice number, anything to remember…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
 
@@ -267,7 +267,7 @@ export default function ExpenseEntryTab() {
               type="button"
               onClick={save}
               disabled={busy}
-              className="rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
+              className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
             >
               {busy ? "Saving…" : "Save expense"}
             </button>

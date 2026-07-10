@@ -65,8 +65,8 @@ const METHOD_DEFS: Array<{
     key: "upi",
     label: "UPI",
     icon: Smartphone,
-    className: "border-blue-200 bg-white text-blue-700 hover:bg-blue-50",
-    activeClass: "border-blue-500 bg-blue-600 text-white shadow-sm",
+    className: "border-green-200 bg-white text-green-700 hover:bg-green-50",
+    activeClass: "border-green-500 bg-green-600 text-white shadow-sm",
   },
   {
     key: "card",
@@ -267,7 +267,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 inputMode="tel"
                 autoFocus
                 placeholder="10-digit number"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
 
@@ -296,7 +296,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                   Existing {leadHits.length === 1 ? "patient" : "patients"}{" "}
                   with this number:
                 </p>
-                <ul className="divide-y divide-slate-100 rounded-lg border border-blue-200 bg-blue-50/40">
+                <ul className="divide-y divide-slate-100 rounded-lg border border-green-200 bg-green-50/40">
                   {leadHits.slice(0, 4).map(h => (
                     <li
                       key={h.id}
@@ -313,7 +313,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                       <button
                         type="button"
                         onClick={() => linkLead(h)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
                       >
                         <Link2 size={12} />
                         Link
@@ -337,7 +337,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                       ? "No match — enter walk-in name"
                       : "Patient name"
                   }
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 />
               </label>
             )}
@@ -365,7 +365,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                   key={p.id}
                   type="button"
                   onClick={() => addPreset(p)}
-                  className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-white px-3 py-1.5 text-sm font-medium text-green-700 transition hover:bg-green-50"
                 >
                   <Plus size={12} />
                   <span>{p.title}</span>
@@ -387,7 +387,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 value={customTitle}
                 onChange={e => setCustomTitle(e.target.value)}
                 placeholder="e.g. Suture removal"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
@@ -399,7 +399,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 onChange={e => setCustomAmount(e.target.value)}
                 inputMode="numeric"
                 placeholder="0"
-                className="mt-1 w-28 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 w-28 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <button
@@ -487,14 +487,14 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 onChange={e => setDiscountInput(e.target.value)}
                 inputMode="numeric"
                 placeholder="0"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           </div>
 
           <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold tracking-tight">
             <span className="text-slate-700">Final</span>
-            <span className="text-blue-700">{formatRupees(finalPaise)}</span>
+            <span className="text-green-700">{formatRupees(finalPaise)}</span>
           </div>
         </section>
 
@@ -508,7 +508,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
               onChange={e => setNotes(e.target.value)}
               rows={3}
               placeholder="Anything to remember about this payment…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </section>
@@ -528,7 +528,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
           type="button"
           onClick={save}
           disabled={busy || items.length === 0}
-          className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
+          className="w-full rounded-lg bg-[#1f3d2b] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
         >
           {busy ? "Saving…" : `Save payment · ${formatRupees(finalPaise)}`}
         </button>

@@ -41,7 +41,7 @@ const VARIANTS: Record<ContactFormVariant, VariantClasses> = {
     successHeading: "text-base font-semibold text-slate-900",
     successLink: "mt-4 text-sm font-medium text-slate-900 hover:underline",
     button:
-      "flex w-full justify-center rounded-xl bg-slate-900 px-4 py-4 text-xs font-semibold uppercase tracking-wider text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:opacity-60",
+      "flex w-full justify-center rounded-xl bg-[#1f3d2b] px-4 py-4 text-xs font-semibold uppercase tracking-wider text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:opacity-60",
   },
   // Clinical = deep teal button, mint accents, sharp corners.
   clinical: {

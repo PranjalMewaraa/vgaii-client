@@ -14,7 +14,7 @@ const KIND_LABELS: Record<AttachmentKind, string> = {
 };
 
 const KIND_BADGE: Record<AttachmentKind, string> = {
-  prescription: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-100",
+  prescription: "bg-green-50 text-green-700 ring-1 ring-inset ring-green-100",
   lab_report: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-100",
   scan: "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-100",
   xray: "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-100",
@@ -307,7 +307,7 @@ export default function AttachmentsSection({
             <select
               value={defaultKind}
               onChange={e => setDefaultKind(e.target.value as AttachmentKind)}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               {(Object.keys(KIND_LABELS) as AttachmentKind[]).map(k => (
                 <option key={k} value={k}>
@@ -343,7 +343,7 @@ export default function AttachmentsSection({
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="truncate text-sm font-medium text-blue-700 hover:underline"
+                    className="truncate text-sm font-medium text-green-700 hover:underline"
                     title={a.filename}
                   >
                     {a.filename}
@@ -398,7 +398,7 @@ export default function AttachmentsSection({
             }}
             className={`mt-4 cursor-pointer rounded-xl border-2 border-dashed px-3 py-6 text-center text-xs transition ${
               dragActive
-                ? "border-blue-500 bg-blue-50"
+                ? "border-green-500 bg-green-50"
                 : "border-slate-200 bg-slate-50/50 hover:border-slate-300 hover:bg-slate-100"
             }`}
           >
@@ -410,7 +410,7 @@ export default function AttachmentsSection({
             <p className="font-medium text-slate-700">
               Drop multiple files here, or
             </p>
-            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors">
+            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors">
               <Upload size={12} />
               Choose files
             </span>

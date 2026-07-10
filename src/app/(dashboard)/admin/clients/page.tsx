@@ -137,7 +137,7 @@ function AdminClientsPageInner() {
         </div>
         <Link
           href="/admin/clients/new"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
         >
           <Plus size={14} />
           Onboard new clinic
@@ -154,7 +154,7 @@ function AdminClientsPageInner() {
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-5 py-3.5">
           <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
               <Building2 size={14} />
             </span>
             All Clients
@@ -274,7 +274,7 @@ function AdminClientsPageInner() {
                           <Link
                             href={`/p/${c.profileSlug}`}
                             target="_blank"
-                            className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                            className="inline-flex items-center gap-1 text-green-600 hover:underline"
                           >
                             <ExternalLink size={11} />
                             View public profile
@@ -337,7 +337,7 @@ function ClientAdminBlock({
             type="button"
             onClick={() => onImpersonate(client.admin!.id)}
             disabled={busyId === client.admin.id}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             <UserRound size={12} />
             {busyId === client.admin.id ? "Switching…" : "Impersonate"}
@@ -545,14 +545,14 @@ function UserSecurityActions({
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="≥8 chars, letters + a digit"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={resetPassword}
             disabled={busy || password.length < 8}
-            className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {busy ? "Saving…" : "Set password"}
           </button>
@@ -570,14 +570,14 @@ function UserSecurityActions({
               value={newEmail}
               onChange={e => setNewEmail(e.target.value)}
               placeholder="user@example.com"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={changeEmail}
             disabled={busy || !newEmail.trim()}
-            className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {busy ? "Saving…" : "Save email"}
           </button>
@@ -658,7 +658,7 @@ function ClientIntegrationsBlock({
           <button
             type="button"
             onClick={startEdit}
-            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline"
           >
             <Pencil size={11} />
             Edit
@@ -697,7 +697,7 @@ function ClientIntegrationsBlock({
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
               >
                 <Check size={12} />
                 {saving ? "Saving…" : "Save"}
@@ -998,7 +998,7 @@ function WebhookRow({
             onClick={() => setMode("header")}
             className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
               mode === "header"
-                ? "bg-blue-600 text-white"
+                ? "bg-green-600 text-white"
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -1009,7 +1009,7 @@ function WebhookRow({
             onClick={() => setMode("query")}
             className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
               mode === "query"
-                ? "bg-blue-600 text-white"
+                ? "bg-green-600 text-white"
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -1020,7 +1020,7 @@ function WebhookRow({
 
       <div className="mt-2 flex items-stretch gap-2">
         <code className="flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs text-slate-700">
-          <span className="text-blue-600">{method}</span> {display}
+          <span className="text-green-600">{method}</span> {display}
         </code>
         <CopyButton value={display} />
       </div>
@@ -1045,7 +1045,7 @@ function WebhookRow({
           <button
             type="button"
             onClick={() => setShowSchema(s => !s)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-blue-600 hover:underline"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-green-600 hover:underline"
             aria-expanded={showSchema}
           >
             {showSchema ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
@@ -1197,7 +1197,7 @@ function Field({
         required={required}
         minLength={minLength}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </label>
@@ -1228,7 +1228,7 @@ function PlaceIdField({
             value={value}
             onChange={e => onChange(e.target.value)}
             placeholder="ChIJ…"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"

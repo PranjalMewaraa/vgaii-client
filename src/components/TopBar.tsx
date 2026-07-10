@@ -1,25 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Menu } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bell, Gift, LogOut, Menu } from "lucide-react";
 import { clearStoredAuth, useStoredUser } from "@/lib/client-auth";
 import GlobalSearch from "@/components/GlobalSearch";
-
-const PAGE_TITLES: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/leads": "Leads",
-  "/patients": "Patients",
-  "/appointments": "Appointments",
-  "/feedbacks": "Feedbacks",
-  "/finances": "Finances",
-  "/reports": "Reports",
-  "/activity": "Activity",
-  "/staff": "Team",
-  "/profile": "Profile",
-  "/settings": "Settings",
-  "/admin/clients": "Clients",
-};
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Platform",
@@ -29,22 +14,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
   const router = useRouter();
-  const pathname = usePathname();
   const user = useStoredUser();
-
-  // Match dynamic detail routes before falling back to the path-segment
-  // heuristic — otherwise we'd render the cuid as the page title.
-  const resolveTitle = (): string => {
-    if (!pathname) return "Dashboard";
-    if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
-    if (/^\/patients\/[^/]+$/.test(pathname)) return "Patient Details";
-    if (/^\/leads\/[^/]+$/.test(pathname)) return "Lead Details";
-    return (
-      pathname.split("/").pop()?.replace(/^\w/, c => c.toUpperCase()) ||
-      "Dashboard"
-    );
-  };
-  const title = resolveTitle();
 
   const logout = () => {
     // Fire-and-forget audit ping; don't block UI on it.
@@ -75,27 +45,40 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
         <Menu size={18} />
       </button>
 
-      <div className="min-w-0 flex-1 md:flex-initial">
-        <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900">
-          {title}
-        </h1>
-      </div>
-
       {user && user.role !== "SUPER_ADMIN" && (
-        <div className="hidden flex-1 justify-center md:flex">
+        <div className="hidden flex-1 md:flex">
           <GlobalSearch />
         </div>
       )}
 
       {user && (
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <div className="hidden items-center gap-2 sm:flex">
+            <Link
+              href="/settings"
+              title="What's new"
+              aria-label="What's new"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700"
+            >
+              <Gift size={17} />
+            </Link>
+            <Link
+              href="/activity"
+              title="Notifications"
+              aria-label="Notifications"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700"
+            >
+              <Bell size={17} />
+              <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-green-500 ring-2 ring-white" />
+            </Link>
+          </div>
           <span className="mx-0.5 hidden h-6 w-px bg-slate-200 sm:block" />
           <Link
             href="/account"
             title="Account & password"
             className="flex items-center gap-2.5 rounded-xl px-1 py-1 transition-colors hover:bg-slate-100 sm:pr-2.5"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700 ring-1 ring-inset ring-blue-200">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-200">
               {initial}
             </span>
             <span className="hidden text-left leading-tight sm:block">

@@ -76,9 +76,9 @@ function StepIndicator({ current }: { current: number }) {
             <span
               className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all ${
                 done
-                  ? "bg-blue-600 text-white"
+                  ? "bg-green-600 text-white"
                   : active
-                  ? "border-2 border-blue-600 bg-white text-blue-600"
+                  ? "border-2 border-green-600 bg-white text-green-600"
                   : "border-2 border-slate-200 bg-white text-slate-400"
               }`}
             >
@@ -87,7 +87,7 @@ function StepIndicator({ current }: { current: number }) {
             <span
               className={`text-[11px] font-semibold uppercase tracking-wider ${
                 active
-                  ? "text-blue-600"
+                  ? "text-green-600"
                   : done
                   ? "text-slate-600"
                   : "text-slate-400"
@@ -120,7 +120,7 @@ function Field({
       </span>
       <input
         {...props}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
       {hint && (
         <p className="mt-0.5 text-[11px] text-slate-400">{hint}</p>
@@ -149,13 +149,13 @@ function RadioCard<T extends string>({
       onClick={() => onChange(value)}
       className={`flex items-start gap-3 rounded-xl border p-3 text-left shadow-sm transition-all ${
         active
-          ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+          ? "border-green-500 bg-green-50 ring-1 ring-green-500"
           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
       }`}
     >
       <span
         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-          active ? "border-blue-600 bg-blue-600" : "border-slate-300"
+          active ? "border-green-600 bg-green-600" : "border-slate-300"
         }`}
       >
         {active && (
@@ -207,7 +207,7 @@ function ReviewSection({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3.5">
-        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
+        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
           <Icon size={13} />
         </span>
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -362,7 +362,7 @@ function StepAdmin({
             minLength={8}
             placeholder="At least 8 characters"
             required
-            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 pr-10 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 pr-10 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
@@ -407,7 +407,7 @@ function StepSettings({
             value={form.googlePlaceId}
             onChange={e => set("googlePlaceId", e.target.value)}
             placeholder="ChIJ…"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
@@ -442,7 +442,7 @@ const STATUS_BADGE: Record<SubStatus, string> = {
 };
 const PLAN_BADGE: Record<Plan, string> = {
   basic: "bg-slate-100 text-slate-700",
-  pro: "bg-blue-100 text-blue-700",
+  pro: "bg-green-100 text-green-700",
 };
 
 function StepReview({ form, error }: { form: FormState; error: string | null }) {
@@ -562,7 +562,7 @@ function SuccessScreen({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1f3d2b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
           >
             <Plus size={15} />
             Onboard another clinic
@@ -666,7 +666,7 @@ function OnboardClientWizard() {
         {/* Header */}
         <div className="border-b border-slate-200 px-6 pt-6 pb-5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-100">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
               <Building2 size={18} />
             </span>
             <div>
@@ -729,7 +729,7 @@ function OnboardClientWizard() {
                 type="button"
                 onClick={() => setStep(s => s + 1)}
                 disabled={!canAdvance}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-50"
               >
                 Next
                 <ArrowRight size={14} />
@@ -739,7 +739,7 @@ function OnboardClientWizard() {
                 type="button"
                 onClick={submit}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-50"
               >
                 {busy ? (
                   "Creating…"
