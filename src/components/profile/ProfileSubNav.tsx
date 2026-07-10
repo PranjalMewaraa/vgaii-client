@@ -27,7 +27,7 @@ export default function ProfileSubNav() {
   const pathname = usePathname();
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex border-b border-slate-200">
         {TABS.map(t => {
           // Exact-match: /profile/template should NOT mark /profile as
@@ -37,14 +37,14 @@ export default function ProfileSubNav() {
             <Link
               key={t.href}
               href={t.href}
-              className={`flex flex-1 flex-col items-start gap-0.5 border-b-2 px-4 py-2.5 text-sm transition ${
+              className={`flex flex-1 flex-col items-start gap-0.5 border-b-2 px-5 py-3.5 text-sm transition-colors ${
                 isActive
-                  ? "border-indigo-600 text-indigo-700"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  ? "border-indigo-600 bg-indigo-50/40 text-indigo-700"
+                  : "border-transparent text-slate-500 hover:bg-slate-50/70 hover:text-slate-700"
               }`}
               aria-current={isActive ? "page" : undefined}
             >
-              <span className="font-semibold">{t.label}</span>
+              <span className="font-semibold tracking-tight">{t.label}</span>
               <span className="text-[11px] font-normal text-slate-400">
                 {t.description}
               </span>

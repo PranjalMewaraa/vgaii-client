@@ -81,10 +81,10 @@ export default function DailySummaryTab() {
   }, [data]);
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 shadow-sm">
         <div>
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold tracking-tight text-slate-900">
             Daily summary
           </p>
           <p className="text-xs text-slate-500">
@@ -98,7 +98,7 @@ export default function DailySummaryTab() {
             type="date"
             value={date}
             onChange={e => setDate(e.target.value || todayISO())}
-            className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           />
         </label>
       </div>
@@ -107,7 +107,7 @@ export default function DailySummaryTab() {
         <p className="text-sm text-slate-500">Loading…</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
             <Tile
               icon={TrendingUp}
               tone="emerald"
@@ -157,7 +157,7 @@ export default function DailySummaryTab() {
             />
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             <Tile
               icon={TrendingDown}
               tone="rose"
@@ -174,7 +174,7 @@ export default function DailySummaryTab() {
             />
           </div>
 
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             <MethodBarChart data={methodChartData} />
             <CategoryBarChart
               data={data?.expenses?.byCategory ?? []}
@@ -195,23 +195,23 @@ const TONE: Record<
   { bg: string; text: string; tile: string }
 > = {
   emerald: {
-    bg: "bg-emerald-100",
+    bg: "bg-emerald-50 ring-1 ring-inset ring-emerald-100",
     text: "text-emerald-600",
     tile: "border-slate-200",
   },
   indigo: {
-    bg: "bg-indigo-100",
+    bg: "bg-indigo-50 ring-1 ring-inset ring-indigo-100",
     text: "text-indigo-600",
     tile: "border-slate-200",
   },
-  sky: { bg: "bg-sky-100", text: "text-sky-600", tile: "border-slate-200" },
-  amber: { bg: "bg-amber-100", text: "text-amber-600", tile: "border-slate-200" },
+  sky: { bg: "bg-sky-50 ring-1 ring-inset ring-sky-100", text: "text-sky-600", tile: "border-slate-200" },
+  amber: { bg: "bg-amber-50 ring-1 ring-inset ring-amber-100", text: "text-amber-600", tile: "border-slate-200" },
   violet: {
-    bg: "bg-violet-100",
+    bg: "bg-violet-50 ring-1 ring-inset ring-violet-100",
     text: "text-violet-600",
     tile: "border-slate-200",
   },
-  rose: { bg: "bg-rose-100", text: "text-rose-600", tile: "border-rose-100" },
+  rose: { bg: "bg-rose-50 ring-1 ring-inset ring-rose-100", text: "text-rose-600", tile: "border-rose-100" },
 };
 
 function Tile({
@@ -230,10 +230,10 @@ function Tile({
   const t = TONE[tone];
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border ${t.tile} bg-white px-4 py-3`}
+      className={`flex items-center gap-3 rounded-2xl border ${t.tile} bg-white p-5 shadow-sm`}
     >
       <span
-        className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${t.bg} ${t.text}`}
+        className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${t.bg} ${t.text}`}
       >
         <Icon size={20} />
       </span>
@@ -241,7 +241,7 @@ function Tile({
         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           {label}
         </p>
-        <p className="mt-0.5 text-xl font-bold leading-tight text-slate-900">
+        <p className="mt-0.5 text-xl font-semibold leading-tight tracking-tight text-slate-900">
           {value}
         </p>
         {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
