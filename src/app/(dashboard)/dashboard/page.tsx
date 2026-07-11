@@ -11,6 +11,7 @@ import QuickActionsCard from "@/components/QuickActionsCard";
 import NextAppointmentCard from "@/components/NextAppointmentCard";
 import OverviewCard from "@/components/OverviewCard";
 import AdminDashboard from "@/components/AdminDashboard";
+import DashboardMetricStrip from "@/components/DashboardMetricStrip";
 import LeadsTrendChart from "@/components/charts/LeadsTrendChart";
 import { useStoredUser } from "@/lib/client-auth";
 
@@ -79,6 +80,17 @@ export default function Dashboard() {
           Refresh
         </button>
       </header>
+
+      {/* Selimor-style headline metric strip */}
+      <DashboardMetricStrip
+        leadsCount={data.leadsCount}
+        todayLeads={data.todayLeads}
+        yesterdayLeads={data.yesterdayLeads}
+        patientsCount={data.patientsCount}
+        appointments={data.appointments}
+        yesterdayUpcomingAppointments={data.yesterdayUpcomingAppointments}
+        openFeedback={data.openFeedback}
+      />
 
       {/* Row 1: GMB · Quick Actions · Overview. On tablet (md) the GMB
           card spans the full row and Quick Actions / Overview share the
