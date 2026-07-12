@@ -51,7 +51,8 @@ export default function ResumeTourBanner() {
   if (dismissed || !data?.resumable) return null;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-green-200 bg-green-50 px-4 py-2 text-sm text-green-900">
+    <div className="border-b border-green-200 bg-green-50 text-green-900">
+      <div className="mx-auto flex w-full max-w-screen-2xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm sm:px-6 lg:px-8">
       <p className="inline-flex items-center gap-2">
         <Sparkles size={14} className="text-green-600" />
         You started a tour but didn&apos;t finish — want to pick it back up?
@@ -72,6 +73,7 @@ export default function ResumeTourBanner() {
           <X size={12} />
           Skip & clean up
         </button>
+      </div>
       </div>
     </div>
   );

@@ -35,7 +35,8 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
   const roleLabel = user?.role ? ROLE_LABELS[user.role] ?? user.role : "";
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-md md:gap-4 md:px-6 lg:px-8">
+    <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 w-full max-w-screen-2xl items-center gap-3 px-4 md:gap-4 md:px-6 lg:px-8">
       <button
         type="button"
         onClick={onMenuClick}
@@ -103,6 +104,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
           </button>
         </div>
       )}
+      </div>
     </header>
   );
 }

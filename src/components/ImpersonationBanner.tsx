@@ -29,18 +29,20 @@ export default function ImpersonationBanner() {
   const detail = user?.clientName ? ` · ${user.clientName}` : "";
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-6 py-2 text-sm text-amber-900 md:px-8">
-      <span>
-        You are impersonating <span className="font-semibold">{name}</span>
-        {detail}.
-      </span>
-      <button
-        type="button"
-        onClick={stop}
-        className="rounded-md bg-amber-900 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-800"
-      >
-        Stop impersonating
-      </button>
+    <div className="border-b border-amber-200 bg-amber-50 text-amber-900">
+      <div className="mx-auto flex w-full max-w-screen-2xl flex-wrap items-center justify-between gap-3 px-4 py-2 text-sm sm:px-6 lg:px-8">
+        <span>
+          You are impersonating <span className="font-semibold">{name}</span>
+          {detail}.
+        </span>
+        <button
+          type="button"
+          onClick={stop}
+          className="rounded-md bg-amber-900 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-amber-800"
+        >
+          Stop impersonating
+        </button>
+      </div>
     </div>
   );
 }

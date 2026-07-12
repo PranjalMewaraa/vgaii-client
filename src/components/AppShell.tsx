@@ -81,9 +81,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 {children}
               </main>
 
-              <footer className="mt-auto flex items-center justify-between border-t border-slate-200/80 bg-white/60 px-4 py-3 text-xs text-slate-400 sm:px-6 lg:px-8">
-                <span>© {YEAR} VGAII. All rights reserved.</span>
-                <span className="font-medium">Version {APP_VERSION}</span>
+              <footer className="mt-auto border-t border-slate-200/80 bg-white/60">
+                <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-3 text-xs text-slate-400 sm:px-6 lg:px-8">
+                  <span>© {YEAR} VGAII. All rights reserved.</span>
+                  <span className="font-medium">Version {APP_VERSION}</span>
+                </div>
               </footer>
             </div>
           </div>
