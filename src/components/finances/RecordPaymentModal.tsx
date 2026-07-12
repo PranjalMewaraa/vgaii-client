@@ -42,7 +42,7 @@ export default function RecordPaymentModal({
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-5xl rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="w-full max-w-5xl rounded-xl border border-slate-200/70 bg-white shadow-2xl"
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>

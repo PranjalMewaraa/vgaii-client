@@ -211,13 +211,13 @@ export default function GlobalSearch() {
         <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
           <Search size={16} />
         </span>
-        <span className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 sm:inline">
+        <span className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded-md border border-slate-200/70 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 sm:inline">
           ⌘K
         </span>
       </div>
 
       {open && q.trim().length >= 2 && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-slate-200/70 bg-white shadow-lg">
           {loading && totalResults === 0 ? (
             <p className="px-4 py-3 text-sm text-slate-500">Searching…</p>
           ) : totalResults === 0 ? (

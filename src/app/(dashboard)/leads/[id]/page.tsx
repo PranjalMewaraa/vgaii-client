@@ -187,7 +187,7 @@ function LeadDetailPageInner({
   const showBookingAction = status === "qualified";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <button
         type="button"
         onClick={() => router.push("/leads")}
@@ -197,7 +197,7 @@ function LeadDetailPageInner({
       </button>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="rounded-xl border border-slate-200/70 bg-white p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -220,8 +220,8 @@ function LeadDetailPageInner({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Next step
           </p>
 
@@ -238,7 +238,7 @@ function LeadDetailPageInner({
                   type="button"
                   onClick={() => setBookingOpen(o => !o)}
                   disabled={busy}
-                  className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+                  className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                 >
                   {bookingOpen ? "Hide booking" : "Book appointment"}
                 </button>
@@ -257,8 +257,8 @@ function LeadDetailPageInner({
                     disabled={busy}
                     className={
                       isRetry
-                        ? "rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
-                        : "rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+                        ? "rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
+                        : "rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                     }
                   >
                     {TRANSITION_LABELS[next] ?? STATUS_LABELS[next]}
@@ -282,9 +282,9 @@ function LeadDetailPageInner({
       </div>
 
       {showBookingAction && bookingOpen && (
-        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="rounded-xl border border-slate-200/70 bg-white p-6">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Book appointment
             </p>
             <p className="text-xs text-slate-500">
@@ -316,15 +316,15 @@ function LeadDetailPageInner({
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Internal notes
         </p>
         <textarea
           value={notesDraft}
           onChange={e => setNotesDraft(e.target.value)}
           rows={4}
-          className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+          className="mt-2 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           placeholder="Track call attempts, customer preferences, follow-ups…"
         />
         <div className="mt-2 flex justify-end">
@@ -332,7 +332,7 @@ function LeadDetailPageInner({
             type="button"
             onClick={saveNotes}
             disabled={!dirtyNotes || savingNotes}
-            className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {savingNotes ? "Saving…" : "Save notes"}
           </button>

@@ -28,8 +28,8 @@ export default function DashboardMetricStrip({
   openFeedback,
 }: Props) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="mb-4 text-sm font-semibold tracking-tight text-slate-900">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+      <p className="mb-4 text-base font-semibold tracking-tight text-slate-900">
         Performance overview
       </p>
       <div className="overflow-x-auto">

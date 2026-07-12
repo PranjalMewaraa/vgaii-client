@@ -90,7 +90,7 @@ export default function PremiumTemplate({
                   </a>
                   <a
                     href="#services"
-                    className="flex items-center justify-center rounded-full border border-slate-200 bg-white px-8 py-4 text-sm font-medium text-slate-600 transition-all duration-300 hover:bg-slate-50"
+                    className="flex items-center justify-center rounded-full border border-slate-200/70 bg-white px-8 py-4 text-sm font-medium text-slate-600 transition-all duration-300 hover:bg-slate-50"
                   >
                     Our Services
                   </a>
@@ -118,7 +118,7 @@ export default function PremiumTemplate({
               <img
                 src={v.aboutImageUrl}
                 alt={`${v.doctorName} portrait`}
-                className="h-[500px] w-full rounded-2xl object-cover"
+                className="h-[500px] w-full rounded-xl object-cover"
               />
             </div>
             <div>

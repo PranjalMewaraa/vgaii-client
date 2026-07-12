@@ -77,8 +77,8 @@ export default function BusinessInfoCard({
 
   if (!businessInfo || !businessInfo.name) {
     return (
-      <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="font-semibold tracking-tight text-slate-900">
+      <div className="flex h-full flex-col rounded-xl border border-slate-200/70 bg-white p-6">
+        <h2 className="text-base font-semibold tracking-tight text-slate-900">
           Connect your Google Business profile
         </h2>
         <p className="mt-1 text-sm text-slate-600">
@@ -91,7 +91,7 @@ export default function BusinessInfoCard({
             type="button"
             onClick={refresh}
             disabled={refreshing}
-            className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {refreshing ? "Refreshing…" : "Refresh now"}
           </button>
@@ -104,7 +104,7 @@ export default function BusinessInfoCard({
   const hoursToday = todayHours(businessInfo.hours);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="flex h-full flex-col rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex flex-1 flex-col gap-4 md:flex-row">
         <div className="shrink-0">
           {businessInfo.mainPhoto ? (
@@ -146,7 +146,7 @@ export default function BusinessInfoCard({
               onClick={refresh}
               disabled={refreshing}
               title="Refresh listing from Google"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
             >
               <Pencil size={12} />
               {refreshing ? "…" : "Edit"}

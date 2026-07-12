@@ -82,7 +82,7 @@ function FinancesPageInner() {
   const visibleTabs = TABS.filter(t => !t.adminOnly || isAdmin);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Finances</h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -90,7 +90,7 @@ function FinancesPageInner() {
         </p>
       </header>
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="rounded-xl border border-slate-200/70 bg-white">
         <div className="flex overflow-x-auto border-b border-slate-200">
           {visibleTabs.map(t => {
             const isActive = tab === t.key;
@@ -100,10 +100,10 @@ function FinancesPageInner() {
                 type="button"
                 onClick={() => setTab(t.key)}
                 data-tour={t.key === "payment" ? "payments-tab" : undefined}
-                className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition md:flex-1 ${
+                className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition-colors md:flex-1 ${
                   isActive
                     ? "border-green-600 text-green-700"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 {t.label}
@@ -123,12 +123,12 @@ function FinancesPageInner() {
       {tab === "summary" && <DailySummaryTab />}
       {tab === "reports" && <ReportsTab />}
       {tab === "presets" && isAdmin && (
-        <div className="space-y-5">
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-sm shadow-sm">
+        <div className="space-y-6">
+          <div className="inline-flex rounded-lg border border-slate-200/70 bg-white p-0.5 text-sm">
             <button
               type="button"
               onClick={() => setPresetSubTab("earning")}
-              className={`rounded-md px-3 py-1.5 font-medium transition ${
+              className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
                 presetSubTab === "earning"
                   ? "bg-green-600 text-white"
                   : "text-slate-600 hover:bg-slate-50"
@@ -139,7 +139,7 @@ function FinancesPageInner() {
             <button
               type="button"
               onClick={() => setPresetSubTab("expense")}
-              className={`rounded-md px-3 py-1.5 font-medium transition ${
+              className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
                 presetSubTab === "expense"
                   ? "bg-green-600 text-white"
                   : "text-slate-600 hover:bg-slate-50"

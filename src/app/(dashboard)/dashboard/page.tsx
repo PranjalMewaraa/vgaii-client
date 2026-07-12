@@ -60,7 +60,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -74,7 +74,7 @@ export default function Dashboard() {
           type="button"
           onClick={() => mutate()}
           disabled={isLoading}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/70 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
         >
           <RefreshCw size={13} className={isLoading ? "animate-spin" : ""} />
           Refresh

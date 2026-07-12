@@ -81,10 +81,10 @@ export default function DailySummaryTab() {
   }, [data]);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 shadow-sm">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/70 bg-white px-6 py-4">
         <div>
-          <p className="text-sm font-semibold tracking-tight text-slate-900">
+          <p className="text-base font-semibold tracking-tight text-slate-900">
             Daily summary
           </p>
           <p className="text-xs text-slate-500">
@@ -98,7 +98,7 @@ export default function DailySummaryTab() {
             type="date"
             value={date}
             onChange={e => setDate(e.target.value || todayISO())}
-            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+            className="rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
         </label>
       </div>
@@ -230,7 +230,7 @@ function Tile({
   const t = TONE[tone];
   return (
     <div
-      className={`flex items-center gap-3 rounded-2xl border ${t.tile} bg-white p-5 shadow-sm`}
+      className={`flex items-center gap-3 rounded-xl border ${t.tile} bg-white p-6`}
     >
       <span
         className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${t.bg} ${t.text}`}

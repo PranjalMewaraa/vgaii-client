@@ -38,7 +38,7 @@ const MethodTooltip = ({
   const p = payload[0]?.payload;
   if (!p) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs shadow-md">
       <p className="font-medium text-slate-900 capitalize">{p.method}</p>
       <p className="text-slate-500">
         {formatRupees(p.total)} · {p.count} {p.count === 1 ? "entry" : "entries"}

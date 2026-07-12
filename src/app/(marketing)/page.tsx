@@ -185,7 +185,7 @@ function WhatsAppCta({ className = "" }: { className?: string }) {
       href={WHATSAPP_HREF}
       target="_blank"
       rel="noreferrer"
-      className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200/70 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 ${className}`}
     >
       <MessageSquare size={14} />
       Talk on WhatsApp
@@ -213,7 +213,7 @@ function TrustBadge({
   children: React.ReactNode;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
       <Icon size={13} className="text-green-600" />
       {children}
     </span>
@@ -239,7 +239,7 @@ function HeroProductMock() {
   return (
     <div className="relative">
       <div className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-br from-green-200/40 via-emerald-100/40 to-amber-100/40 blur-2xl" />
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-green-900/10">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-2xl shadow-green-900/10">
         <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
           <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
@@ -342,7 +342,7 @@ function WhatsAppPreviewCard() {
           Online
         </span>
       </div>
-      <div className="space-y-2.5 rounded-2xl border border-emerald-100 bg-white p-3">
+      <div className="space-y-2.5 rounded-xl border border-emerald-100 bg-white p-3">
         <ChatBubble side="left">Hi, I want to know implant cost.</ChatBubble>
         <ChatBubble side="right">
           Thanks, Priya. Our clinic will call you shortly. You can also book a
@@ -369,7 +369,7 @@ function ChatBubble({
   return (
     <div className={`flex ${side === "right" ? "justify-end" : "justify-start"}`}>
       <p
-        className={`max-w-[86%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+        className={`max-w-[86%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
           side === "right"
             ? "rounded-br-md bg-emerald-600 text-white"
             : "rounded-bl-md bg-slate-100 text-slate-700"
@@ -518,7 +518,7 @@ function StoryCard({
   const s = map[tone];
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-b ${s.bg} p-7 ring-1 ${s.ring}`}
+      className={`relative overflow-hidden rounded-xl border border-slate-200/70 bg-gradient-to-b ${s.bg} p-7 ring-1 ${s.ring}`}
     >
       <div className="flex items-center gap-3">
         <span
@@ -565,7 +565,7 @@ function BeforeAfter() {
   return (
     <section className="bg-white pb-20 md:pb-28">
       <div className="mx-auto max-w-6xl px-6 md:px-8">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 md:p-7">
+        <div className="rounded-xl border border-slate-200/70 bg-slate-50 p-5 md:p-7">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
             What changes with ClinicEssential
           </h2>
@@ -597,7 +597,7 @@ function ComparisonColumn({
   items: string[];
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-5">
       <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
         {title}
       </h3>
@@ -672,7 +672,7 @@ function HowItWorks() {
           {steps.map(s => (
             <div
               key={s.n}
-              className="rounded-2xl border border-slate-200 bg-white p-6"
+              className="rounded-xl border border-slate-200/70 bg-white p-6"
             >
               <div className="flex items-start justify-between">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-600">
@@ -741,7 +741,7 @@ function AutomationPreview() {
           {steps.map((step, index) => (
             <div
               key={step.title}
-              className="relative rounded-xl border border-slate-200 bg-white p-5"
+              className="relative rounded-xl border border-slate-200/70 bg-white p-5"
             >
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-600">
                 <step.icon size={18} />
@@ -812,7 +812,7 @@ function Features() {
           {items.map(f => (
             <div
               key={f.title}
-              className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-green-200 hover:shadow-md"
+              className="group relative overflow-hidden rounded-xl border border-slate-200/70 bg-white p-6 transition hover:border-green-200 hover:shadow-md"
             >
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-600 transition group-hover:bg-green-600 group-hover:text-white">
                 <f.icon size={18} />
@@ -887,8 +887,8 @@ function ScreenshotCard({
   body: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-      <div className="mb-4 flex h-24 items-end rounded-lg border border-slate-200 bg-white p-3">
+    <div className="rounded-xl border border-slate-200/70 bg-slate-50 p-5">
+      <div className="mb-4 flex h-24 items-end rounded-lg border border-slate-200/70 bg-white p-3">
         <div className="w-full space-y-2">
           <div className="h-2 w-2/3 rounded-full bg-slate-200" />
           <div className="grid grid-cols-3 gap-2">
@@ -934,7 +934,7 @@ function WhoThisIsFor() {
           {clinics.map(([title, body]) => (
             <div
               key={title}
-              className="rounded-xl border border-slate-200 bg-white p-5"
+              className="rounded-xl border border-slate-200/70 bg-white p-5"
             >
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-600">
                 <Heart size={17} />
@@ -1003,7 +1003,7 @@ function Roi() {
           </div>
 
           <div className="lg:col-span-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
               <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-green-200">
                 Sample clinic — ₹50k/mo ad spend
               </p>
@@ -1061,7 +1061,7 @@ function Onboarding() {
           {steps.map(([n, title, body]) => (
             <div
               key={title}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-5"
+              className="rounded-xl border border-slate-200/70 bg-slate-50 p-5"
             >
               <p className="text-xs font-bold tracking-widest text-green-600">
                 {n}
@@ -1117,7 +1117,7 @@ function Addons() {
           </div>
 
           {/* Email marketing — small accented card */}
-          <div className="rounded-2xl border-2 border-green-400/60 bg-slate-900/60 p-5 ring-1 ring-green-500/20">
+          <div className="rounded-xl border-2 border-green-400/60 bg-slate-900/60 p-5 ring-1 ring-green-500/20">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-green-300">
               Patient Email Follow-ups
             </p>
@@ -1193,7 +1193,7 @@ function AdCard({
   extra: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm">
+    <div className="rounded-xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm">
       <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
         {label}
       </p>
@@ -1217,7 +1217,7 @@ function SmmCard({
   features: string[];
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm">
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 p-5 backdrop-blur-sm">
       {/* Top accent bar */}
       <div
         aria-hidden
@@ -1260,7 +1260,7 @@ function Comparison() {
           title="Why clinics switch to ClinicEssential"
           subtitle="A simpler operating layer for reception, managers, and owners."
         />
-        <div className="mt-12 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="mt-12 overflow-hidden rounded-xl border border-slate-200/70 bg-white">
           <div className="grid grid-cols-2 bg-slate-50 text-sm font-bold text-slate-900">
             <div className="border-r border-slate-200 p-4">
               Traditional Setup
@@ -1343,7 +1343,7 @@ function Faq() {
           {items.map(i => (
             <details
               key={i.q}
-              className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-green-200"
+              className="group rounded-xl border border-slate-200/70 bg-white p-5 transition hover:border-green-200"
             >
               <summary className="flex cursor-pointer items-center justify-between gap-4 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
                 {i.q}

@@ -39,7 +39,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
       <button
         type="button"
         onClick={onMenuClick}
-        className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 md:hidden"
+        className="rounded-lg border border-slate-200/70 bg-white p-2 text-slate-600 hover:bg-slate-50 md:hidden"
         aria-label="Open menu"
       >
         <Menu size={18} />
@@ -58,7 +58,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
               href="/settings"
               title="What's new"
               aria-label="What's new"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/70 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700"
             >
               <Gift size={17} />
             </Link>
@@ -66,7 +66,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
               href="/activity"
               title="Notifications"
               aria-label="Notifications"
-              className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200/70 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700"
             >
               <Bell size={17} />
               <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-green-500 ring-2 ring-white" />
@@ -96,7 +96,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             type="button"
             onClick={logout}
             title="Logout"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/70 bg-white px-2.5 py-2 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             <LogOut size={15} />
             <span className="sr-only sm:not-sr-only">Logout</span>

@@ -163,7 +163,7 @@ function StaffPageInner() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="inline-flex items-center gap-2 text-3xl font-bold tracking-tight text-slate-900">
@@ -180,7 +180,7 @@ function StaffPageInner() {
           type="button"
           onClick={() => (showCreate ? closeCreate() : setShowCreate(true))}
           data-tour="team-invite"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           {showCreate ? (
             <>
@@ -197,8 +197,8 @@ function StaffPageInner() {
       </header>
 
       {showCreate && (
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-3.5">
+      <div className="rounded-xl border border-slate-200/70 bg-white">
+        <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
               <UserPlus size={14} />
@@ -211,10 +211,10 @@ function StaffPageInner() {
           </p>
         </div>
 
-        <form onSubmit={submitCreate} className="p-5">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <form onSubmit={submitCreate} className="p-6">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             <label className="block">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">
                 Name
               </span>
               <input
@@ -222,11 +222,11 @@ function StaffPageInner() {
                 onChange={e => setName(e.target.value)}
                 required
                 minLength={2}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">
                 Email
               </span>
               <input
@@ -234,11 +234,11 @@ function StaffPageInner() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              <span className="mb-1.5 block text-sm font-medium text-slate-700">
                 Temporary password
               </span>
               <input
@@ -248,7 +248,7 @@ function StaffPageInner() {
                 required
                 minLength={8}
                 aria-describedby="password-helper"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 placeholder="At least 8 characters"
               />
               <p
@@ -314,14 +314,14 @@ function StaffPageInner() {
             <button
               type="button"
               onClick={closeCreate}
-              className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+              className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={creating}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
             >
               <UserPlus size={14} />
               {creating ? "Creating…" : "Add staff"}
@@ -331,8 +331,8 @@ function StaffPageInner() {
       </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
               <Users size={14} />
@@ -345,32 +345,32 @@ function StaffPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
+          <p className="px-6 py-4 text-sm text-slate-500">Loading…</p>
         ) : staff.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-slate-500">
+          <p className="px-6 py-4 text-sm text-slate-500">
             No staff yet — add one above.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50/70">
-                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">Email</th>
-                  <th className="px-4 py-3 text-left">Modules</th>
-                  <th className="px-4 py-3 text-left">Created</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Name</th>
+                  <th className="px-6 py-3 text-left">Email</th>
+                  <th className="px-6 py-3 text-left">Modules</th>
+                  <th className="px-6 py-3 text-left">Created</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {staff.map(member => {
                   const editing = editingId === member.id;
                   return (
                     <tr
                       key={member.id}
-                      className="border-t border-slate-100 align-top transition-colors hover:bg-slate-50/70"
+                      className="align-top transition-colors hover:bg-slate-50/70"
                     >
-                      <td className="px-4 py-3 font-medium text-slate-900">
+                      <td className="px-6 py-3.5 font-medium text-slate-900">
                         <span className="inline-flex items-center gap-2">
                           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-100 text-xs font-semibold text-green-700">
                             {(member.name || member.email || "?")
@@ -380,10 +380,10 @@ function StaffPageInner() {
                           {member.name || "—"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-700">
+                      <td className="px-6 py-3.5 text-slate-700">
                         {member.email}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-3.5">
                         {editing ? (
                           <div className="flex flex-wrap gap-2">
                             {ASSIGNABLE_MODULES.map(m => {
@@ -424,18 +424,18 @@ function StaffPageInner() {
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-slate-500">
+                      <td className="px-6 py-3.5 text-xs text-slate-500">
                         {member.createdAt
                           ? new Date(member.createdAt).toLocaleDateString()
                           : "—"}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-6 py-3.5 text-right">
                         {editing ? (
                           <div className="inline-flex gap-2">
                             <button
                               type="button"
                               onClick={cancelEdit}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
                             >
                               <X size={12} />
                               Cancel
@@ -444,7 +444,7 @@ function StaffPageInner() {
                               type="button"
                               onClick={() => saveEdit(member.id)}
                               disabled={savingId === member.id}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                             >
                               <Check size={12} />
                               {savingId === member.id ? "Saving…" : "Save"}
@@ -455,7 +455,7 @@ function StaffPageInner() {
                             <button
                               type="button"
                               onClick={() => startEdit(member)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
                             >
                               <Pencil size={12} />
                               Edit modules
@@ -464,7 +464,7 @@ function StaffPageInner() {
                               type="button"
                               onClick={() => remove(member.id)}
                               disabled={removingId === member.id}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
                             >
                               <Trash2 size={12} />
                               {removingId === member.id

@@ -27,7 +27,7 @@ export default function SubscriptionCard({
   const text = STATUS_TEXT[status || ""] ?? "text-slate-700";
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex items-center gap-3">
         <span className={`h-2.5 w-2.5 rounded-full ${dot}`} />
         <div>

@@ -139,7 +139,7 @@ export default function AdminDashboard() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/activity"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             <Activity size={14} />
             Activity log
@@ -290,7 +290,7 @@ function SubscriptionAttention({ rows }: { rows: AttentionRow[] }) {
   const expiredCount = rows.filter(r => r.severity === "expired").length;
   const weekCount = rows.filter(r => r.severity === "this_week").length;
   return (
-    <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm">
+    <section className="rounded-xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100">
           <AlertCircle size={14} />
@@ -333,7 +333,7 @@ function SubscriptionAttention({ rows }: { rows: AttentionRow[] }) {
 
 function TopClients({ rows }: { rows: TopClientRow[] }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
           <TrendingUp size={14} />
@@ -382,7 +382,7 @@ function TopClients({ rows }: { rows: TopClientRow[] }) {
 
 function RecentActivity({ entries }: { entries: ActivityEntry[] | null }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-xl bg-violet-50 text-violet-600 ring-1 ring-inset ring-violet-100">

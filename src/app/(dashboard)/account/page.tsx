@@ -67,7 +67,7 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Account</h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -76,11 +76,11 @@ export default function AccountPage() {
         </p>
       </header>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-3.5">
+      <section className="rounded-xl border border-slate-200/70 bg-white">
+        <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="text-sm font-semibold tracking-tight text-slate-900">Profile</h2>
         </div>
-        <dl className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-5 p-6 sm:grid-cols-2">
           <Row label="Name" value={user?.name ?? "—"} />
           <Row label="Email" value={user?.email ?? "—"} />
           <Row label="Role" value={user?.role ?? "—"} />
@@ -95,14 +95,14 @@ export default function AccountPage() {
         </dl>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-3.5">
+      <section className="rounded-xl border border-slate-200/70 bg-white">
+        <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Change password
           </h2>
           <p className="text-xs text-slate-500">{passwordPolicyDescription}</p>
         </div>
-        <form onSubmit={submit} className="space-y-3 p-5">
+        <form onSubmit={submit} className="space-y-4 p-6">
           <Field
             label="Current password"
             type="password"
@@ -146,7 +146,7 @@ export default function AccountPage() {
                 !newPassword ||
                 !confirmPassword
               }
-              className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+              className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
             >
               {submitting ? "Updating…" : "Update password"}
             </button>
@@ -203,15 +203,15 @@ function ChangeEmailSection() {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-5 py-3.5">
+    <section className="rounded-xl border border-slate-200/70 bg-white">
+      <div className="border-b border-slate-200 px-6 py-4">
         <h2 className="text-sm font-semibold tracking-tight text-slate-900">Change email</h2>
         <p className="text-xs text-slate-500">
           Current: <span className="font-medium">{user?.email ?? "—"}</span>.
           You&apos;ll sign in with the new email next time.
         </p>
       </div>
-      <form onSubmit={submit} className="space-y-3 p-5">
+      <form onSubmit={submit} className="space-y-4 p-6">
         <Field
           label="New email"
           type="email"
@@ -242,7 +242,7 @@ function ChangeEmailSection() {
           <button
             type="submit"
             disabled={submitting || !newEmail || !currentPassword}
-            className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {submitting ? "Updating…" : "Update email"}
           </button>
@@ -324,8 +324,8 @@ function OnboardingControls() {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-5 py-3.5">
+    <section className="rounded-xl border border-slate-200/70 bg-white">
+      <div className="border-b border-slate-200 px-6 py-4">
         <h2 className="text-sm font-semibold tracking-tight text-slate-900">
           Onboarding tour
         </h2>
@@ -334,12 +334,12 @@ function OnboardingControls() {
           behind from a tour you didn&apos;t finish.
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-2 p-5">
+      <div className="flex flex-wrap items-center gap-2 p-6">
         <button
           type="button"
           onClick={restart}
           disabled={busy !== null}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
         >
           <Sparkles size={12} />
           {busy === "restart" ? "Restarting…" : "Restart tour"}
@@ -349,7 +349,7 @@ function OnboardingControls() {
             type="button"
             onClick={clearDemo}
             disabled={busy !== null}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-700 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-60"
           >
             <Trash2 size={12} />
             {busy === "clear" ? "Clearing…" : "Clear demo data"}
@@ -389,7 +389,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </span>
       <input
@@ -398,7 +398,7 @@ function Field({
         onChange={e => onChange(e.target.value)}
         autoComplete={autoComplete}
         required={required}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+        className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
     </label>
   );

@@ -38,10 +38,10 @@ export default function RecentActivityCard() {
   const forbidden = (error as { status?: number } | undefined)?.status === 403;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">
             Recent Activity
           </h2>
           <p className="text-xs text-slate-500">

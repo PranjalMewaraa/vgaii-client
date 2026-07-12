@@ -56,7 +56,7 @@ export default function BookingSettings() {
 
   if (loading) {
     return (
-      <section className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 shadow-sm">
+      <section className="rounded-xl border border-slate-200/70 bg-white px-5 py-4 text-sm text-slate-500 shadow-sm">
         Loading booking settings…
       </section>
     );
@@ -101,7 +101,7 @@ export default function BookingSettings() {
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <section className="rounded-xl border border-slate-200/70 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
         <div>
           <h2 className="text-sm font-semibold tracking-tight text-slate-900">Booking</h2>
@@ -231,7 +231,7 @@ function DayRow({
   const add = () => onChange([...ranges, { open: "10:00", close: "13:00" }]);
 
   return (
-    <div className="flex flex-wrap items-start gap-2 rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 shadow-sm">
+    <div className="flex flex-wrap items-start gap-2 rounded-xl border border-slate-200/70 bg-slate-50/70 px-3 py-2 shadow-sm">
       <span className="w-24 pt-1.5 text-sm font-medium text-slate-700">
         {DAY_LABEL[day]}
       </span>
@@ -242,7 +242,7 @@ function DayRow({
         {ranges.map((r, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-sm"
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200/70 bg-white px-2 py-1 shadow-sm"
           >
             <input
               type="time"
@@ -270,7 +270,7 @@ function DayRow({
         <button
           type="button"
           onClick={add}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50"
+          className="rounded-lg border border-slate-200/70 bg-white px-2 py-1 text-xs font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50"
         >
           + Add
         </button>
@@ -295,7 +295,7 @@ function BlackoutEditor({
         {dates.map((d, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-sm"
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200/70 bg-white px-2 py-1 shadow-sm"
           >
             <input
               type="date"
@@ -322,7 +322,7 @@ function BlackoutEditor({
             const v = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
             onChange([...dates, v]);
           }}
-          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50"
+          className="rounded-lg border border-slate-200/70 bg-white px-2 py-1 text-xs font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50"
         >
           + Add date
         </button>
@@ -332,7 +332,7 @@ function BlackoutEditor({
 }
 
 const selectCls =
-  "mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100";
+  "mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100";
 
 function Field({
   label,

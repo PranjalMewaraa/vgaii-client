@@ -381,7 +381,7 @@ function AppointmentsPageInner() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Appointments</h1>
@@ -397,7 +397,7 @@ function AppointmentsPageInner() {
             setAddOpen(true);
           }}
           data-tour="appointments-add-btn"
-          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
+          className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           + Add appointment
         </button>
@@ -455,7 +455,7 @@ function AppointmentsPageInner() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="rounded-xl border border-slate-200/70 bg-white">
         <div className="flex border-b border-slate-200">
           {TAB_DEFS.map(({ key, label, icon: Icon }) => {
             const isActive = tab === key;
@@ -466,10 +466,10 @@ function AppointmentsPageInner() {
                 onClick={() => {
                   setTab(key);
                 }}
-                className={`flex flex-1 items-center justify-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                className={`-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
                   isActive
                     ? "border-green-600 text-green-700"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 <Icon size={16} />
@@ -487,9 +487,9 @@ function AppointmentsPageInner() {
                 key={p}
                 type="button"
                 onClick={() => setPreset(p)}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
                   !specificDate && activePreset === p
-                    ? "bg-green-600 text-white shadow-sm"
+                    ? "bg-green-600 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -504,7 +504,7 @@ function AppointmentsPageInner() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="🔍  Search by name, phone or email…"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="inline-flex items-center gap-2 text-xs text-slate-500">
@@ -513,7 +513,7 @@ function AppointmentsPageInner() {
                 type="date"
                 value={specificDate}
                 onChange={e => setSpecificDate(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             {filtersActive && (
@@ -548,9 +548,9 @@ function AppointmentsPageInner() {
       )}
 
       {tab !== "calendar" && (
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
-          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">
             {tab === "upcoming" ? "Upcoming Appointments" : "Appointment History"}
           </h2>
           <span className="text-xs text-slate-500">
@@ -570,24 +570,24 @@ function AppointmentsPageInner() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50/70">
-                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3 text-left">Patient</th>
-                  <th className="px-4 py-3 text-left">Schedule</th>
-                  <th className="px-4 py-3 text-left">Source</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Patient</th>
+                  <th className="px-6 py-3 text-left">Schedule</th>
+                  <th className="px-6 py-3 text-left">Source</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {pagedVisible.map(a => {
                   const isScheduled = !a.status || a.status === "scheduled";
                   const dt = new Date(a.date);
                   return (
                     <tr
                       key={a.id}
-                      className="border-t border-slate-100 transition-colors hover:bg-slate-50/70"
+                      className="transition-colors hover:bg-slate-50/70"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-3.5">
                         <div className="flex items-center gap-3">
                           <span
                             className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${avatarTone(a.name)}`}
@@ -604,7 +604,7 @@ function AppointmentsPageInner() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-3.5">
                         <div className="flex flex-col items-start gap-1">
                           <StatusPill status={a.status ?? "scheduled"} />
                           <span className="text-xs text-slate-500">
@@ -622,10 +622,10 @@ function AppointmentsPageInner() {
                           <VitalsBadges appointment={a} />
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-700">
+                      <td className="px-6 py-3.5 text-slate-700">
                         {a.source || "—"}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-3.5">
                         <div className="flex items-center justify-end gap-1.5">
                           {isScheduled && (
                             <>
@@ -635,7 +635,7 @@ function AppointmentsPageInner() {
                                   setEditTarget({ appointment: a, mode: "visit" })
                                 }
                                 disabled={busyId === a.id}
-                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-700 shadow-sm transition-colors hover:bg-emerald-50 disabled:opacity-60"
+                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-60"
                               >
                                 ✓ Mark visited
                               </button>
@@ -643,7 +643,7 @@ function AppointmentsPageInner() {
                                 type="button"
                                 onClick={() => markNoShow(a.id)}
                                 disabled={busyId === a.id}
-                                className="rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
+                                className="rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
                               >
                                 No show
                               </button>
@@ -654,7 +654,7 @@ function AppointmentsPageInner() {
                               type="button"
                               onClick={() => reopen(a.id)}
                               disabled={busyId === a.id}
-                              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
+                              className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
                             >
                               Reopen
                             </button>
@@ -692,13 +692,13 @@ function AppointmentsPageInner() {
         )}
 
         {visible.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-3.5 text-xs text-slate-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/70 px-6 py-3.5 text-xs text-slate-600">
             <label className="inline-flex items-center gap-2">
               <span>Rows per page:</span>
               <select
                 value={rowsPerPage}
                 onChange={e => setRowsPerPage(Number(e.target.value))}
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="rounded-md border border-slate-200/70 bg-white px-2 py-1 text-xs text-slate-700 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 {[10, 25, 50, 100].map(n => (
                   <option key={n} value={n}>
@@ -716,7 +716,7 @@ function AppointmentsPageInner() {
                 type="button"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={safePage <= 1}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-slate-200/70 bg-white px-3 py-1 font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 ‹ Previous
               </button>
@@ -727,7 +727,7 @@ function AppointmentsPageInner() {
                 type="button"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={safePage >= totalPages}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-slate-200/70 bg-white px-3 py-1 font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next ›
               </button>
@@ -790,8 +790,8 @@ function SpotlightCard({
 }) {
   const isActive = tone === "active";
   const containerCls = isActive
-    ? "rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm"
-    : "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
+    ? "rounded-xl border border-emerald-200 bg-emerald-50 p-6"
+    : "rounded-xl border border-slate-200/70 bg-white p-6";
   const labelCls = isActive ? "text-emerald-700" : "text-slate-500";
   const date = new Date(appointment.date);
 
@@ -822,7 +822,7 @@ function SpotlightCard({
               type="button"
               onClick={onMarkVisited}
               disabled={busy}
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-60"
+              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60"
             >
               Mark visited
             </button>
@@ -830,7 +830,7 @@ function SpotlightCard({
               type="button"
               onClick={onNoShow}
               disabled={busy}
-              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
+              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
             >
               No show
             </button>
@@ -898,27 +898,27 @@ function CalendarWeekGrid({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-5 py-3.5">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 px-6 py-4">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onPrevWeek}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+            className="rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             ← Prev
           </button>
           <button
             type="button"
             onClick={onToday}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+            className="rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             Today
           </button>
           <button
             type="button"
             onClick={onNextWeek}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+            className="rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             Next →
           </button>

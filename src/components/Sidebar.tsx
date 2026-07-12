@@ -146,7 +146,7 @@ export default function Sidebar({
             type="button"
             onClick={() => setCollapsed(c => !c)}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="hidden h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700 md:flex"
+            className="hidden h-8 w-8 items-center justify-center rounded-lg border border-slate-200/70 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-700 md:flex"
           >
             {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
           </button>
@@ -214,7 +214,7 @@ export default function Sidebar({
               href="/account"
               onClick={onClose}
               title={collapsed ? displayName : undefined}
-              className={`flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm transition-colors hover:bg-slate-50 ${
+              className={`flex items-center gap-2.5 rounded-xl border border-slate-200/70 bg-white px-2.5 py-2 shadow-sm transition-colors hover:bg-slate-50 ${
                 collapsed ? "md:justify-center md:px-0" : ""
               }`}
             >

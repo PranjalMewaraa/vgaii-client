@@ -110,7 +110,7 @@ function ActivityPageInner() {
   }, [entries]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header data-tour="activity-feed">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Activity log</h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -119,7 +119,7 @@ function ActivityPageInner() {
         </p>
       </header>
 
-      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
         <div className="flex flex-wrap items-end gap-4">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -128,7 +128,7 @@ function ActivityPageInner() {
             <select
               value={entityType}
               onChange={e => setEntityType(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-700 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All entities</option>
               <option value="Lead">Leads / Patients</option>
@@ -146,7 +146,7 @@ function ActivityPageInner() {
               value={actionFilter}
               onChange={e => setActionFilter(e.target.value)}
               placeholder="e.g. lead.status.changed"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-700 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           {filtersActive && (
@@ -174,7 +174,7 @@ function ActivityPageInner() {
               <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 {group.day}
               </h2>
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
                 <ul className="divide-y divide-slate-100">
                   {group.items.map(e => (
                     <li key={e.id} className="px-4 py-3 transition-colors hover:bg-slate-50/70">
@@ -228,7 +228,7 @@ function ActivityPageInner() {
                 type="button"
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
+                className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
               >
                 {loadingMore ? "Loading…" : "Load more"}
               </button>

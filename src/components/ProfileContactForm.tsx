@@ -37,7 +37,7 @@ const VARIANTS: Record<ContactFormVariant, VariantClasses> = {
     label:
       "block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2",
     input:
-      "block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-sm shadow-sm placeholder:text-slate-400 transition-all focus:border-sky-600 focus:ring-1 focus:ring-sky-600",
+      "block w-full rounded-xl border border-slate-200/70 bg-slate-50/50 px-4 py-3.5 text-sm shadow-sm placeholder:text-slate-400 transition-all focus:border-sky-600 focus:ring-1 focus:ring-sky-600",
     successHeading: "text-base font-semibold text-slate-900",
     successLink: "mt-4 text-sm font-medium text-slate-900 hover:underline",
     button:

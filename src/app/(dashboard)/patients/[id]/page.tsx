@@ -310,7 +310,7 @@ function PatientDetailPageInner({
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Link
         href="/patients"
         className="inline-flex items-center gap-1 text-sm text-green-600 hover:underline"
@@ -322,7 +322,7 @@ function PatientDetailPageInner({
       {/* HEADER: identity + primary CTA */}
       <div
         data-tour="patient-header"
-        className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm"
+        className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200/70 bg-white p-6"
       >
         <div className="flex min-w-0 items-center gap-4">
           <div
@@ -332,7 +332,7 @@ function PatientDetailPageInner({
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate text-3xl font-bold tracking-tight text-slate-900">
+              <h1 className="truncate text-2xl font-bold tracking-tight text-slate-900">
                 {lead.name}
               </h1>
               <span
@@ -357,7 +357,7 @@ function PatientDetailPageInner({
           <button
             type="button"
             onClick={() => setEditProfileOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
             aria-label="Edit patient profile"
             title="Edit patient profile"
           >
@@ -375,7 +375,7 @@ function PatientDetailPageInner({
               });
               router.push(`/finances?${params.toString()}`);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3.5 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3.5 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50"
           >
             <CreditCard size={14} />
             Record payment
@@ -383,7 +383,7 @@ function PatientDetailPageInner({
           <button
             type="button"
             onClick={() => setBookingOpen(true)}
-            className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
           >
             + Schedule appointment
           </button>
@@ -391,11 +391,8 @@ function PatientDetailPageInner({
       </div>
 
       {/* TAB NAV */}
-      <div
-        data-tour="patient-tabs"
-        className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
-      >
-        <div className="flex border-b border-slate-200">
+      <div data-tour="patient-tabs">
+        <div className="flex gap-6 overflow-x-auto border-b border-slate-200 px-1">
           {TAB_DEFS.map(({ key, label }) => {
             const isActive = tab === key;
             return (
@@ -403,10 +400,10 @@ function PatientDetailPageInner({
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
-                className={`flex-1 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                className={`-mb-px shrink-0 border-b-2 px-1 py-3 text-sm font-semibold transition-colors ${
                   isActive
                     ? "border-green-600 text-green-700"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 {label}
@@ -420,8 +417,8 @@ function PatientDetailPageInner({
         <div className="grid gap-4 lg:grid-cols-3">
           {/* LEFT COLUMN — Contact + Notes */}
           <div className="space-y-4 lg:col-span-1">
-            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-              <p className="text-sm font-semibold tracking-tight text-slate-900">Contact</p>
+            <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+              <p className="text-base font-semibold tracking-tight text-slate-900">Contact</p>
               <dl className="mt-3 space-y-2 text-sm">
                 <ContactRow
                   icon={<Phone size={14} />}
@@ -475,9 +472,9 @@ function PatientDetailPageInner({
               )}
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+            <div className="rounded-xl border border-slate-200/70 bg-white p-6">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold tracking-tight text-slate-900">
+                <p className="text-base font-semibold tracking-tight text-slate-900">
                   Patient notes
                 </p>
                 {dirtyNotes && (
@@ -488,7 +485,7 @@ function PatientDetailPageInner({
                 value={notesDraft}
                 onChange={e => setNotesDraft(e.target.value)}
                 rows={6}
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="mt-2 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 placeholder="Allergies, chronic conditions, preferences, follow-up reminders…"
               />
               <div className="mt-2 flex justify-end">
@@ -496,7 +493,7 @@ function PatientDetailPageInner({
                   type="button"
                   onClick={saveNotes}
                   disabled={!dirtyNotes || savingNotes}
-                  className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+                  className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                 >
                   {savingNotes ? "Saving…" : "Save notes"}
                 </button>
@@ -564,10 +561,10 @@ function PatientDetailPageInner({
               <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Feedback ({feedbacks.length})
               </h2>
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
                 <ul className="divide-y divide-slate-100">
                   {feedbacks.map(f => (
-                    <li key={f.id} className="px-5 py-4">
+                    <li key={f.id} className="px-6 py-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-slate-800">
@@ -644,7 +641,7 @@ function PatientDetailPageInner({
         >
           <div
             onClick={e => e.stopPropagation()}
-            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
           >
             <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
               <div>
@@ -808,7 +805,7 @@ function AppointmentCard({
 
   return (
     <article
-      className={`rounded-2xl border border-slate-200 border-l-4 bg-white px-5 py-4 shadow-sm ${stripe}`}
+      className={`rounded-xl border border-slate-200/70 border-l-4 bg-white p-6 ${stripe}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <button
@@ -845,7 +842,7 @@ function AppointmentCard({
               <button
                 type="button"
                 onClick={onMarkVisited}
-                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-emerald-700"
               >
                 Mark visited
               </button>
@@ -853,7 +850,7 @@ function AppointmentCard({
                 type="button"
                 onClick={onNoShow}
                 disabled={busy}
-                className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
+                className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
               >
                 No show
               </button>
@@ -862,7 +859,7 @@ function AppointmentCard({
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Edit
           </button>
@@ -870,7 +867,7 @@ function AppointmentCard({
             type="button"
             onClick={onDelete}
             disabled={busy}
-            className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
+            className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
           >
             {busy ? "…" : "Delete"}
           </button>
@@ -956,14 +953,14 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
   }, [payments]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Payment history ({payments.length})
         </h2>
         <Link
           href={`/finances?tab=payment&leadId=${encodeURIComponent(lead.id)}&name=${encodeURIComponent(lead.name)}&phone=${encodeURIComponent(lead.phone)}`}
-          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
+          className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           + Record payment
         </Link>
@@ -989,29 +986,29 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
         />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
         {isLoading ? (
-          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
+          <p className="px-6 py-4 text-sm text-slate-500">Loading…</p>
         ) : payments.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-slate-500">
+          <p className="px-6 py-4 text-sm text-slate-500">
             No payments recorded for this patient yet.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50/70">
-                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3 text-left">Date</th>
-                  <th className="px-4 py-3 text-left">Items</th>
-                  <th className="px-4 py-3 text-left">Method</th>
-                  <th className="px-4 py-3 text-left">Collected by</th>
-                  <th className="px-4 py-3 text-right">Final</th>
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Date</th>
+                  <th className="px-6 py-3 text-left">Items</th>
+                  <th className="px-6 py-3 text-left">Method</th>
+                  <th className="px-6 py-3 text-left">Collected by</th>
+                  <th className="px-6 py-3 text-right">Final</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {payments.map(p => (
-                  <tr key={p.id} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                  <tr key={p.id} className="transition-colors hover:bg-slate-50/70">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {new Date(p.createdAt).toLocaleString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -1020,7 +1017,7 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="px-6 py-3.5 text-slate-700">
                       <span>{p.items.map(i => i.title).join(" + ")}</span>
                       {p.discount > 0 && (
                         <span className="ml-1 text-[11px] text-slate-500">
@@ -1028,15 +1025,15 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-3.5">
                       <span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">
                         {p.paymentMethod}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {p.collectedBy?.name ?? p.collectedBy?.email ?? "—"}
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900">
+                    <td className="px-6 py-3.5 text-right font-medium text-slate-900">
                       {formatRupees(p.finalAmount)}
                     </td>
                   </tr>
@@ -1067,7 +1064,7 @@ function SummaryTile({
     slate: "text-slate-900",
   };
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </p>
@@ -1293,12 +1290,12 @@ function DirectAppointmentView({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Link href="/patients" className="text-sm text-green-600 hover:underline">
         ← Back to patients
       </Link>
 
-      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
           <h1 className="text-base font-semibold tracking-tight text-slate-900">
             {a.name || "Unnamed"}
@@ -1318,8 +1315,8 @@ function DirectAppointmentView({
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="border-b border-slate-200 px-5 py-3.5">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
+        <div className="border-b border-slate-200/70 px-6 py-3.5">
           <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Link to existing patient
           </h2>
@@ -1332,12 +1329,12 @@ function DirectAppointmentView({
             if it isn&apos;t already.
           </p>
         </div>
-        <div className="px-5 py-4">
+        <div className="px-6 py-4">
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Name or phone…"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+            className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           {error && (
             <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -1351,7 +1348,7 @@ function DirectAppointmentView({
             <p className="mt-3 text-xs text-slate-500">No matches.</p>
           )}
           {results.length > 0 && (
-            <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200/70 overflow-hidden">
               {results.map(r => (
                 <li
                   key={r.id}
@@ -1370,7 +1367,7 @@ function DirectAppointmentView({
                     type="button"
                     onClick={() => link(r.id)}
                     disabled={linking === r.id}
-                    className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+                    className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                   >
                     {linking === r.id ? "Linking…" : "Link"}
                   </button>

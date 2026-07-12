@@ -125,7 +125,7 @@ function AdminClientsPageInner() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Clients</h1>
@@ -137,7 +137,7 @@ function AdminClientsPageInner() {
         </div>
         <Link
           href="/admin/clients/new"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           <Plus size={14} />
           Onboard new clinic
@@ -151,8 +151,8 @@ function AdminClientsPageInner() {
       )}
 
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-5 py-3.5">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-6 py-4">
           <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
               <Building2 size={14} />
@@ -312,7 +312,7 @@ function ClientAdminBlock({
   onUpdated: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -337,7 +337,7 @@ function ClientAdminBlock({
             type="button"
             onClick={() => onImpersonate(client.admin!.id)}
             disabled={busyId === client.admin.id}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             <UserRound size={12} />
             {busyId === client.admin.id ? "Switching…" : "Impersonate"}
@@ -367,7 +367,7 @@ function ClientStaffBlock({
   onUpdated: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
       <div className="border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Users size={11} />
@@ -405,7 +405,7 @@ function ClientStaffBlock({
                 type="button"
                 onClick={() => onImpersonate(s.id)}
                 disabled={busyId === s.id}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
               >
                 <UserRound size={12} />
                 {busyId === s.id ? "Switching…" : "Impersonate"}
@@ -518,7 +518,7 @@ function UserSecurityActions({
         <button
           type="button"
           onClick={() => open("password")}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
         >
           <KeyRound size={11} />
           Reset password
@@ -526,7 +526,7 @@ function UserSecurityActions({
         <button
           type="button"
           onClick={() => open("email")}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
         >
           <Pencil size={11} />
           Change email
@@ -545,14 +545,14 @@ function UserSecurityActions({
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="≥8 chars, letters + a digit"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-1.5 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={resetPassword}
             disabled={busy || password.length < 8}
-            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {busy ? "Saving…" : "Set password"}
           </button>
@@ -570,14 +570,14 @@ function UserSecurityActions({
               value={newEmail}
               onChange={e => setNewEmail(e.target.value)}
               placeholder="user@example.com"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-1.5 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={changeEmail}
             disabled={busy || !newEmail.trim()}
-            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {busy ? "Saving…" : "Save email"}
           </button>
@@ -648,7 +648,7 @@ function ClientIntegrationsBlock({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Plug size={11} />
@@ -689,7 +689,7 @@ function ClientIntegrationsBlock({
               <button
                 type="button"
                 onClick={cancel}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
               >
                 Cancel
               </button>
@@ -697,7 +697,7 @@ function ClientIntegrationsBlock({
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
               >
                 <Check size={12} />
                 {saving ? "Saving…" : "Save"}
@@ -781,7 +781,7 @@ function ClientWebhooksBlock({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Webhook size={11} />
@@ -791,7 +791,7 @@ function ClientWebhooksBlock({
           type="button"
           onClick={rotate}
           disabled={rotating}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
         >
           <RotateCcw size={12} />
           {rotating ? "Rotating…" : "Rotate key"}
@@ -984,7 +984,7 @@ function WebhookRow({
   const display = mode === "query" ? queryUrl : url;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-slate-50/60 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -992,7 +992,7 @@ function WebhookRow({
           </p>
           {hint && <p className="text-xs text-slate-500">{hint}</p>}
         </div>
-        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-[11px]">
+        <div className="inline-flex rounded-lg border border-slate-200/70 bg-white p-0.5 text-[11px]">
           <button
             type="button"
             onClick={() => setMode("header")}
@@ -1066,7 +1066,7 @@ function SchemaPanel({ schema }: { schema: WebhookSchema }) {
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
           Fields
         </p>
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-slate-200/70 bg-white">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
               <tr>
@@ -1117,7 +1117,7 @@ function SchemaPanel({ schema }: { schema: WebhookSchema }) {
           </p>
           <CopyButton value={schema.exampleRequest} />
         </div>
-        <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-900 p-3 text-[11px] leading-relaxed text-slate-100">
+        <pre className="overflow-x-auto rounded-lg border border-slate-200/70 bg-slate-900 p-3 text-[11px] leading-relaxed text-slate-100">
           {schema.exampleRequest}
         </pre>
       </div>
@@ -1129,13 +1129,13 @@ function SchemaPanel({ schema }: { schema: WebhookSchema }) {
           </p>
           <CopyButton value={schema.exampleResponse} />
         </div>
-        <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-700">
+        <pre className="overflow-x-auto rounded-lg border border-slate-200/70 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-700">
           {schema.exampleResponse}
         </pre>
       </div>
 
       {schema.notes && (
-        <p className="rounded-lg border border-slate-200 bg-amber-50/60 px-3 py-2 text-[11px] text-slate-700">
+        <p className="rounded-lg border border-slate-200/70 bg-amber-50/60 px-3 py-2 text-[11px] text-slate-700">
           {schema.notes}
         </p>
       )}
@@ -1158,7 +1158,7 @@ function CopyButton({ value }: { value: string }) {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copied" : "Copy"}
@@ -1187,7 +1187,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </span>
       <input
@@ -1197,7 +1197,7 @@ function Field({
         required={required}
         minLength={minLength}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+        className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </label>
@@ -1219,22 +1219,22 @@ function PlaceIdField({
   return (
     <div>
       <label className="block">
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        <span className="mb-1.5 block text-sm font-medium text-slate-700">
           Google Place ID
         </span>
-        <div className="mt-1 flex items-stretch gap-2">
+        <div className="flex items-stretch gap-2">
           <input
             type="text"
             value={value}
             onChange={e => onChange(e.target.value)}
             placeholder="ChIJ…"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+            className="flex-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
             onClick={() => setOpen(true)}
             title="Search a business and grab its Place ID"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             <MapPin size={12} />
             Locate

@@ -197,7 +197,7 @@ export default function ReportsPanel() {
       </div>
 
       {preset === "custom" && (
-        <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200/70 bg-white px-5 py-4 shadow-sm">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               From
@@ -206,7 +206,7 @@ export default function ReportsPanel() {
               type="date"
               value={fromCustom}
               onChange={e => setFromCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
@@ -217,7 +217,7 @@ export default function ReportsPanel() {
               type="date"
               value={toCustom}
               onChange={e => setToCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </div>
@@ -256,7 +256,7 @@ export default function ReportsPanel() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
         <h3 className="text-sm font-semibold tracking-tight text-slate-900">
           Appointment outcomes
         </h3>
@@ -270,7 +270,7 @@ export default function ReportsPanel() {
           <ApptRow label="Cancelled" count={appointments.cancelled} total={appointments.total} color="bg-slate-400" />
         </div>
         {appointments.completed + appointments.no_show > 0 && (
-          <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          <p className="mt-4 rounded-lg border border-slate-200/70 bg-slate-50 px-3 py-2 text-xs text-slate-600">
             Of {appointments.completed + appointments.no_show} appointments
             that resolved,{" "}
             <span className="font-semibold text-slate-900">
@@ -281,7 +281,7 @@ export default function ReportsPanel() {
         )}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
         <div className="border-b border-slate-200 px-5 py-3.5">
           <h3 className="text-sm font-semibold tracking-tight text-slate-900">
             Source attribution
@@ -338,7 +338,7 @@ export default function ReportsPanel() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <h3 className="text-sm font-semibold tracking-tight text-slate-900">
@@ -350,7 +350,7 @@ export default function ReportsPanel() {
                   : "Star distribution from your Google Business listing (all-time)."}
               </p>
             </div>
-            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-[11px]">
+            <div className="inline-flex rounded-lg border border-slate-200/70 p-0.5 text-[11px]">
               <button
                 type="button"
                 onClick={() => setRatingsSource("internal")}
@@ -398,7 +398,7 @@ export default function ReportsPanel() {
             // Aggregate-only fallback when DataForSEO doesn't return
             // rating_distribution. Show the rating + total reviews so the
             // panel isn't blank.
-            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+            <div className="mt-4 rounded-lg border border-slate-200/70 bg-slate-50 px-3 py-3 text-sm text-slate-700">
               <p>
                 <span className="font-semibold">
                   ⭐ {(data.googleRatings.rating ?? 0).toFixed(1)}
@@ -425,7 +425,7 @@ export default function ReportsPanel() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
           <h3 className="text-sm font-semibold tracking-tight text-slate-900">Funnel</h3>
           <p className="text-xs text-slate-500">
             Each stage shows leads that reached it or moved past. {lost} also
@@ -466,7 +466,7 @@ export default function ReportsPanel() {
         </section>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
         <h3 className="text-sm font-semibold tracking-tight text-slate-900">Daily volume</h3>
         <p className="text-xs text-slate-500">
           Leads captured and appointments dated for each day in the range.
@@ -521,7 +521,7 @@ function Stat({
   tone?: "warn";
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </p>

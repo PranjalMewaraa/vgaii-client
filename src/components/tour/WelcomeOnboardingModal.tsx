@@ -102,7 +102,7 @@ export default function WelcomeOnboardingModal() {
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+      <div className="w-full max-w-md rounded-xl border border-slate-200/70 bg-white p-6 shadow-2xl">
         <div className="flex items-start gap-3">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
             <Sparkles size={20} />
@@ -129,7 +129,7 @@ export default function WelcomeOnboardingModal() {
           <button
             type="button"
             onClick={handleSkip}
-            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Skip
           </button>

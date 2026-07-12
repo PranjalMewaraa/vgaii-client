@@ -112,8 +112,8 @@ export default function ReportsTab() {
   const [section, setSection] = useState<"payments" | "expenses">("payments");
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="space-y-6">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
         <div className="flex border-b border-slate-200">
           <SectionTab
             label="Payments"
@@ -145,10 +145,10 @@ function SectionTab({
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+      className={`-mb-px flex-1 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
         active
           ? "border-green-600 text-green-700"
-          : "border-transparent text-slate-500 hover:text-slate-700"
+          : "border-transparent text-slate-500 hover:text-slate-800"
       }`}
     >
       {label}
@@ -256,7 +256,7 @@ function PaymentsReport() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <FilterBar
         preset={preset}
         setPreset={setPreset}
@@ -273,7 +273,7 @@ function PaymentsReport() {
               <select
                 value={method}
                 onChange={e => setMethod(e.target.value as typeof method)}
-                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 <option value="">All</option>
                 {PAYMENT_METHODS.map(m => (
@@ -291,7 +291,7 @@ function PaymentsReport() {
                 <select
                   value={staff}
                   onChange={e => setStaff(e.target.value)}
-                  className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                  className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 >
                   <option value="">Anyone</option>
                   {staffOptions.map(s => (
@@ -329,30 +329,30 @@ function PaymentsReport() {
 
       <PaymentsTrendChart data={dailyTrend} empty={dailyTrend.length === 0} />
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
         {isLoading ? (
-          <p className="px-5 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-6 py-4 text-sm text-slate-500">Loading…</p>
         ) : payments.length === 0 ? (
-          <p className="px-5 py-3 text-sm text-slate-500">
+          <p className="px-6 py-4 text-sm text-slate-500">
             No payments in this range.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50/70">
-                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3 text-left">Date</th>
-                  <th className="px-4 py-3 text-left">Patient</th>
-                  <th className="px-4 py-3 text-left">Items</th>
-                  <th className="px-4 py-3 text-left">Method</th>
-                  <th className="px-4 py-3 text-left">Collected by</th>
-                  <th className="px-4 py-3 text-right">Final</th>
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Date</th>
+                  <th className="px-6 py-3 text-left">Patient</th>
+                  <th className="px-6 py-3 text-left">Items</th>
+                  <th className="px-6 py-3 text-left">Method</th>
+                  <th className="px-6 py-3 text-left">Collected by</th>
+                  <th className="px-6 py-3 text-right">Final</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {payments.map(p => (
-                  <tr key={p.id} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                  <tr key={p.id} className="transition-colors hover:bg-slate-50/70">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {new Date(p.createdAt).toLocaleString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -360,7 +360,7 @@ function PaymentsReport() {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-slate-900">
+                    <td className="px-6 py-3.5 text-slate-900">
                       {p.lead?.name ?? p.patientName ?? "—"}
                       {(p.lead?.phone || p.patientPhone) && (
                         <span className="ml-2 text-xs text-slate-500">
@@ -368,7 +368,7 @@ function PaymentsReport() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="px-6 py-3.5 text-slate-700">
                       <span className="truncate">
                         {p.items.map(i => i.title).join(" + ")}
                       </span>
@@ -378,15 +378,15 @@ function PaymentsReport() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-3.5">
                       <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">
                         {p.paymentMethod}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {p.collectedBy?.name ?? p.collectedBy?.email ?? "—"}
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900">
+                    <td className="px-6 py-3.5 text-right font-medium text-slate-900">
                       {formatRupees(p.finalAmount)}
                     </td>
                   </tr>
@@ -445,7 +445,7 @@ function ExpensesReport() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <FilterBar
         preset={preset}
         setPreset={setPreset}
@@ -461,7 +461,7 @@ function ExpensesReport() {
             <select
               value={category}
               onChange={e => setCategory(e.target.value as typeof category)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All</option>
               {EXPENSE_CATEGORIES.map(c => (
@@ -507,30 +507,30 @@ function ExpensesReport() {
         subtitle="Totals across the filtered range"
       />
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
         {isLoading ? (
-          <p className="px-5 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-6 py-4 text-sm text-slate-500">Loading…</p>
         ) : expenses.length === 0 ? (
-          <p className="px-5 py-3 text-sm text-slate-500">
+          <p className="px-6 py-4 text-sm text-slate-500">
             No expenses in this range.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50/70">
-                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3 text-left">Date</th>
-                  <th className="px-4 py-3 text-left">Category</th>
-                  <th className="px-4 py-3 text-left">Method</th>
-                  <th className="px-4 py-3 text-left">Created by</th>
-                  <th className="px-4 py-3 text-left">Notes</th>
-                  <th className="px-4 py-3 text-right">Amount</th>
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Date</th>
+                  <th className="px-6 py-3 text-left">Category</th>
+                  <th className="px-6 py-3 text-left">Method</th>
+                  <th className="px-6 py-3 text-left">Created by</th>
+                  <th className="px-6 py-3 text-left">Notes</th>
+                  <th className="px-6 py-3 text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {expenses.map(e => (
-                  <tr key={e.id} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                  <tr key={e.id} className="transition-colors hover:bg-slate-50/70">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {new Date(e.createdAt).toLocaleString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -538,21 +538,21 @@ function ExpensesReport() {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-slate-900">
+                    <td className="px-6 py-3.5 text-slate-900">
                       {formatCategory(e.category)}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-3.5">
                       <span className="inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">
                         {e.paymentMethod}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {e.createdBy?.name ?? e.createdBy?.email ?? "—"}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-600">
+                    <td className="px-6 py-3.5 text-xs text-slate-600">
                       <span className="line-clamp-1">{e.notes || "—"}</span>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900">
+                    <td className="px-6 py-3.5 text-right font-medium text-slate-900">
                       {formatRupees(e.amount)}
                     </td>
                   </tr>
@@ -586,16 +586,16 @@ function FilterBar({
   onExport?: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex flex-wrap items-center gap-2">
         {(["today", "week", "month", "custom"] as Preset[]).map(p => (
           <button
             key={p}
             type="button"
             onClick={() => setPreset(p)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
               preset === p
-                ? "bg-green-600 text-white shadow-sm"
+                ? "bg-green-600 text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -606,7 +606,7 @@ function FilterBar({
           <button
             type="button"
             onClick={onExport}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             <Download size={12} />
             Export CSV
@@ -625,7 +625,7 @@ function FilterBar({
                 type="date"
                 value={customFrom}
                 onChange={e => setCustomFrom(e.target.value)}
-                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
@@ -636,7 +636,7 @@ function FilterBar({
                 type="date"
                 value={customTo}
                 onChange={e => setCustomTo(e.target.value)}
-                className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           </>
@@ -666,7 +666,7 @@ function SummaryTile({
     slate: "text-slate-900",
   };
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </p>

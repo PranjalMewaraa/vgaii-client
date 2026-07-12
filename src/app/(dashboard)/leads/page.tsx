@@ -112,10 +112,10 @@ function LeadsPageInner() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Leads</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Leads</h1>
           <p className="mt-1 text-sm text-slate-500">
             Early-funnel and dropped contacts. Once a lead is{" "}
             <code className="rounded bg-slate-100 px-1">qualified</code>, they
@@ -126,7 +126,7 @@ function LeadsPageInner() {
           type="button"
           onClick={() => setAddOpen(true)}
           data-tour="leads-add-btn"
-          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
+          className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           + Add lead
         </button>
@@ -173,7 +173,7 @@ function LeadsPageInner() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block flex-1 min-w-[180px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -183,7 +183,7 @@ function LeadsPageInner() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Name or phone…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
@@ -193,7 +193,7 @@ function LeadsPageInner() {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All statuses</option>
               {LEAD_STATUSES.filter(
@@ -216,7 +216,7 @@ function LeadsPageInner() {
             <select
               value={sourceFilter}
               onChange={e => setSourceFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All sources</option>
               {sources.map(s => (
@@ -239,8 +239,8 @@ function LeadsPageInner() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-3.5">
           <h2 className="text-sm font-semibold tracking-tight text-slate-900">All Leads</h2>
           <span className="text-xs text-slate-500">
             {visible.length} of {leads.length}
@@ -256,24 +256,24 @@ function LeadsPageInner() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50/70">
-                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">Phone</th>
-                  <th className="px-4 py-3 text-left">Source</th>
-                  <th className="px-4 py-3 text-left">Status</th>
-                  <th className="px-4 py-3 text-right">Created</th>
-                  <th className="px-2 py-3" aria-label="Actions" />
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Name</th>
+                  <th className="px-6 py-3 text-left">Phone</th>
+                  <th className="px-6 py-3 text-left">Source</th>
+                  <th className="px-6 py-3 text-left">Status</th>
+                  <th className="px-6 py-3 text-right">Created</th>
+                  <th className="px-6 py-3" aria-label="Actions" />
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {visible.map(lead => (
                   <tr
                     key={lead.id}
                     onClick={() => router.push(`/leads/${lead.id}`)}
-                    className="cursor-pointer border-t border-slate-100 transition-colors hover:bg-slate-50/70"
+                    className="cursor-pointer transition-colors hover:bg-slate-50/70"
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3">
                         <Avatar name={lead.name} size="md" />
                         <span className="font-semibold text-slate-900">
@@ -286,20 +286,20 @@ function LeadsPageInner() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-700">{lead.phone}</td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-6 py-3.5 text-slate-700">{lead.phone}</td>
+                    <td className="px-6 py-3.5 text-slate-600">
                       {lead.source || "—"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-3.5">
                       <StatusPill status={lead.status} />
                     </td>
-                    <td className="px-4 py-3 text-right text-xs text-slate-500">
+                    <td className="px-6 py-3.5 text-right text-xs text-slate-500">
                       {lead.createdAt
                         ? new Date(lead.createdAt).toLocaleDateString()
                         : "—"}
                     </td>
                     <td
-                      className="px-2 py-3 text-right"
+                      className="px-6 py-3.5 text-right"
                       onClick={e => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-end gap-1">

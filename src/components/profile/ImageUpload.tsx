@@ -100,7 +100,7 @@ export default function ImageUpload({
           <img
             src={value}
             alt={label}
-            className="h-16 w-16 rounded-xl border border-slate-200 bg-slate-50 object-cover shadow-sm"
+            className="h-16 w-16 rounded-xl border border-slate-200/70 bg-slate-50 object-cover shadow-sm"
           />
         ) : (
           <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-400">
@@ -113,7 +113,7 @@ export default function ImageUpload({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
             >
               <Upload size={12} />
               {busy

@@ -92,7 +92,7 @@ function Form({
       <form
         onClick={e => e.stopPropagation()}
         onSubmit={submit}
-        className="w-full max-w-md max-h-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        className="w-full max-w-md max-h-full overflow-y-auto rounded-xl border border-slate-200/70 bg-white p-6 shadow-2xl"
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -113,46 +113,46 @@ function Form({
 
         <div className="mt-4 space-y-4">
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
               Name *
             </span>
             <input
               value={name}
               onChange={e => setName(e.target.value)}
               autoFocus
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
               Phone *
             </span>
             <input
               value={phone}
               onChange={e => setPhone(e.target.value)}
               inputMode="tel"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
               Area
             </span>
             <input
               value={area}
               onChange={e => setArea(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
               Source
             </span>
             <input
               value={source}
               onChange={e => setSource(e.target.value)}
               placeholder="walk-in, referral, instagram…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </div>
@@ -167,14 +167,14 @@ function Form({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy}
-            className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {busy ? "Adding…" : "Add lead"}
           </button>

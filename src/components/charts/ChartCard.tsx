@@ -21,7 +21,7 @@ export default function ChartCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
       <div>
         <h2 className="text-sm font-semibold tracking-tight text-slate-900">
           {title}

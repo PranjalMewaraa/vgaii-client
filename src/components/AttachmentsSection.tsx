@@ -296,7 +296,7 @@ export default function AttachmentsSection({
   }
 
   return (
-    <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="mt-3 rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Records {list.length > 0 ? `(${list.length})` : ""}
@@ -307,7 +307,7 @@ export default function AttachmentsSection({
             <select
               value={defaultKind}
               onChange={e => setDefaultKind(e.target.value as AttachmentKind)}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              className="rounded-lg border border-slate-200/70 bg-white px-2 py-0.5 text-xs text-slate-700 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               {(Object.keys(KIND_LABELS) as AttachmentKind[]).map(k => (
                 <option key={k} value={k}>
@@ -433,7 +433,7 @@ export default function AttachmentsSection({
               {uploads.map(u => (
                 <li
                   key={u.id}
-                  className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-[11px] shadow-sm"
+                  className="flex items-center gap-2 rounded-lg border border-slate-200/70 bg-slate-50/70 px-2.5 py-1.5 text-[11px] shadow-sm"
                 >
                   <span className="flex-1 truncate text-slate-700">
                     {u.file.name}

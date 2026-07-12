@@ -24,7 +24,7 @@ export default function StatCard({
   hint,
 }: StatCardProps) {
   return (
-    <div className="group flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-md">
+    <div className="group flex items-center gap-3.5 rounded-xl border border-slate-200/70 bg-white p-6 transition-colors hover:border-slate-300">
       {Icon && (
         <span
           className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${

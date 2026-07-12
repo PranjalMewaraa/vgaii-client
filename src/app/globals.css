@@ -16,10 +16,12 @@
     -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Softer, tighter elevation tokens tuned for a light neutral canvas. */
-  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
-  --shadow-md: 0 2px 4px -1px rgb(15 23 42 / 0.06),
-    0 4px 12px -2px rgb(15 23 42 / 0.08);
+  /* Elevation kept to a hairline — surfaces read via crisp borders, not
+     shadows (the modern, professional aesthetic). Only overlays (dropdowns,
+     modals) use the slightly deeper shadow-md/lg. */
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.03);
+  --shadow-md: 0 4px 12px -2px rgb(15 23 42 / 0.08),
+    0 2px 6px -2px rgb(15 23 42 / 0.05);
 }
 
 body {
@@ -80,7 +82,7 @@ td {
     transition-property: color, background-color, border-color, box-shadow,
       transform, opacity;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 180ms;
+    transition-duration: 150ms;
   }
 }
 

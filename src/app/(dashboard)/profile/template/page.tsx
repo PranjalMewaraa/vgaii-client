@@ -140,7 +140,7 @@ function ProfileTemplatePageInner() {
             href={previewHref}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Preview ↗
           </a>
@@ -161,7 +161,7 @@ function ProfileTemplatePageInner() {
         </p>
       )}
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="rounded-xl border border-slate-200/70 bg-white">
         <div className="border-b border-slate-200 px-5 py-3.5">
           <h2 className="text-sm font-semibold tracking-tight text-slate-900">Template</h2>
           <p className="text-xs text-slate-500">
@@ -184,7 +184,7 @@ function ProfileTemplatePageInner() {
                   onClick={() => pickTemplate(opt.id)}
                   disabled={isSaving}
                   aria-pressed={isActive}
-                  className={`group flex flex-col gap-3 rounded-2xl border-2 p-4 text-left shadow-sm transition hover:shadow-md disabled:cursor-wait ${
+                  className={`group flex flex-col gap-3 rounded-xl border-2 p-4 text-left shadow-sm transition hover:shadow-md disabled:cursor-wait ${
                     isActive
                       ? "border-green-600 ring-2 ring-green-100"
                       : "border-slate-200 hover:border-slate-300"

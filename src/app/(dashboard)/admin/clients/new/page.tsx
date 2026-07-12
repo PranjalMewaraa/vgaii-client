@@ -115,12 +115,12 @@ function Field({
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className={`block ${className ?? ""}`}>
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </span>
       <input
         {...props}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+        className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
       {hint && (
         <p className="mt-0.5 text-[11px] text-slate-400">{hint}</p>
@@ -147,7 +147,7 @@ function RadioCard<T extends string>({
     <button
       type="button"
       onClick={() => onChange(value)}
-      className={`flex items-start gap-3 rounded-xl border p-3 text-left shadow-sm transition-all ${
+      className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
         active
           ? "border-green-500 bg-green-50 ring-1 ring-green-500"
           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
@@ -186,7 +186,7 @@ function CopyButton({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copied!" : "Copy"}
@@ -205,8 +205,8 @@ function ReviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3.5">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
+      <div className="flex items-center gap-2 border-b border-slate-100 px-6 py-4">
         <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
           <Icon size={13} />
         </span>
@@ -214,7 +214,7 @@ function ReviewSection({
           {title}
         </span>
       </div>
-      <dl className="divide-y divide-slate-100 px-5">{children}</dl>
+      <dl className="divide-y divide-slate-100 px-6">{children}</dl>
     </div>
   );
 }
@@ -255,7 +255,7 @@ function StepClinic({ form, set }: { form: FormState; set: SetFn }) {
       />
 
       <div>
-        <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+        <p className="mb-2.5 text-sm font-medium text-slate-700">
           Plan
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -277,7 +277,7 @@ function StepClinic({ form, set }: { form: FormState; set: SetFn }) {
       </div>
 
       <div>
-        <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+        <p className="mb-2.5 text-sm font-medium text-slate-700">
           Subscription status
         </p>
         <div className="grid grid-cols-3 gap-3">
@@ -351,10 +351,10 @@ function StepAdmin({
       />
 
       <label className="block">
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        <span className="mb-1.5 block text-sm font-medium text-slate-700">
           Temporary password *
         </span>
-        <div className="relative mt-1">
+        <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             value={form.adminPassword}
@@ -362,7 +362,7 @@ function StepAdmin({
             minLength={8}
             placeholder="At least 8 characters"
             required
-            className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 pr-10 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+            className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 pr-10 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
@@ -398,21 +398,21 @@ function StepSettings({
       </p>
 
       <div>
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        <span className="mb-1.5 block text-sm font-medium text-slate-700">
           Google Place ID
         </span>
-        <div className="mt-1 flex gap-2">
+        <div className="flex gap-2">
           <input
             type="text"
             value={form.googlePlaceId}
             onChange={e => set("googlePlaceId", e.target.value)}
             placeholder="ChIJ…"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+            className="flex-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
             onClick={onOpenPlacePicker}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             <MapPin size={14} />
             Find
@@ -524,7 +524,7 @@ function SuccessScreen({
 }) {
   return (
     <div className="mx-auto max-w-lg py-12">
-      <div className="rounded-2xl border border-emerald-200 bg-white p-8 text-center shadow-sm">
+      <div className="rounded-xl border border-emerald-200 bg-white p-8 text-center">
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
           <Check size={28} className="text-emerald-600" />
         </span>
@@ -536,11 +536,11 @@ function SuccessScreen({
         </p>
 
         {webhookKey && (
-          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-left">
+          <div className="mt-6 rounded-lg border border-slate-200/70 bg-slate-50 p-4 text-left">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Webhook key
             </p>
-            <p className="mb-3 break-all rounded border border-slate-200 bg-white px-3 py-2 font-mono text-xs text-slate-800">
+            <p className="mb-3 break-all rounded border border-slate-200/70 bg-white px-3 py-2 font-mono text-xs text-slate-800">
               {webhookKey}
             </p>
             <CopyButton value={webhookKey} />
@@ -554,7 +554,7 @@ function SuccessScreen({
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/admin/clients"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             <ArrowLeft size={15} />
             Go to clients list
@@ -562,7 +562,7 @@ function SuccessScreen({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1f3d2b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1f3d2b] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
           >
             <Plus size={15} />
             Onboard another clinic
@@ -653,7 +653,7 @@ function OnboardClientWizard() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5">
+    <div className="mx-auto max-w-2xl space-y-6">
       <Link
         href="/admin/clients"
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-800"
@@ -662,7 +662,7 @@ function OnboardClientWizard() {
         Back to clients
       </Link>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
         {/* Header */}
         <div className="border-b border-slate-200 px-6 pt-6 pb-5">
           <div className="flex items-center gap-2.5">
@@ -710,7 +710,7 @@ function OnboardClientWizard() {
             type="button"
             onClick={() => setStep(s => s - 1)}
             disabled={step === 1}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40"
           >
             <ArrowLeft size={14} />
             Back
@@ -729,7 +729,7 @@ function OnboardClientWizard() {
                 type="button"
                 onClick={() => setStep(s => s + 1)}
                 disabled={!canAdvance}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-50"
               >
                 Next
                 <ArrowRight size={14} />
@@ -739,7 +739,7 @@ function OnboardClientWizard() {
                 type="button"
                 onClick={submit}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-50"
               >
                 {busy ? (
                   "Creating…"

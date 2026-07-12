@@ -42,7 +42,7 @@ const PieTooltip = ({
   const slice = payload[0]?.payload;
   if (!slice) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs shadow-md">
       <p className="font-medium text-slate-900">{slice.label}</p>
       <p className="text-slate-500">
         {slice.value} {slice.value === 1 ? "lead" : "leads"} ·{" "}
@@ -70,8 +70,8 @@ export default function TopSourcesCard({
   }, [sources]);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-sm font-semibold tracking-tight text-slate-900">Top Sources</h2>
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+      <h2 className="text-base font-semibold tracking-tight text-slate-900">Top Sources</h2>
       <p className="text-xs text-slate-500">Where your leads are coming from</p>
 
       {data.length === 0 ? (
