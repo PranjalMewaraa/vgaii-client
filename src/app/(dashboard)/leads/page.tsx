@@ -3,14 +3,31 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { Clock, Eye, Pencil, TrendingUp, UserPlus, Users } from "lucide-react";
+import {
+  Clock,
+  Eye,
+  LayoutGrid,
+  List,
+  Pencil,
+  TrendingUp,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddLeadModal from "@/components/AddLeadModal";
 import StatCard from "@/components/StatCard";
 import Avatar from "@/components/Avatar";
 import TopSourcesCard from "@/components/TopSourcesCard";
-import { LEAD_STATUSES } from "@/lib/constants";
+import LeadsBoard from "@/components/LeadsBoard";
+import { LEAD_STATUSES, type LeadStatus } from "@/lib/constants";
+
+const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${
+    typeof window !== "undefined" ? localStorage.getItem("token") : ""
+  }`,
+});
 
 type DashboardData = {
   topSources?: Array<{ source: string; count: number }>;
@@ -111,6 +128,33 @@ function LeadsPageInner() {
     setSearch("");
   };
 
+  // Table ⇄ Board view. Seed from ?view=board so the choice is shareable.
+  const [view, setView] = useState<"table" | "board">(() =>
+    searchParams.get("view") === "board" ? "board" : "table",
+  );
+
+  // Drag-and-drop status change from the board. Optimistically re-bucket the
+  // card, persist via PATCH (the API enforces the transition matrix), then
+  // revalidate — a promoted (qualified) lead drops out of scope into Patients.
+  const moveLead = async (id: string, status: LeadStatus) => {
+    mutate(
+      prev =>
+        prev
+          ? { leads: prev.leads.map(l => (l.id === id ? { ...l, status } : l)) }
+          : prev,
+      { revalidate: false },
+    );
+    try {
+      await fetch(`/api/leads/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ status }),
+      });
+    } finally {
+      mutate();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -122,14 +166,44 @@ function LeadsPageInner() {
             move to the Patients tab.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          data-tour="leads-add-btn"
-          className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
-        >
-          + Add lead
-        </button>
+        <div className="flex items-center gap-2.5">
+          <div className="inline-flex rounded-lg border border-slate-200/70 bg-white p-0.5">
+            <button
+              type="button"
+              onClick={() => setView("table")}
+              aria-pressed={view === "table"}
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                view === "table"
+                  ? "bg-green-600 text-white"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <List size={14} />
+              Table
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("board")}
+              aria-pressed={view === "board"}
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                view === "board"
+                  ? "bg-green-600 text-white"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <LayoutGrid size={14} />
+              Board
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            data-tour="leads-add-btn"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
+          >
+            + Add lead
+          </button>
+        </div>
       </header>
 
       <AddLeadModal
@@ -239,6 +313,7 @@ function LeadsPageInner() {
         </div>
       </div>
 
+      {view === "table" ? (
       <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
         <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-3.5">
           <h2 className="text-sm font-semibold tracking-tight text-slate-900">All Leads</h2>
@@ -330,6 +405,15 @@ function LeadsPageInner() {
           </div>
         )}
       </div>
+      ) : isLoading ? (
+        <p className="px-1 py-6 text-sm text-slate-500">Loading…</p>
+      ) : visible.length === 0 ? (
+        <p className="rounded-xl border border-slate-200/70 bg-white px-6 py-8 text-center text-sm text-slate-500">
+          No leads match these filters.
+        </p>
+      ) : (
+        <LeadsBoard leads={visible} onMove={moveLead} />
+      )}
     </div>
   );
 }
