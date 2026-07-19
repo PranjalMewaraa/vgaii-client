@@ -59,6 +59,7 @@ type ClientRow = {
   profileSlug?: string;
   customDomain?: string;
   googlePlaceId?: string;
+  googleMapsUrl?: string;
   subscriptionKey?: string;
   webhookKey?: string;
   createdAt?: string;
@@ -602,6 +603,7 @@ function ClientIntegrationsBlock({
 }) {
   const [editing, setEditing] = useState(false);
   const [googlePlaceId, setGooglePlaceId] = useState(client.googlePlaceId ?? "");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState(client.googleMapsUrl ?? "");
   const [subscriptionKey, setSubscriptionKey] = useState(client.subscriptionKey ?? "");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -609,6 +611,7 @@ function ClientIntegrationsBlock({
 
   const startEdit = () => {
     setGooglePlaceId(client.googlePlaceId ?? "");
+    setGoogleMapsUrl(client.googleMapsUrl ?? "");
     setSubscriptionKey(client.subscriptionKey ?? "");
     setErr(null);
     setSavedAt(null);
@@ -629,6 +632,7 @@ function ClientIntegrationsBlock({
         headers: authHeaders(),
         body: JSON.stringify({
           googlePlaceId: googlePlaceId.trim() || null,
+          googleMapsUrl: googleMapsUrl.trim() || null,
           subscriptionKey: subscriptionKey.trim() || null,
         }),
       });
@@ -674,6 +678,13 @@ function ClientIntegrationsBlock({
               hint="Empty to clear."
             />
             <Field
+              label="Google Maps URL"
+              value={googleMapsUrl}
+              onChange={setGoogleMapsUrl}
+              placeholder="https://www.google.com/maps/place/…"
+              hint="Optional but preferred for review fetching — paste the business's full Maps link. Empty to clear."
+            />
+            <Field
               label="Subscription key"
               value={subscriptionKey}
               onChange={setSubscriptionKey}
@@ -710,6 +721,12 @@ function ClientIntegrationsBlock({
               label="Google Place ID"
               icon={Globe}
               value={client.googlePlaceId}
+              copyable
+            />
+            <ReadRow
+              label="Google Maps URL"
+              icon={Globe}
+              value={client.googleMapsUrl}
               copyable
             />
             <ReadRow

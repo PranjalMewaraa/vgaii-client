@@ -47,6 +47,9 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (data.googlePlaceId !== undefined) {
       update.googlePlaceId = data.googlePlaceId ?? null;
     }
+    if (data.googleMapsUrl !== undefined) {
+      update.googleMapsUrl = cleanString(data.googleMapsUrl);
+    }
     if (data.subscriptionKey !== undefined) {
       update.subscriptionKey = data.subscriptionKey ?? null;
     }
@@ -69,6 +72,7 @@ export async function PATCH(req: Request, ctx: RouteContext) {
           subscriptionStatus: true,
           renewalDate: true,
           googlePlaceId: true,
+          googleMapsUrl: true,
           subscriptionKey: true,
           profileSlug: true,
           customDomain: true,

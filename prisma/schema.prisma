@@ -129,6 +129,10 @@ model Client {
   renewalDate        DateTime?
   subscriptionKey    String?            @db.VarChar(500)
   googlePlaceId      String?
+  // Full Google Maps place URL. Preferred over the derived place-id URL when
+  // registering the business with the review-fetch service (more reliable
+  // scrapes). Optional; falls back to a place-id URL.
+  googleMapsUrl      String?            @db.VarChar(1000)
   profileSlug        String?            @unique
   customDomain       String?            @unique
   plan               String             @default("basic")

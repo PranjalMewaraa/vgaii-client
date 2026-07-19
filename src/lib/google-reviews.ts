@@ -84,15 +84,21 @@ export const refreshClientReviews = async (
     select: {
       name: true,
       googlePlaceId: true,
+      googleMapsUrl: true,
       profileSlug: true,
       googleBusinessInfo: true,
       reviewsTaskId: true,
     },
   });
   if (!client) throw new Error("Client not found");
-  // The service registers a business by its Google Maps URL, which we
-  // derive from the place id — so a place id is still the prerequisite.
-  if (!client.googlePlaceId) return { status: "no-place-id" };
+
+  // The service registers a business by its Google Maps URL. Prefer the
+  // explicitly-stored URL (most reliable); otherwise derive one from the
+  // place id. Without either we can't register — surface no-place-id.
+  const mapsUrl =
+    client.googleMapsUrl ||
+    (client.googlePlaceId ? mapsUrlFromPlaceId(client.googlePlaceId) : null);
+  if (!mapsUrl) return { status: "no-place-id" };
 
   const slug = slugFor(clientId, client.profileSlug);
 
@@ -100,7 +106,7 @@ export const refreshClientReviews = async (
   await ensureReviewSite({
     website_slug: slug,
     business_name: client.name,
-    google_maps_url: mapsUrlFromPlaceId(client.googlePlaceId),
+    google_maps_url: mapsUrl,
   });
 
   // 1. Scrape already in flight — advance it once.
@@ -164,6 +170,7 @@ export const readCachedReviews = async (
     where: { id: clientId },
     select: {
       googlePlaceId: true,
+      googleMapsUrl: true,
       profileSlug: true,
       googleBusinessInfo: true,
       reviewsTaskId: true,
@@ -184,6 +191,7 @@ export const readCachedReviews = async (
           where: { id: clientId },
           select: {
             googlePlaceId: true,
+            googleMapsUrl: true,
             googleBusinessInfo: true,
             reviewsTaskId: true,
           },
@@ -202,6 +210,7 @@ export const readCachedReviews = async (
 const shapeRead = (
   client: {
     googlePlaceId: string | null;
+    googleMapsUrl?: string | null;
     googleBusinessInfo: Prisma.JsonValue | null;
     reviewsTaskId: string | null;
   } | null,
@@ -222,7 +231,8 @@ const shapeRead = (
   const syncedAt =
     typeof info.reviewsSyncedAt === "string" ? info.reviewsSyncedAt : null;
   return {
-    placeIdSet: !!client?.googlePlaceId,
+    // Reviews can be fetched with either a place id or a full Maps URL.
+    placeIdSet: !!(client?.googlePlaceId || client?.googleMapsUrl),
     reviews,
     syncedAt,
     pending: !!client?.reviewsTaskId,
