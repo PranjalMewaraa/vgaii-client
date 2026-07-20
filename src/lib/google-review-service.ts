@@ -168,6 +168,35 @@ export const getReviewsPage = (
 export const getLatestReviews = (slug: string) =>
   call<ServiceReview[]>(`/api/reviews/${encodeURIComponent(slug)}/latest`);
 
+// Verbatim passthrough of the service's latest-reviews response — the full
+// { success, message, data } envelope, unwrapped for callers who want the
+// payload exactly as the a2zcloud API returned it. Never throws: returns the
+// parsed JSON, or null on a network/parse error.
+export const getLatestReviewsRaw = async (
+  slug: string,
+): Promise<unknown> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(
+      `${GOOGLE_REVIEW_API_URL}/api/reviews/${encodeURIComponent(slug)}/latest`,
+      {
+        signal: controller.signal,
+        headers: {
+          "X-API-Key": GOOGLE_REVIEW_API_KEY,
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      },
+    );
+    return await res.json().catch(() => null);
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 export const getReviewStats = (slug: string) =>
   call<ReviewStats>(`/api/stats/${encodeURIComponent(slug)}`);
 

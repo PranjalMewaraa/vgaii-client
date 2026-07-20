@@ -3,6 +3,7 @@ import {
   addReviewSite,
   getFetchLog,
   getLatestReviews,
+  getLatestReviewsRaw,
   listReviewSites,
   mapServiceReview,
   mapsUrlFromPlaceId,
@@ -220,6 +221,7 @@ export const readCachedReviews = async (
   reviews: StoredGoogleReview[];
   syncedAt: string | null;
   pending: boolean;
+  data: unknown;
 }> => {
   const client = await prisma.client.findUnique({
     where: { id: clientId },
@@ -232,11 +234,15 @@ export const readCachedReviews = async (
     },
   });
 
+  const slug = slugFor(clientId, client?.profileSlug ?? null);
+  // Verbatim a2zcloud `/latest` response, attached as-is under `data` so
+  // callers get the service payload alongside our cached/shaped reviews.
+  const data = await getLatestReviewsRaw(slug);
+
   // Lazy-advance: if a scrape is in flight, check the fetch-log once. If
   // the latest fetch succeeded, pull + persist and return fresh data;
   // otherwise fall through to read whatever's cached.
   if (client?.reviewsTaskId) {
-    const slug = slugFor(clientId, client.profileSlug);
     try {
       const log = await getFetchLog(slug);
       if (log?.latest_fetch?.status === "success") {
@@ -251,7 +257,7 @@ export const readCachedReviews = async (
             reviewsTaskId: true,
           },
         });
-        return shapeRead(fresh);
+        return { ...shapeRead(fresh), data };
       }
     } catch (err) {
       // Service hiccup / stale marker; the next refresh will replace it.
@@ -259,7 +265,7 @@ export const readCachedReviews = async (
     }
   }
 
-  return shapeRead(client);
+  return { ...shapeRead(client), data };
 };
 
 const shapeRead = (
