@@ -51,6 +51,50 @@ export const PAYMENT_METHODS = [
 
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
+// ── Prescription / EMR option lists ──────────────────────────────────
+// Used by the Create Prescription modal (selects) and the patient EMR
+// timeline (rendering + pill colours).
+
+// Dosing frequency. `code` is the terse clinical shorthand shown as a pill.
+export const RX_FREQUENCIES = [
+  { code: "OD", label: "Once a day (OD)" },
+  { code: "BD", label: "Twice a day (BD)" },
+  { code: "TDS", label: "Three times a day (TDS)" },
+  { code: "QID", label: "Four times a day (QID)" },
+  { code: "HS", label: "At bedtime (HS)" },
+  { code: "SOS", label: "As needed (SOS)" },
+  { code: "STAT", label: "Immediately (STAT)" },
+] as const;
+
+export type RxFrequency = (typeof RX_FREQUENCIES)[number]["code"];
+
+export const RX_INSTRUCTIONS = [
+  "After Food",
+  "Before Food",
+  "With Food",
+  "Empty Stomach",
+  "Before Sleep",
+  "Use daily",
+] as const;
+
+export const DIAGNOSIS_STATUSES = [
+  "Initial Entry",
+  "Improving",
+  "Stable",
+  "Worsening",
+  "Resolved",
+] as const;
+
+export type DiagnosisStatus = (typeof DIAGNOSIS_STATUSES)[number];
+
+export const ENCOUNTER_TYPES = [
+  "Primary Consultation",
+  "Follow-up Consultation",
+  "Routine Checkup",
+  "Emergency",
+  "Teleconsultation",
+] as const;
+
 export const EXPENSE_CATEGORIES = [
   "electricity",
   "rent",

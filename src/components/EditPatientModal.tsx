@@ -16,7 +16,11 @@ type Patient = {
   age?: number | null;
   gender?: string | null;
   area?: string | null;
+  bloodGroup?: string | null;
+  allergies?: string | null;
 };
+
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 type Props = {
   open: boolean;
@@ -58,6 +62,8 @@ function Form({
   );
   const [gender, setGender] = useState(patient.gender ?? "");
   const [area, setArea] = useState(patient.area ?? "");
+  const [bloodGroup, setBloodGroup] = useState(patient.bloodGroup ?? "");
+  const [allergies, setAllergies] = useState(patient.allergies ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,6 +106,8 @@ function Form({
           age: ageNum,
           gender,
           area: area.trim(),
+          bloodGroup: bloodGroup.trim(),
+          allergies: allergies.trim(),
         }),
       });
       const data = await res.json().catch(() => null);
@@ -199,6 +207,29 @@ function Form({
             placeholder="patient@example.com"
           />
           <Field label="Area" value={area} onChange={setArea} />
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
+              Blood group
+            </span>
+            <select
+              value={bloodGroup}
+              onChange={e => setBloodGroup(e.target.value)}
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+            >
+              <option value="">—</option>
+              {BLOOD_GROUPS.map(g => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Field
+            label="Allergies"
+            value={allergies}
+            onChange={setAllergies}
+            placeholder="e.g. Penicillin, Sulfa"
+          />
         </div>
 
         {error && (

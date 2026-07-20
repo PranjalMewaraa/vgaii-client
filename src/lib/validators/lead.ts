@@ -36,6 +36,9 @@ export const leadUpdateSchema = z
     status: z.enum(LEAD_STATUSES).optional(),
     notes: z.string().max(5000).optional(),
     outcomeRating: z.number().int().min(1).max(5).optional(),
+    // Clinical identity on the EMR header. Empty string clears the field.
+    bloodGroup: z.string().trim().max(10).optional().or(z.literal("")),
+    allergies: z.string().trim().max(2000).optional().or(z.literal("")),
   })
   .refine(d => Object.keys(d).length > 0, {
     message: "At least one field is required",

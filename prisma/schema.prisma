@@ -233,6 +233,10 @@ model Lead {
   status            LeadStatus @default(new)
   statusUpdatedAt   DateTime   @default(now())
   outcomeRating     Int?
+  // Clinical identity shown on the EMR patient header. Both optional — the
+  // receptionist/doctor fills them in when known.
+  bloodGroup        String?
+  allergies         String?    @db.Text
   feedbackToken     String?    @unique
   feedbackTokenUsed Boolean    @default(false)
   // MySQL forbids literal defaults on TEXT columns; the app always writes
@@ -276,7 +280,17 @@ model Appointment {
   // explicit "" / [] when no value is provided.
   notes       String            @db.Text
   diagnosis   String            @db.Text
-  // String[] in Mongo → JSON array.
+  // EMR encounter metadata (all optional). encounterType e.g. "Follow-up
+  // Consultation"; diagnosisCode is the ICD code (e.g. "J01.90");
+  // diagnosisStatus e.g. "Improving" / "Stable" / "Initial Entry".
+  encounterType   String?
+  diagnosisCode   String?
+  diagnosisStatus String?
+  // Clinical observations block, distinct from the internal `notes` field.
+  observations    String?       @db.Text
+  // String[] in Mongo → JSON array. Now holds structured prescription items
+  // ({ name, dosage, frequency, timing, duration, instructions }); legacy
+  // rows may still be plain strings and are rendered name-only.
   medicines   Json
   // Optional vitals captured at appointment completion. All four are
   // nullable — the receptionist fills them in only when the patient was

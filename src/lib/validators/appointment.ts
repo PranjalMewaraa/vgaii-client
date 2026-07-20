@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { APPOINTMENT_STATUSES } from "@/lib/constants";
+import { prescriptionItemSchema } from "@/lib/validators/prescription";
 
 const optionalDate = z
   .string()
@@ -31,7 +32,17 @@ export const appointmentUpdateSchema = z
     notes: z.string().max(5000).optional(),
     date: optionalDate,
     diagnosis: z.string().max(5000).optional(),
-    medicines: z.array(z.string().max(200)).max(50).optional(),
+    // EMR encounter metadata.
+    encounterType: z.string().max(80).optional(),
+    diagnosisCode: z.string().max(40).optional(),
+    diagnosisStatus: z.string().max(40).optional(),
+    observations: z.string().max(5000).optional(),
+    // Structured prescription items. Legacy rows are plain strings, so accept
+    // either shape — the UI normalises strings to name-only on render.
+    medicines: z
+      .array(z.union([z.string().max(200), prescriptionItemSchema]))
+      .max(50)
+      .optional(),
     name: z.string().max(120).optional(),
     phone: z.string().max(40).optional(),
     email: z.string().max(120).optional(),

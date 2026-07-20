@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AttachmentsSection from "@/components/AttachmentsSection";
 import StatusPill from "@/components/StatusPill";
+import type { PrescriptionItem } from "@/lib/validators/prescription";
 
 export type EditAppointment = {
   id: string;
@@ -14,11 +15,23 @@ export type EditAppointment = {
   status?: string | null;
   notes?: string | null;
   diagnosis?: string | null;
-  medicines?: string[] | null;
+  // Legacy strings or structured items. This freeform editor renders them as
+  // text lines; saving here flattens structured items back to strings (the
+  // structured editor is Create/Repeat Prescription).
+  medicines?: Array<string | PrescriptionItem> | null;
   weightKg?: number | null;
   sugarMgDl?: number | null;
   bpSystolic?: number | null;
   bpDiastolic?: number | null;
+};
+
+// Render a medicine entry (string or structured) as a single editable line.
+const medicineToLine = (m: string | PrescriptionItem): string => {
+  if (typeof m === "string") return m;
+  const detail = [m.dosage, m.frequency, m.duration, m.instructions]
+    .filter(Boolean)
+    .join(" · ");
+  return detail ? `${m.name} — ${detail}` : m.name;
 };
 
 type Props = {
@@ -79,7 +92,9 @@ function Form({
     mode === "visit" ? "completed" : a.status ?? "scheduled",
   );
   const [diagnosis, setDiagnosis] = useState(a.diagnosis ?? "");
-  const [medicines, setMedicines] = useState((a.medicines ?? []).join("\n"));
+  const [medicines, setMedicines] = useState(
+    (a.medicines ?? []).map(medicineToLine).join("\n"),
+  );
   const [notes, setNotes] = useState(a.notes ?? "");
   const [weight, setWeight] = useState(
     a.weightKg != null ? String(a.weightKg) : "",

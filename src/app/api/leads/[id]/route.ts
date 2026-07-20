@@ -105,6 +105,12 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (parsed.data.area !== undefined) {
       data.area = parsed.data.area === "" ? null : parsed.data.area;
     }
+    if (parsed.data.bloodGroup !== undefined) {
+      data.bloodGroup = parsed.data.bloodGroup === "" ? null : parsed.data.bloodGroup;
+    }
+    if (parsed.data.allergies !== undefined) {
+      data.allergies = parsed.data.allergies === "" ? null : parsed.data.allergies;
+    }
 
     // updateLead pre-computes phoneNormalized when phone is in `data` —
     // it isn't here (PATCH doesn't allow phone changes), but routing
@@ -151,7 +157,9 @@ export async function PATCH(req: Request, ctx: RouteContext) {
       parsed.data.email !== undefined ||
       parsed.data.age !== undefined ||
       parsed.data.gender !== undefined ||
-      parsed.data.area !== undefined;
+      parsed.data.area !== undefined ||
+      parsed.data.bloodGroup !== undefined ||
+      parsed.data.allergies !== undefined;
     if (profileFieldsTouched) {
       const summary = parsed.data.name && parsed.data.name !== prevName
         ? `Profile updated (renamed: ${prevName} → ${parsed.data.name})`
