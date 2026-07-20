@@ -187,19 +187,6 @@ export const mapServiceReview = (r: ServiceReview): StoredGoogleReview => ({
   ownerAnswer: r.owner_reply ?? undefined,
 });
 
-// Idempotently ensure a slug is registered, returning the site record.
-// Adds it if missing; otherwise returns the existing entry.
-export const ensureReviewSite = async (input: {
-  website_slug: string;
-  business_name: string;
-  google_maps_url: string;
-}): Promise<ReviewSite> => {
-  const existing = await listReviewSites();
-  const found = existing.find(s => s.website_slug === input.website_slug);
-  if (found) return found;
-  return addReviewSite(input);
-};
-
 // Build a Google Maps place URL from a bare place_id when a full maps URL
 // isn't stored on the client. Accepted by the service's add-website call.
 export const mapsUrlFromPlaceId = (placeId: string) =>

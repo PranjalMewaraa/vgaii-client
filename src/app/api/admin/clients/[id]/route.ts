@@ -4,6 +4,7 @@ import { getUser } from "@/middleware/auth";
 import { adminClientUpdateSchema } from "@/lib/validators/client";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
+import { syncReviewSite } from "@/lib/google-reviews";
 import { NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -99,6 +100,24 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     }
 
     const changed = Object.keys(data);
+
+    // When any field that identifies the business to the review service changes,
+    // register/update the website with a2zcloud so the reviews path can just
+    // fetch. Best-effort — syncReviewSite swallows its own errors.
+    if (
+      ["googleMapsUrl", "googlePlaceId", "profileSlug", "name"].some(f =>
+        changed.includes(f),
+      )
+    ) {
+      await syncReviewSite({
+        id: client.id,
+        name: client.name,
+        profileSlug: client.profileSlug,
+        googleMapsUrl: client.googleMapsUrl,
+        googlePlaceId: client.googlePlaceId,
+      });
+    }
+
     await logAudit(req, { actorType: "user", user }, {
       action: "admin.client.updated",
       entityType: "Client",

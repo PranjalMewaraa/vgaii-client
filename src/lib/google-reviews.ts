@@ -1,11 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import {
-  ensureReviewSite,
+  addReviewSite,
   getFetchLog,
   getLatestReviews,
+  listReviewSites,
   mapServiceReview,
   mapsUrlFromPlaceId,
   triggerReviewFetch,
+  updateReviewSite,
 } from "@/lib/google-review-service";
 import type { Prisma } from "@/generated/prisma/client";
 
@@ -36,6 +38,55 @@ export type RefreshOutcome =
 // tenant has a stable, unique slug even before they pick a public handle.
 const slugFor = (clientId: string, profileSlug: string | null) =>
   profileSlug || clientId;
+
+// Register (or update) a client's business with the a2zcloud review service.
+// Called authoritatively when a SUPER_ADMIN saves the Maps URL / Place ID, and
+// again as a cheap idempotent fallback on the reviews path so pre-existing
+// clients (or save-time failures) never break. Best-effort: swallows its own
+// errors — the third-party service must never fail the caller's operation.
+//   - No Maps URL / Place ID → no-op (nothing to register).
+//   - Slug not registered → POST /api/websites (add).
+//   - Registered but URL/name drifted → PUT /api/websites/:id (update).
+export const syncReviewSite = async (client: {
+  id: string;
+  name: string;
+  profileSlug: string | null;
+  googleMapsUrl: string | null;
+  googlePlaceId: string | null;
+}): Promise<void> => {
+  const mapsUrl =
+    client.googleMapsUrl ||
+    (client.googlePlaceId ? mapsUrlFromPlaceId(client.googlePlaceId) : null);
+  if (!mapsUrl) return;
+
+  const slug = slugFor(client.id, client.profileSlug);
+
+  try {
+    const existing = await listReviewSites();
+    const found = existing.find(s => s.website_slug === slug);
+    if (!found) {
+      await addReviewSite({
+        website_slug: slug,
+        business_name: client.name,
+        google_maps_url: mapsUrl,
+      });
+      return;
+    }
+    // Propagate edits to a Maps URL or business name that changed since the
+    // site was first registered.
+    if (
+      found.google_maps_url !== mapsUrl ||
+      found.business_name !== client.name
+    ) {
+      await updateReviewSite(found.id, {
+        google_maps_url: mapsUrl,
+        business_name: client.name,
+      });
+    }
+  } catch (err) {
+    console.warn("[reviews] syncReviewSite failed", err);
+  }
+};
 
 // Pull the latest reviews from the review service into our own cache
 // (Client.googleBusinessInfo.reviews) so reads stay fast and offline-safe.
@@ -102,11 +153,15 @@ export const refreshClientReviews = async (
 
   const slug = slugFor(clientId, client.profileSlug);
 
-  // Make sure the slug exists in the service before fetching/reading.
-  await ensureReviewSite({
-    website_slug: slug,
-    business_name: client.name,
-    google_maps_url: mapsUrl,
+  // Idempotent fallback: registration is authoritatively done when the
+  // SUPER_ADMIN saves the Maps URL, but ensure the slug exists here too so
+  // pre-existing clients (or a failed save-time sync) still fetch reviews.
+  await syncReviewSite({
+    id: clientId,
+    name: client.name,
+    profileSlug: client.profileSlug,
+    googleMapsUrl: client.googleMapsUrl,
+    googlePlaceId: client.googlePlaceId,
   });
 
   // 1. Scrape already in flight — advance it once.
