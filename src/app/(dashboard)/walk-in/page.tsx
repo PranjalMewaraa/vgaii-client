@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
-  DoorOpen,
   Link2,
   Loader2,
   Phone,
@@ -213,20 +212,17 @@ function WalkInPageInner() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1f3d2b]/10 text-[#1f3d2b]">
-          <DoorOpen size={22} />
-        </span>
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             Walk-in
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500">
             Record a patient who walked in — start with their phone number.
           </p>
         </div>
-      </div>
+      </header>
 
       {done && (
         <div className="flex items-start justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
