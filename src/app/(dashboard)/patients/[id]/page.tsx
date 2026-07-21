@@ -174,6 +174,7 @@ function PatientDetailPageInner({
   // `initial` pre-fills it (Repeat Rx, or an appointment's existing data).
   const [rx, setRx] = useState<{
     appointmentId?: string;
+    mode?: "complete" | "edit";
     initial?: PrescriptionInitial;
   } | null>(null);
 
@@ -282,7 +283,12 @@ function PatientDetailPageInner({
   // Mark visited = complete this scheduled appointment via the structured
   // prescription form, pre-filled with whatever it already holds.
   const startMarkVisited = (a: Appointment) =>
-    setRx({ appointmentId: a.id, initial: initialFromAppointment(a) });
+    setRx({ appointmentId: a.id, mode: "complete", initial: initialFromAppointment(a) });
+
+  // Edit a recorded visit in the same structured form (no flattening) —
+  // PATCHes the appointment's clinical fields in place.
+  const openEditRx = (a: Appointment) =>
+    setRx({ appointmentId: a.id, mode: "edit", initial: initialFromAppointment(a) });
 
   const startEdit = (a: Appointment) =>
     setEditTarget({ appointment: a, mode: "edit" });
@@ -580,6 +586,7 @@ function PatientDetailPageInner({
               appointments={past.filter(a => a.status === "completed")}
               filters={ALL_VISIBLE}
               onRepeat={openRepeatRx}
+              onEdit={openEditRx}
             />
           </div>
         </div>
@@ -630,6 +637,7 @@ function PatientDetailPageInner({
             appointments={past.filter(a => a.status === "completed")}
             filters={filters}
             onRepeat={openRepeatRx}
+            onEdit={openEditRx}
           />
 
           {feedbacks.length > 0 && (
@@ -710,7 +718,7 @@ function PatientDetailPageInner({
         open={rx !== null}
         patient={{ leadId: lead.id, name: lead.name, phone: lead.phone }}
         appointmentId={rx?.appointmentId}
-        mode={rx?.appointmentId ? "complete" : "create"}
+        mode={rx?.appointmentId ? (rx.mode ?? "complete") : "create"}
         initial={rx?.initial}
         onClose={() => setRx(null)}
         onCreated={() => {
@@ -1171,10 +1179,12 @@ function MedicalHistory({
   appointments,
   filters,
   onRepeat,
+  onEdit,
 }: {
   appointments: Appointment[];
   filters: EmrFilters;
   onRepeat: (a: Appointment) => void;
+  onEdit: (a: Appointment) => void;
 }) {
   // Sort oldest → newest for the trend chart's X axis (so the line goes
   // left-to-right in time). The timeline below reverses to most-recent
@@ -1284,6 +1294,7 @@ function MedicalHistory({
                   appointment={a}
                   filters={filters}
                   onRepeat={() => onRepeat(a)}
+                  onEdit={() => onEdit(a)}
                 />
               </li>
             ))}
@@ -1426,10 +1437,12 @@ function EmrVisitCard({
   appointment: a,
   filters,
   onRepeat,
+  onEdit,
 }: {
   appointment: Appointment;
   filters: EmrFilters;
   onRepeat: () => void;
+  onEdit: () => void;
 }) {
   const meds = (a.medicines ?? []).map(normalizeMedicine);
   const dateStr = a.date
@@ -1459,15 +1472,26 @@ function EmrVisitCard({
             </span>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onRepeat}
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
-          title="Repeat this prescription in a new visit"
-        >
-          <RefreshCw size={11} />
-          Repeat Rx
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
+            title="Edit this visit's diagnosis & prescription"
+          >
+            <Pencil size={11} />
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={onRepeat}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+            title="Repeat this prescription in a new visit"
+          >
+            <RefreshCw size={11} />
+            Repeat Rx
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3 px-5 py-4">

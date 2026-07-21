@@ -44,10 +44,11 @@ type Props = {
   // existing appointment (which is targeted by appointmentId instead).
   patient: { leadId?: string; name: string; phone?: string };
   initial?: PrescriptionInitial;
-  // When set, saving COMPLETES this appointment (PATCH, status=completed)
-  // instead of creating a new visit (POST). Drives the Mark-visited flow.
+  // When set, saving PATCHes this appointment instead of creating a new visit
+  // (POST). "complete" also flips status → completed (Mark visited); "edit"
+  // only updates the clinical fields, leaving status/date untouched.
   appointmentId?: string;
-  mode?: "create" | "complete";
+  mode?: "create" | "complete" | "edit";
   onClose: () => void;
   onCreated: () => void;
 };
@@ -119,7 +120,9 @@ function Form({
   onClose,
   onCreated,
 }: Omit<Props, "open">) {
-  const completing = mode === "complete" || !!appointmentId;
+  const isPatch = !!appointmentId;
+  const isEdit = isPatch && mode === "edit";
+  const isComplete = isPatch && !isEdit; // Mark visited
   const [encounterType, setEncounterType] = useState(
     initial?.encounterType ?? "Follow-up Consultation",
   );
@@ -192,11 +195,14 @@ function Form({
         bpSystolic: numOrNull(bpSys),
         bpDiastolic: numOrNull(bpDia),
       };
-      const res = completing
+      const res = isPatch
         ? await fetch(`/api/appointments/${appointmentId}`, {
             method: "PATCH",
             headers: authHeaders(),
-            body: JSON.stringify({ status: "completed", ...clinical }),
+            // "complete" flips status; "edit" leaves status/date as-is.
+            body: JSON.stringify(
+              isComplete ? { status: "completed", ...clinical } : clinical,
+            ),
           })
         : await fetch("/api/prescriptions", {
             method: "POST",
@@ -236,14 +242,20 @@ function Form({
         <div className="flex items-start justify-between gap-3 border-b border-slate-200/70 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold tracking-tight text-slate-900">
-              {completing ? "Mark visited" : "Create prescription"}
+              {isEdit
+                ? "Edit visit"
+                : isComplete
+                  ? "Mark visited"
+                  : "Create prescription"}
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              {completing ? "Complete the visit for " : "New visit for "}
+              {isEdit
+                ? "Update the record for "
+                : isComplete
+                  ? "Complete the visit for "
+                  : "New visit for "}
               <span className="font-medium text-slate-700">{patient.name}</span>
-              {completing
-                ? " — record diagnosis & prescription."
-                : ", dated today."}
+              {isEdit ? "." : isComplete ? " — record diagnosis & prescription." : ", dated today."}
             </p>
           </div>
           <button
@@ -395,9 +407,11 @@ function Form({
           >
             {busy
               ? "Saving…"
-              : completing
-                ? "Save & mark visited"
-                : "Save prescription"}
+              : isEdit
+                ? "Save changes"
+                : isComplete
+                  ? "Save & mark visited"
+                  : "Save prescription"}
           </button>
         </div>
       </form>
