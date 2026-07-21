@@ -49,6 +49,18 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (parsed.data.diagnosis !== undefined) {
       data.diagnosis = parsed.data.diagnosis;
     }
+    if (parsed.data.encounterType !== undefined) {
+      data.encounterType = parsed.data.encounterType || null;
+    }
+    if (parsed.data.diagnosisCode !== undefined) {
+      data.diagnosisCode = parsed.data.diagnosisCode || null;
+    }
+    if (parsed.data.diagnosisStatus !== undefined) {
+      data.diagnosisStatus = parsed.data.diagnosisStatus || null;
+    }
+    if (parsed.data.observations !== undefined) {
+      data.observations = parsed.data.observations || null;
+    }
     if (parsed.data.medicines !== undefined) {
       data.medicines = parsed.data.medicines;
     }

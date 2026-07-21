@@ -8,6 +8,8 @@ import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddAppointmentModal from "@/components/AddAppointmentModal";
 import EditAppointmentModal from "@/components/EditAppointmentModal";
+import CreatePrescriptionModal from "@/components/CreatePrescriptionModal";
+import type { PrescriptionItem } from "@/lib/validators/prescription";
 
 type Appointment = {
   id: string;
@@ -19,7 +21,11 @@ type Appointment = {
   status?: string;
   notes?: string;
   diagnosis?: string;
-  medicines?: string[];
+  encounterType?: string | null;
+  diagnosisCode?: string | null;
+  diagnosisStatus?: string | null;
+  observations?: string | null;
+  medicines?: Array<string | PrescriptionItem>;
   weightKg?: number | null;
   sugarMgDl?: number | null;
   bpSystolic?: number | null;
@@ -229,6 +235,10 @@ function AppointmentsPageInner() {
     mode: "edit" | "visit";
   } | null>(null);
 
+  // Mark-visited opens the structured prescription modal to complete the
+  // appointment (diagnosis + observations + medicines), not the freeform editor.
+  const [rxComplete, setRxComplete] = useState<Appointment | null>(null);
+
   // datetime-local seed for the Add modal when opened from a calendar slot.
   const [prefillDate, setPrefillDate] = useState<string | undefined>(undefined);
 
@@ -427,6 +437,38 @@ function AppointmentsPageInner() {
         />
       )}
 
+      {rxComplete && (
+        <CreatePrescriptionModal
+          open
+          mode="complete"
+          appointmentId={rxComplete.id}
+          patient={{
+            name: rxComplete.name ?? "Patient",
+            phone: rxComplete.phone,
+          }}
+          initial={{
+            encounterType: rxComplete.encounterType ?? undefined,
+            diagnosis: rxComplete.diagnosis || undefined,
+            diagnosisCode: rxComplete.diagnosisCode ?? undefined,
+            diagnosisStatus: rxComplete.diagnosisStatus ?? undefined,
+            observations: rxComplete.observations ?? undefined,
+            medicines: (rxComplete.medicines ?? []).map(m =>
+              typeof m === "string" ? { name: m } : m,
+            ),
+            weightKg: rxComplete.weightKg ?? null,
+            sugarMgDl: rxComplete.sugarMgDl ?? null,
+            bpSystolic: rxComplete.bpSystolic ?? null,
+            bpDiastolic: rxComplete.bpDiastolic ?? null,
+          }}
+          onClose={() => setRxComplete(null)}
+          onCreated={() => {
+            setRxComplete(null);
+            refreshTable();
+            refreshNow();
+          }}
+        />
+      )}
+
       {(active || next) && (
         <div
           className={`grid gap-4 ${
@@ -439,9 +481,7 @@ function AppointmentsPageInner() {
               label="Active appointment"
               appointment={active}
               busy={busyId === active.id}
-              onMarkVisited={() =>
-                setEditTarget({ appointment: active, mode: "visit" })
-              }
+              onMarkVisited={() => setRxComplete(active)}
               onNoShow={() => markNoShow(active.id)}
             />
           )}
@@ -631,9 +671,7 @@ function AppointmentsPageInner() {
                             <>
                               <button
                                 type="button"
-                                onClick={() =>
-                                  setEditTarget({ appointment: a, mode: "visit" })
-                                }
+                                onClick={() => setRxComplete(a)}
                                 disabled={busyId === a.id}
                                 className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-60"
                               >

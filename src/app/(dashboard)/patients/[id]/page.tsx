@@ -169,12 +169,13 @@ function PatientDetailPageInner({
 
   const [bookingOpen, setBookingOpen] = useState(false);
 
-  // Create-prescription modal. `rxInitial` is set when repeating a past Rx so
-  // the modal opens pre-filled from that visit.
-  const [rxOpen, setRxOpen] = useState(false);
-  const [rxInitial, setRxInitial] = useState<PrescriptionInitial | undefined>(
-    undefined,
-  );
+  // Structured prescription modal. `appointmentId` set → the modal completes
+  // that existing visit (Mark visited); otherwise it creates a new visit.
+  // `initial` pre-fills it (Repeat Rx, or an appointment's existing data).
+  const [rx, setRx] = useState<{
+    appointmentId?: string;
+    initial?: PrescriptionInitial;
+  } | null>(null);
 
   // EMR timeline filters. All sections on and no date window by default.
   const [filters, setFilters] = useState<EmrFilters>({
@@ -272,29 +273,19 @@ function PatientDetailPageInner({
     }
   };
 
-  const openCreateRx = () => {
-    setRxInitial(undefined);
-    setRxOpen(true);
-  };
+  const openCreateRx = () => setRx({});
 
   // Clone a past visit's clinical content into a fresh prescription draft.
-  const openRepeatRx = (a: Appointment) => {
-    setRxInitial({
-      encounterType: a.encounterType ?? undefined,
-      diagnosis: a.diagnosis || undefined,
-      diagnosisCode: a.diagnosisCode ?? undefined,
-      diagnosisStatus: a.diagnosisStatus ?? undefined,
-      observations: a.observations ?? undefined,
-      medicines: (a.medicines ?? []).map(normalizeMedicine),
-    });
-    setRxOpen(true);
-  };
+  const openRepeatRx = (a: Appointment) =>
+    setRx({ initial: initialFromAppointment(a) });
+
+  // Mark visited = complete this scheduled appointment via the structured
+  // prescription form, pre-filled with whatever it already holds.
+  const startMarkVisited = (a: Appointment) =>
+    setRx({ appointmentId: a.id, initial: initialFromAppointment(a) });
 
   const startEdit = (a: Appointment) =>
     setEditTarget({ appointment: a, mode: "edit" });
-
-  const startMarkVisited = (a: Appointment) =>
-    setEditTarget({ appointment: a, mode: "visit" });
 
   const markNoShow = async (apptId: string) => {
     setBusyApptId(apptId);
@@ -716,12 +707,14 @@ function PatientDetailPageInner({
       />
 
       <CreatePrescriptionModal
-        open={rxOpen}
+        open={rx !== null}
         patient={{ leadId: lead.id, name: lead.name, phone: lead.phone }}
-        initial={rxInitial}
-        onClose={() => setRxOpen(false)}
+        appointmentId={rx?.appointmentId}
+        mode={rx?.appointmentId ? "complete" : "create"}
+        initial={rx?.initial}
+        onClose={() => setRx(null)}
         onCreated={() => {
-          setRxOpen(false);
+          setRx(null);
           load();
         }}
       />
@@ -1316,6 +1309,23 @@ function medicineLabel(m: MedicineEntry): string {
     Boolean,
   );
   return parts.length ? `${it.name} — ${parts.join(" · ")}` : it.name;
+}
+
+// Seed the prescription modal from an appointment's existing clinical data —
+// used by both Repeat Rx (clone) and Mark visited (complete in place).
+function initialFromAppointment(a: Appointment): PrescriptionInitial {
+  return {
+    encounterType: a.encounterType ?? undefined,
+    diagnosis: a.diagnosis || undefined,
+    diagnosisCode: a.diagnosisCode ?? undefined,
+    diagnosisStatus: a.diagnosisStatus ?? undefined,
+    observations: a.observations ?? undefined,
+    medicines: (a.medicines ?? []).map(normalizeMedicine),
+    weightKg: a.weightKg ?? null,
+    sugarMgDl: a.sugarMgDl ?? null,
+    bpSystolic: a.bpSystolic ?? null,
+    bpDiastolic: a.bpDiastolic ?? null,
+  };
 }
 
 // Pill colour per dosing frequency, echoing the mockup (OD sky, BD amber,

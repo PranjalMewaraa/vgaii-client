@@ -32,12 +32,22 @@ export type PrescriptionInitial = {
   diagnosisStatus?: string;
   observations?: string;
   medicines?: PrescriptionItem[];
+  weightKg?: number | null;
+  sugarMgDl?: number | null;
+  bpSystolic?: number | null;
+  bpDiastolic?: number | null;
 };
 
 type Props = {
   open: boolean;
-  patient: { leadId: string; name: string; phone?: string };
+  // leadId is required to create a new visit; optional when completing an
+  // existing appointment (which is targeted by appointmentId instead).
+  patient: { leadId?: string; name: string; phone?: string };
   initial?: PrescriptionInitial;
+  // When set, saving COMPLETES this appointment (PATCH, status=completed)
+  // instead of creating a new visit (POST). Drives the Mark-visited flow.
+  appointmentId?: string;
+  mode?: "create" | "complete";
   onClose: () => void;
   onCreated: () => void;
 };
@@ -80,6 +90,8 @@ export default function CreatePrescriptionModal({
   open,
   patient,
   initial,
+  appointmentId,
+  mode,
   onClose,
   onCreated,
 }: Props) {
@@ -88,18 +100,26 @@ export default function CreatePrescriptionModal({
     <Form
       patient={patient}
       initial={initial}
+      appointmentId={appointmentId}
+      mode={mode}
       onClose={onClose}
       onCreated={onCreated}
     />
   );
 }
 
+const vitalStr = (v: number | null | undefined) =>
+  v === null || v === undefined ? "" : String(v);
+
 function Form({
   patient,
   initial,
+  appointmentId,
+  mode,
   onClose,
   onCreated,
 }: Omit<Props, "open">) {
+  const completing = mode === "complete" || !!appointmentId;
   const [encounterType, setEncounterType] = useState(
     initial?.encounterType ?? "Follow-up Consultation",
   );
@@ -109,10 +129,10 @@ function Form({
     initial?.diagnosisStatus ?? "Initial Entry",
   );
   const [observations, setObservations] = useState(initial?.observations ?? "");
-  const [weight, setWeight] = useState("");
-  const [sugar, setSugar] = useState("");
-  const [bpSys, setBpSys] = useState("");
-  const [bpDia, setBpDia] = useState("");
+  const [weight, setWeight] = useState(vitalStr(initial?.weightKg));
+  const [sugar, setSugar] = useState(vitalStr(initial?.sugarMgDl));
+  const [bpSys, setBpSys] = useState(vitalStr(initial?.bpSystolic));
+  const [bpDia, setBpDia] = useState(vitalStr(initial?.bpDiastolic));
   const [rows, setRows] = useState<MedRow[]>(() => rowsFromInitial(initial));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -159,23 +179,30 @@ function Form({
 
     setBusy(true);
     try {
-      const res = await fetch("/api/prescriptions", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          leadId: patient.leadId,
-          encounterType: encounterType.trim() || undefined,
-          diagnosis: diagnosis.trim() || undefined,
-          diagnosisCode: diagnosisCode.trim() || undefined,
-          diagnosisStatus: diagnosisStatus.trim() || undefined,
-          observations: observations.trim() || undefined,
-          medicines,
-          weightKg: numOrNull(weight),
-          sugarMgDl: numOrNull(sugar),
-          bpSystolic: numOrNull(bpSys),
-          bpDiastolic: numOrNull(bpDia),
-        }),
-      });
+      // Complete an existing appointment (Mark visited) vs. create a new visit.
+      const clinical = {
+        encounterType: encounterType.trim() || undefined,
+        diagnosis: diagnosis.trim() || undefined,
+        diagnosisCode: diagnosisCode.trim() || undefined,
+        diagnosisStatus: diagnosisStatus.trim() || undefined,
+        observations: observations.trim() || undefined,
+        medicines,
+        weightKg: numOrNull(weight),
+        sugarMgDl: numOrNull(sugar),
+        bpSystolic: numOrNull(bpSys),
+        bpDiastolic: numOrNull(bpDia),
+      };
+      const res = completing
+        ? await fetch(`/api/appointments/${appointmentId}`, {
+            method: "PATCH",
+            headers: authHeaders(),
+            body: JSON.stringify({ status: "completed", ...clinical }),
+          })
+        : await fetch("/api/prescriptions", {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ leadId: patient.leadId, ...clinical }),
+          });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
         setError(
@@ -209,12 +236,14 @@ function Form({
         <div className="flex items-start justify-between gap-3 border-b border-slate-200/70 px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold tracking-tight text-slate-900">
-              Create prescription
+              {completing ? "Mark visited" : "Create prescription"}
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              New visit for{" "}
+              {completing ? "Complete the visit for " : "New visit for "}
               <span className="font-medium text-slate-700">{patient.name}</span>
-              , dated today.
+              {completing
+                ? " — record diagnosis & prescription."
+                : ", dated today."}
             </p>
           </div>
           <button
@@ -364,7 +393,11 @@ function Form({
             disabled={busy}
             className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
-            {busy ? "Saving…" : "Save prescription"}
+            {busy
+              ? "Saving…"
+              : completing
+                ? "Save & mark visited"
+                : "Save prescription"}
           </button>
         </div>
       </form>
