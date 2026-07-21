@@ -10,6 +10,7 @@ import {
   Calendar,
   ChevronsUpDown,
   ClipboardList,
+  DoorOpen,
   IndianRupee,
   LayoutDashboard,
   MessageSquare,
@@ -43,6 +44,7 @@ const CLIENT_SECTIONS: NavSection[] = [
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/patients", label: "Patients", icon: Stethoscope, module: "patients" },
+      { href: "/walk-in", label: "Walk-in", icon: DoorOpen, module: "appointments" },
       { href: "/appointments", label: "Appointments", icon: Calendar, module: "appointments" },
     ],
   },
