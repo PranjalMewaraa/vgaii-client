@@ -30,8 +30,17 @@ const adapterConfig = {
   user: decodeURIComponent(parsed.username),
   password: decodeURIComponent(parsed.password),
   database: parsed.pathname.replace(/^\//, "") || undefined,
-  connectionLimit: 10,
+  // Shared MySQL hosts cap concurrent connections per user (freedb.tech
+  // allows 5) and every serverless instance opens its own pool, so the
+  // default stays low. Roomier hosts can raise it via DB_CONNECTION_LIMIT.
+  connectionLimit: Number(process.env.DB_CONNECTION_LIMIT ?? 4),
   connectTimeout: 15_000,
+  // MySQL 8 defaults to the caching_sha2_password auth plugin, which makes
+  // the driver fetch the server's RSA public key before it can send the
+  // password over a non-TLS link. Without this no connection is ever
+  // established and every query dies on a pool timeout. Unused by MariaDB
+  // and MySQL 5.7, which authenticate with mysql_native_password.
+  allowPublicKeyRetrieval: true,
 };
 
 const buildClient = () =>

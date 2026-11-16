@@ -28,8 +28,14 @@ const prisma = new PrismaClient({
     user: decodeURIComponent(parsed.username),
     password: decodeURIComponent(parsed.password),
     database: parsed.pathname.replace(/^\//, "") || undefined,
-    connectionLimit: 10,
+    // The seed writes sequentially, so a couple of connections is plenty —
+    // and shared hosts cap how many a single user may hold at once.
+    connectionLimit: 2,
     connectTimeout: 15_000,
+    // MySQL 8's caching_sha2_password plugin needs the server's RSA public
+    // key before it will accept the password over a non-TLS link. See the
+    // same option in src/lib/prisma.ts.
+    allowPublicKeyRetrieval: true,
   }),
 });
 
