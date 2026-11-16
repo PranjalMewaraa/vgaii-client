@@ -97,10 +97,10 @@ export default function ClinicalTemplate({
               </div>
             </main>
             <div className="relative h-[350px] w-full lg:col-span-5 lg:h-[500px]">
-              <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-2xl bg-teal-700/10" />
+              <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-xl bg-teal-700/10" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                className="relative z-10 h-full w-full rounded-2xl border-4 border-white object-cover shadow-lg"
+                className="relative z-10 h-full w-full rounded-xl border-4 border-white object-cover shadow-lg"
                 src={v.heroImageUrl}
                 alt={v.doctorName}
               />
@@ -116,7 +116,7 @@ export default function ClinicalTemplate({
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
-            <div className="overflow-hidden rounded-2xl border-2 border-stone-100 shadow-lg">
+            <div className="overflow-hidden rounded-xl border-2 border-stone-100 shadow-lg">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={v.aboutImageUrl}

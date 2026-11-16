@@ -21,7 +21,7 @@ type Response = {
 // colors; everything else falls through to slate.
 const dotTone = (action: string): string => {
   if (/resolved|completed|visited/.test(action)) return "bg-emerald-500";
-  if (/created|booked|added/.test(action)) return "bg-indigo-500";
+  if (/created|booked|added/.test(action)) return "bg-green-500";
   if (/deleted|removed|cancelled|expired|no_show/.test(action))
     return "bg-red-500";
   return "bg-slate-400";
@@ -38,10 +38,10 @@ export default function RecentActivityCard() {
   const forbidden = (error as { status?: number } | undefined)?.status === 403;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">
             Recent Activity
           </h2>
           <p className="text-xs text-slate-500">
@@ -50,7 +50,7 @@ export default function RecentActivityCard() {
         </div>
         <Link
           href="/activity"
-          className="text-xs font-medium text-indigo-600 hover:underline"
+          className="text-xs font-medium text-green-600 hover:underline"
         >
           View all activity →
         </Link>

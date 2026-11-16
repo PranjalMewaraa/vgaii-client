@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { clearImpersonationStash } from "@/lib/impersonation";
 
 type JwtPayload = {
   exp?: number;
@@ -91,6 +92,7 @@ export const updateStoredUser = (patch: Partial<StoredUser>) => {
 export const clearStoredAuth = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  clearImpersonationStash();
   cachedUserRaw = null;
   cachedUser = null;
   userListeners.forEach(cb => cb());

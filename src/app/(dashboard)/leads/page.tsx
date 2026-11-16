@@ -3,13 +3,31 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { Clock, Eye, Pencil, TrendingUp, UserPlus, Users } from "lucide-react";
+import {
+  Clock,
+  Eye,
+  LayoutGrid,
+  List,
+  Pencil,
+  TrendingUp,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddLeadModal from "@/components/AddLeadModal";
 import StatCard from "@/components/StatCard";
+import Avatar from "@/components/Avatar";
 import TopSourcesCard from "@/components/TopSourcesCard";
-import { LEAD_STATUSES } from "@/lib/constants";
+import LeadsBoard from "@/components/LeadsBoard";
+import { LEAD_STATUSES, type LeadStatus } from "@/lib/constants";
+
+const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${
+    typeof window !== "undefined" ? localStorage.getItem("token") : ""
+  }`,
+});
 
 type DashboardData = {
   topSources?: Array<{ source: string; count: number }>;
@@ -110,25 +128,82 @@ function LeadsPageInner() {
     setSearch("");
   };
 
+  // Table ⇄ Board view. Seed from ?view=board so the choice is shareable.
+  const [view, setView] = useState<"table" | "board">(() =>
+    searchParams.get("view") === "board" ? "board" : "table",
+  );
+
+  // Drag-and-drop status change from the board. Optimistically re-bucket the
+  // card, persist via PATCH (the API enforces the transition matrix), then
+  // revalidate — a promoted (qualified) lead drops out of scope into Patients.
+  const moveLead = async (id: string, status: LeadStatus) => {
+    mutate(
+      prev =>
+        prev
+          ? { leads: prev.leads.map(l => (l.id === id ? { ...l, status } : l)) }
+          : prev,
+      { revalidate: false },
+    );
+    try {
+      await fetch(`/api/leads/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: JSON.stringify({ status }),
+      });
+    } finally {
+      mutate();
+    }
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Leads</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Leads</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Early-funnel and dropped contacts. Once a lead is{" "}
             <code className="rounded bg-slate-100 px-1">qualified</code>, they
             move to the Patients tab.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          data-tour="leads-add-btn"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-        >
-          + Add lead
-        </button>
+        <div className="flex items-center gap-2.5">
+          <div className="inline-flex rounded-lg border border-slate-200/70 bg-white p-0.5">
+            <button
+              type="button"
+              onClick={() => setView("table")}
+              aria-pressed={view === "table"}
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                view === "table"
+                  ? "bg-green-600 text-white"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <List size={14} />
+              Table
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("board")}
+              aria-pressed={view === "board"}
+              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                view === "board"
+                  ? "bg-green-600 text-white"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <LayoutGrid size={14} />
+              Board
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            data-tour="leads-add-btn"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
+          >
+            + Add lead
+          </button>
+        </div>
       </header>
 
       <AddLeadModal
@@ -140,8 +215,8 @@ function LeadsPageInner() {
         }}
       />
 
-      <div className="grid gap-3 lg:grid-cols-3">
-        <div className="grid grid-cols-2 gap-3 lg:col-span-2">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
           <StatCard
             title="Total Leads"
             value={stats.total}
@@ -172,7 +247,7 @@ function LeadsPageInner() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block flex-1 min-w-[180px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -182,7 +257,7 @@ function LeadsPageInner() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Name or phone…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
@@ -192,7 +267,7 @@ function LeadsPageInner() {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All statuses</option>
               {LEAD_STATUSES.filter(
@@ -215,7 +290,7 @@ function LeadsPageInner() {
             <select
               value={sourceFilter}
               onChange={e => setSourceFilter(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All sources</option>
               {sources.map(s => (
@@ -230,7 +305,7 @@ function LeadsPageInner() {
             <button
               type="button"
               onClick={clearFilters}
-              className="ml-auto text-xs text-indigo-600 hover:underline"
+              className="ml-auto text-xs text-green-600 hover:underline"
             >
               Clear filters
             </button>
@@ -238,69 +313,75 @@ function LeadsPageInner() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">All Leads</h2>
+      {view === "table" ? (
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">All Leads</h2>
           <span className="text-xs text-slate-500">
             {visible.length} of {leads.length}
           </span>
         </div>
 
         {isLoading ? (
-          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">
+          <p className="px-5 py-4 text-sm text-slate-500">
             No leads match these filters.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-2 text-left">Name</th>
-                  <th className="px-4 py-2 text-left">Phone</th>
-                  <th className="px-4 py-2 text-left">Source</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-right">Created</th>
-                  <th className="px-2 py-2" aria-label="Actions" />
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Name</th>
+                  <th className="px-6 py-3 text-left">Phone</th>
+                  <th className="px-6 py-3 text-left">Source</th>
+                  <th className="px-6 py-3 text-left">Status</th>
+                  <th className="px-6 py-3 text-right">Created</th>
+                  <th className="px-6 py-3" aria-label="Actions" />
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {visible.map(lead => (
                   <tr
                     key={lead.id}
                     onClick={() => router.push(`/leads/${lead.id}`)}
-                    className="cursor-pointer border-t border-slate-200 hover:bg-slate-50"
+                    className="cursor-pointer transition-colors hover:bg-slate-50/70"
                   >
-                    <td className="px-4 py-2.5 font-medium text-slate-900">
-                      {lead.name}
-                      {typeof lead.outcomeRating === "number" && (
-                        <span className="ml-2 text-xs text-amber-600">
-                          ⭐ {lead.outcomeRating}/5
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={lead.name} size="md" />
+                        <span className="font-semibold text-slate-900">
+                          {lead.name}
+                          {typeof lead.outcomeRating === "number" && (
+                            <span className="ml-2 text-xs font-medium text-amber-600">
+                              ⭐ {lead.outcomeRating}/5
+                            </span>
+                          )}
                         </span>
-                      )}
+                      </div>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-700">{lead.phone}</td>
-                    <td className="px-4 py-2.5 text-slate-600">
+                    <td className="px-6 py-3.5 text-slate-700">{lead.phone}</td>
+                    <td className="px-6 py-3.5 text-slate-600">
                       {lead.source || "—"}
                     </td>
-                    <td className="px-4 py-2.5">
+                    <td className="px-6 py-3.5">
                       <StatusPill status={lead.status} />
                     </td>
-                    <td className="px-4 py-2.5 text-right text-xs text-slate-500">
+                    <td className="px-6 py-3.5 text-right text-xs text-slate-500">
                       {lead.createdAt
                         ? new Date(lead.createdAt).toLocaleDateString()
                         : "—"}
                     </td>
                     <td
-                      className="px-2 py-2.5 text-right"
+                      className="px-6 py-3.5 text-right"
                       onClick={e => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}`)}
-                          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                           aria-label={`View ${lead.name}`}
                           title="View"
                         >
@@ -309,7 +390,7 @@ function LeadsPageInner() {
                         <button
                           type="button"
                           onClick={() => router.push(`/leads/${lead.id}?edit=1`)}
-                          className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                          className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                           aria-label={`Edit ${lead.name}`}
                           title="Edit"
                         >
@@ -324,6 +405,15 @@ function LeadsPageInner() {
           </div>
         )}
       </div>
+      ) : isLoading ? (
+        <p className="px-1 py-6 text-sm text-slate-500">Loading…</p>
+      ) : visible.length === 0 ? (
+        <p className="rounded-xl border border-slate-200/70 bg-white px-6 py-8 text-center text-sm text-slate-500">
+          No leads match these filters.
+        </p>
+      ) : (
+        <LeadsBoard leads={visible} onMove={moveLead} />
+      )}
     </div>
   );
 }

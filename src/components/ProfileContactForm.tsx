@@ -37,18 +37,18 @@ const VARIANTS: Record<ContactFormVariant, VariantClasses> = {
     label:
       "block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2",
     input:
-      "block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-sm placeholder:text-slate-400 transition-all focus:border-sky-600 focus:ring-1 focus:ring-sky-600",
+      "block w-full rounded-xl border border-slate-200/70 bg-slate-50/50 px-4 py-3.5 text-sm shadow-sm placeholder:text-slate-400 transition-all focus:border-sky-600 focus:ring-1 focus:ring-sky-600",
     successHeading: "text-base font-semibold text-slate-900",
     successLink: "mt-4 text-sm font-medium text-slate-900 hover:underline",
     button:
-      "flex w-full justify-center rounded-xl bg-slate-900 px-4 py-4 text-xs font-semibold uppercase tracking-wider text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:opacity-60",
+      "flex w-full justify-center rounded-xl bg-[#1f3d2b] px-4 py-4 text-xs font-semibold uppercase tracking-wider text-white shadow-lg shadow-slate-900/10 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:opacity-60",
   },
   // Clinical = deep teal button, mint accents, sharp corners.
   clinical: {
     card: "rounded-xl bg-white p-8 text-stone-800 shadow-xl",
     label: "block text-xs font-bold uppercase text-stone-500 mb-1",
     input:
-      "block w-full rounded border border-stone-200 bg-stone-50 px-4 py-3 text-sm transition focus:border-teal-700 focus:bg-white focus:outline-none",
+      "block w-full rounded border border-stone-200 bg-stone-50 px-4 py-3 text-sm shadow-sm transition focus:border-teal-700 focus:bg-white focus:outline-none",
     successHeading: "text-base font-semibold text-teal-700",
     successLink: "mt-4 text-sm font-medium text-teal-700 hover:underline",
     button:

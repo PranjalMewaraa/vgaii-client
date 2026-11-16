@@ -93,32 +93,32 @@ function SettingsPageInner() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <header>
-        <h1 className="text-lg font-bold text-slate-900">Settings</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Settings</h1>
+        <p className="mt-1 text-sm text-slate-500">
           Contact details for {settings.name}. Your public URL, integrations,
           and webhooks are managed by the platform team — contact them if you
-          need changes to your slug, domain, Google listing, or Cal.com link.
+          need changes to your slug, domain, Google listing, or booking setup.
         </p>
       </header>
 
       <form
         onSubmit={submit}
-        className="rounded-lg border border-slate-200 bg-white"
+        className="rounded-xl border border-slate-200/70 bg-white"
       >
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">
+        <div className="border-b border-slate-200 px-6 py-4">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Business details
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500">
             Your clinic name and contact details.
           </p>
         </div>
 
-        <div className="space-y-3 px-4 py-3">
+        <div className="grid gap-5 p-6 sm:grid-cols-3">
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
               Name
             </span>
             <input
@@ -127,12 +127,12 @@ function SettingsPageInner() {
               placeholder="Aarogya Dental Studio"
               required
               minLength={2}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
 
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
               Email
             </span>
             <input
@@ -140,12 +140,12 @@ function SettingsPageInner() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="hello@aarogyadental.com"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
 
           <label className="block">
-            <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <span className="mb-1.5 block text-sm font-medium text-slate-700">
               Mobile
             </span>
             <input
@@ -153,12 +153,12 @@ function SettingsPageInner() {
               value={mobile}
               onChange={e => setMobile(e.target.value)}
               placeholder="+91 98765 43210"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-2">
+        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/70 px-6 py-4">
           <span className="text-xs text-slate-500">
             {error
               ? null
@@ -169,7 +169,7 @@ function SettingsPageInner() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save settings"}
           </button>
@@ -183,12 +183,12 @@ function SettingsPageInner() {
 
       <BookingSettings />
 
-      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-600">
-        <p className="font-semibold text-slate-900">Managed by the platform</p>
+      <div className="rounded-xl border border-slate-200/70 bg-slate-50/70 p-6 text-sm text-slate-600">
+        <p className="text-sm font-semibold tracking-tight text-slate-900">Managed by the platform</p>
         <p className="mt-1">
-          Google Place ID, Cal.com booking link, and webhook credentials are
-          configured by your platform admin. If you need to update your
-          Google listing or change your booking link, reach out to support.
+          Google Place ID and webhook credentials are configured by your
+          platform admin. If you need to update your Google listing, reach
+          out to support.
         </p>
       </div>
     </div>

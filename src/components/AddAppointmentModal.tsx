@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
-import BookingEmbed from "@/components/BookingEmbed";
 import SlotPicker from "@/components/SlotPicker";
 import type { BookingConfig } from "@/lib/validators/bookingConfig";
 
@@ -21,10 +19,6 @@ type LeadHit = {
   phone: string;
 };
 
-type DashboardData = {
-  bookingUrl?: string | null;
-};
-
 const authHeaders = () => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${
@@ -38,7 +32,7 @@ const authHeader = () => ({
   }`,
 });
 
-type Mode = "self" | "calcom" | "manual";
+type Mode = "self" | "manual";
 
 export default function AddAppointmentModal({
   open,
@@ -61,12 +55,9 @@ function Shell({
   onCreated: () => void;
   prefillDate?: string;
 }) {
-  // Cal.com URL (legacy) + self-hosted booking config, both SWR-cached.
-  const { data, isLoading } = useSWR<DashboardData>("/api/dashboard");
   const { data: cfgData } = useSWR<{ config: BookingConfig }>(
     "/api/booking/config",
   );
-  const bookingUrl = data?.bookingUrl ?? null;
   const config = cfgData?.config;
   const selfEnabled = !!config?.enabled;
   const configLoading = cfgData === undefined;
@@ -83,74 +74,64 @@ function Shell({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const primary: Mode = selfEnabled ? "self" : bookingUrl ? "calcom" : "manual";
+  const primary: Mode = selfEnabled ? "self" : "manual";
   let effectiveMode: Mode = picked ?? primary;
-  if (effectiveMode === "self" && !selfEnabled) effectiveMode = primary;
-  if (effectiveMode === "calcom" && !bookingUrl) effectiveMode = "manual";
+  if (effectiveMode === "self" && !selfEnabled) effectiveMode = "manual";
 
   const subtitle =
     effectiveMode === "self"
       ? "Pick an available slot from your clinic hours."
-      : effectiveMode === "calcom"
-        ? "Patient picks a slot via your Cal.com booking page."
-        : "Record an appointment manually — useful for walk-ins and back-dated visits.";
+      : "Record an appointment manually — useful for walk-ins and back-dated visits.";
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-8 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+        className="flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
               Add appointment
             </h2>
-            <p className="text-xs text-slate-500">{subtitle}</p>
+            <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
             aria-label="Close"
           >
             ✕
           </button>
         </div>
 
-        <div
-          data-tour="appt-modal-mode-tabs"
-          className="flex border-b border-slate-200"
-        >
-          {selfEnabled ? (
+        {selfEnabled && (
+          <div
+            data-tour="appt-modal-mode-tabs"
+            className="flex border-b border-slate-200"
+          >
             <ModeTab
               label="Book a slot"
               active={effectiveMode === "self"}
               onClick={() => setPicked("self")}
             />
-          ) : (
             <ModeTab
-              label="Cal.com booking"
-              active={effectiveMode === "calcom"}
-              disabled={!bookingUrl}
-              onClick={() => setPicked("calcom")}
+              label="Manual entry"
+              active={effectiveMode === "manual"}
+              onClick={() => setPicked("manual")}
             />
-          )}
-          <ModeTab
-            label="Manual entry"
-            active={effectiveMode === "manual"}
-            onClick={() => setPicked("manual")}
-          />
-        </div>
+          </div>
+        )}
 
         <div className="min-h-0 flex-1 overflow-auto">
           {configLoading ? (
-            <p className="px-4 py-6 text-sm text-slate-500">Loading…</p>
+            <p className="px-5 py-6 text-sm text-slate-500">Loading…</p>
           ) : effectiveMode === "self" ? (
             <ManualForm
               onClose={onClose}
@@ -158,12 +139,6 @@ function Shell({
               slotMode
               slotMinutes={config!.slotMinutes}
               advanceDays={config!.advanceDays}
-            />
-          ) : effectiveMode === "calcom" ? (
-            <CalcomPane
-              bookingUrl={bookingUrl}
-              isLoading={isLoading}
-              onScheduled={onCreated}
             />
           ) : (
             <ManualForm
@@ -194,55 +169,14 @@ function ModeTab({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex-1 border-b-2 px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`flex-1 border-b-2 px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
         active
-          ? "border-indigo-600 text-indigo-700"
+          ? "border-green-600 text-green-700"
           : "border-transparent text-slate-500 hover:text-slate-700"
       }`}
     >
       {label}
     </button>
-  );
-}
-
-function CalcomPane({
-  bookingUrl,
-  isLoading,
-  onScheduled,
-}: {
-  bookingUrl: string | null;
-  isLoading: boolean;
-  onScheduled: () => void;
-}) {
-  if (isLoading) {
-    return <p className="px-4 py-6 text-sm text-slate-500">Loading…</p>;
-  }
-  if (!bookingUrl) {
-    return (
-      <div className="px-4 py-4">
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          No Cal.com booking URL is configured for this client. Ask your
-          admin to set it on the{" "}
-          <Link href="/settings" className="font-semibold underline">
-            Settings
-          </Link>{" "}
-          page, or use the <strong>Manual entry</strong> tab.
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="px-2 py-2">
-      <BookingEmbed
-        url={bookingUrl}
-        onScheduled={() => {
-          // Cal.com webhook usually writes the appointment within a second,
-          // so notify the parent to refetch immediately and let the parent
-          // close the modal.
-          onScheduled();
-        }}
-      />
-    </div>
   );
 }
 
@@ -392,10 +326,10 @@ function ManualForm({
     <form
       onSubmit={submit}
       data-tour="appt-modal-form"
-      className="px-4 py-4"
+      className="px-5 py-4"
     >
-      <div className="space-y-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                 Name *
@@ -404,7 +338,7 @@ function ManualForm({
                 value={name}
                 onChange={e => setName(e.target.value)}
                 autoFocus
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
@@ -415,7 +349,7 @@ function ManualForm({
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 inputMode="tel"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           </div>
@@ -442,7 +376,7 @@ function ManualForm({
                 type="datetime-local"
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           )}
@@ -455,11 +389,11 @@ function ManualForm({
               value={email}
               onChange={e => setEmail(e.target.value)}
               type="email"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <label className="block">
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
                 Age
@@ -468,7 +402,7 @@ function ManualForm({
                 value={age}
                 onChange={e => setAge(e.target.value)}
                 inputMode="numeric"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
@@ -478,7 +412,7 @@ function ManualForm({
               <select
                 value={gender}
                 onChange={e => setGender(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 <option value="">—</option>
                 <option value="male">Male</option>
@@ -503,7 +437,7 @@ function ManualForm({
                 <button
                   type="button"
                   onClick={clearLead}
-                  className="text-xs text-slate-500 hover:text-slate-700"
+                  className="text-xs text-slate-500 transition-colors hover:text-slate-700"
                 >
                   Unlink
                 </button>
@@ -518,16 +452,16 @@ function ManualForm({
                   }}
                   onFocus={() => setSearchOpen(true)}
                   placeholder="Search by name or phone…"
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 />
                 {showHits && (
-                  <ul className="absolute left-0 right-0 z-10 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                  <ul className="absolute left-0 right-0 z-10 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200/70 bg-white shadow-lg">
                     {displayedHits.map(hit => (
                       <li key={hit.id}>
                         <button
                           type="button"
                           onClick={() => pickLead(hit)}
-                          className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+                          className="block w-full px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50"
                         >
                           <span className="font-medium text-slate-900">
                             {hit.name}
@@ -552,13 +486,13 @@ function ManualForm({
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={2}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </div>
 
         {error && (
-          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
+          <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
             {error}
           </p>
         )}
@@ -567,14 +501,14 @@ function ManualForm({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+          className="rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={busy}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
         >
           {busy ? "Adding…" : "Add appointment"}
         </button>

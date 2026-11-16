@@ -5,16 +5,26 @@ import useSWR from "swr";
 import {
   Banknote,
   CreditCard,
+  Plus,
   Smartphone,
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { rupeesToPaise, formatRupees } from "@/lib/currency";
+import { rupeesToPaise, paiseToRupees, formatRupees } from "@/lib/currency";
 import {
   EXPENSE_CATEGORIES,
   type ExpenseCategory,
   type PaymentMethod,
 } from "@/lib/constants";
+
+type ExpensePreset = {
+  id: string;
+  title: string;
+  category: ExpenseCategory;
+  amount: number;
+};
+
+type PresetsResponse = { presets: ExpensePreset[] };
 
 type Expense = {
   id: string;
@@ -53,8 +63,8 @@ const METHOD_DEFS: Array<{
     key: "upi",
     label: "UPI",
     icon: Smartphone,
-    className: "border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50",
-    activeClass: "border-indigo-500 bg-indigo-600 text-white shadow-sm",
+    className: "border-green-200 bg-white text-green-700 hover:bg-green-50",
+    activeClass: "border-green-500 bg-green-600 text-white shadow-sm",
   },
   {
     key: "card",
@@ -78,6 +88,8 @@ const formatCategory = (c: string) =>
 export default function ExpenseEntryTab() {
   const { data, mutate } = useSWR<Response>("/api/expenses");
   const expenses = data?.expenses ?? [];
+  const { data: presetsData } = useSWR<PresetsResponse>("/api/expense-presets");
+  const presets = presetsData?.presets ?? [];
 
   const [category, setCategory] = useState<ExpenseCategory>("miscellaneous");
   const [amountInput, setAmountInput] = useState("");
@@ -86,6 +98,12 @@ export default function ExpenseEntryTab() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
+
+  const applyPreset = (p: ExpensePreset) => {
+    setCategory(p.category);
+    setAmountInput(String(paiseToRupees(p.amount)));
+    setNotes(p.title);
+  };
 
   const reset = () => {
     setCategory("miscellaneous");
@@ -128,10 +146,34 @@ export default function ExpenseEntryTab() {
   };
 
   return (
-    <div className="grid gap-3 lg:grid-cols-3">
-      <section className="space-y-3 lg:col-span-2">
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h2 className="text-base font-semibold text-slate-900">New expense</h2>
+    <div className="grid gap-4 lg:grid-cols-3">
+      <section className="space-y-5 lg:col-span-2">
+        <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">New expense</h2>
+
+          {presets.length > 0 && (
+            <div className="mt-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                Presets
+              </span>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {presets.map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => applyPreset(p)}
+                    className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-white px-3 py-1.5 text-sm font-medium text-green-700 transition hover:bg-green-50"
+                  >
+                    <Plus size={12} />
+                    <span>{p.title}</span>
+                    <span className="text-xs text-slate-500">
+                      {formatRupees(p.amount)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
             <label className="block">
@@ -141,7 +183,7 @@ export default function ExpenseEntryTab() {
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as ExpenseCategory)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 {EXPENSE_CATEGORIES.map(c => (
                   <option key={c} value={c}>
@@ -159,7 +201,7 @@ export default function ExpenseEntryTab() {
                 onChange={e => setAmountInput(e.target.value)}
                 inputMode="numeric"
                 placeholder="0"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           </div>
@@ -198,7 +240,7 @@ export default function ExpenseEntryTab() {
               onChange={e => setNotes(e.target.value)}
               rows={2}
               placeholder="Vendor, invoice number, anything to remember…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
 
@@ -217,7 +259,7 @@ export default function ExpenseEntryTab() {
             <button
               type="button"
               onClick={reset}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
             >
               Clear
             </button>
@@ -225,7 +267,7 @@ export default function ExpenseEntryTab() {
               type="button"
               onClick={save}
               disabled={busy}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
             >
               {busy ? "Saving…" : "Save expense"}
             </button>
@@ -234,21 +276,21 @@ export default function ExpenseEntryTab() {
       </section>
 
       <section className="lg:col-span-1">
-        <div className="rounded-lg border border-slate-200 bg-white">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-            <h2 className="text-base font-semibold text-slate-900">Recent</h2>
+        <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
+            <h2 className="text-base font-semibold tracking-tight text-slate-900">Recent</h2>
             <span className="text-xs text-slate-500">
               {expenses.length} entries
             </span>
           </div>
           {expenses.length === 0 ? (
-            <p className="px-4 py-3 text-xs text-slate-500">
+            <p className="px-6 py-4 text-xs text-slate-500">
               No expenses logged yet.
             </p>
           ) : (
-            <ul className="divide-y divide-slate-200">
+            <ul className="divide-y divide-slate-100">
               {expenses.slice(0, 10).map(e => (
-                <li key={e.id} className="px-4 py-2.5">
+                <li key={e.id} className="px-6 py-3 transition-colors hover:bg-slate-50/70">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-slate-900">

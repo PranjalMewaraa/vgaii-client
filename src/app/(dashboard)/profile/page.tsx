@@ -141,11 +141,11 @@ function ProfilePageInner() {
   if (loading) return <p className="text-sm text-slate-500">Loading…</p>;
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form onSubmit={submit} className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Profile</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Profile</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Edit your public landing page. Toggle <em>Enabled</em> to publish.
           </p>
         </div>
@@ -155,7 +155,7 @@ function ProfilePageInner() {
               href={previewHref}
               target="_blank"
               rel="noreferrer"
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
               Preview ↗
             </a>
@@ -163,7 +163,7 @@ function ProfilePageInner() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save profile"}
           </button>
@@ -173,23 +173,23 @@ function ProfilePageInner() {
       <ProfileSubNav />
 
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       )}
       {savedAt && !error && (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           Saved.
         </p>
       )}
 
       {/* Inline "where to change the template" hint — the picker lives
           on its own page now, but the user might still expect it here. */}
-      <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+      <p className="rounded-lg border border-slate-200/70 bg-slate-50 px-4 py-3 text-xs text-slate-600">
         Current template: <strong>{labelFor(profile.template)}</strong>.{" "}
         <Link
           href="/profile/template"
-          className="font-medium text-indigo-600 hover:underline"
+          className="font-medium text-green-600 hover:underline"
         >
           Change template →
         </Link>
@@ -205,7 +205,7 @@ function ProfilePageInner() {
             type="checkbox"
             checked={profile.enabled}
             onChange={e => set("enabled", e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            className="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500"
           />
           <span>Enabled — publish this profile at the public URL.</span>
         </label>
@@ -263,7 +263,7 @@ function ProfilePageInner() {
           placeholder="A few sentences about your background and approach."
         />
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Achievements (up to 10)
           </p>
           <div className="mt-2 space-y-2">
@@ -273,12 +273,12 @@ function ProfilePageInner() {
                   value={a}
                   onChange={e => setAchievement(i, e.target.value)}
                   placeholder="Board Certified in Cardiovascular Disease"
-                  className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="flex-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 />
                 <button
                   type="button"
                   onClick={() => removeAchievement(i)}
-                  className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                  className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
                 >
                   Remove
                 </button>
@@ -288,7 +288,7 @@ function ProfilePageInner() {
               <button
                 type="button"
                 onClick={addAchievement}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
               >
                 + Add achievement
               </button>
@@ -304,14 +304,14 @@ function ProfilePageInner() {
         </Grid>
         <Textarea label="Section subtitle" value={profile.servicesSubtitle} onChange={v => set("servicesSubtitle", v)} rows={2} placeholder="Short paragraph under the title." />
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Services (up to 8)
           </p>
           <div className="mt-2 space-y-3">
             {profile.services.map((s, i) => (
               <div
                 key={i}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                className="rounded-xl border border-slate-200/70 bg-slate-50 p-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 space-y-2">
@@ -319,7 +319,7 @@ function ProfilePageInner() {
                       value={s.title}
                       onChange={e => setService(i, "title", e.target.value)}
                       placeholder="Service title"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                     />
                     <textarea
                       value={s.description}
@@ -328,13 +328,13 @@ function ProfilePageInner() {
                       }
                       placeholder="Service description"
                       rows={2}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => removeService(i)}
-                    className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
+                    className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
                   >
                     Remove
                   </button>
@@ -345,7 +345,7 @@ function ProfilePageInner() {
               <button
                 type="button"
                 onClick={addService}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
               >
                 + Add service
               </button>
@@ -375,7 +375,7 @@ function ProfilePageInner() {
             href={previewHref}
             target="_blank"
             rel="noreferrer"
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Preview ↗
           </a>
@@ -383,7 +383,7 @@ function ProfilePageInner() {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save profile"}
         </button>
@@ -402,14 +402,14 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-4 py-2.5">
-        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+    <section className="rounded-xl border border-slate-200/70 bg-white">
+      <div className="border-b border-slate-200 px-6 py-4">
+        <h2 className="text-sm font-semibold tracking-tight text-slate-900">{title}</h2>
         {description && (
           <p className="text-xs text-slate-500">{description}</p>
         )}
       </div>
-      <div className="space-y-3 px-4 py-3">{children}</div>
+      <div className="space-y-4 p-6">{children}</div>
     </section>
   );
 }
@@ -433,14 +433,14 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </span>
       <input
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
     </label>
   );
@@ -461,7 +461,7 @@ function Textarea({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </span>
       <textarea
@@ -469,7 +469,7 @@ function Textarea({
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
     </label>
   );

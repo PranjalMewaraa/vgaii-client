@@ -33,10 +33,10 @@ export default function NextAppointmentCard() {
   const todayCount = data?.todayCount ?? 0;
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="flex h-full flex-col rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">{label}</h2>
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">{label}</h2>
           <p className="text-[11px] text-slate-500">
             {todayCount === 0
               ? "No appointments today"
@@ -45,7 +45,7 @@ export default function NextAppointmentCard() {
         </div>
         <Link
           href="/appointments"
-          className="text-xs font-medium text-indigo-600 hover:underline"
+          className="text-xs font-medium text-green-600 hover:underline"
         >
           All appointments →
         </Link>
@@ -54,12 +54,12 @@ export default function NextAppointmentCard() {
       {isLoading ? (
         <p className="mt-3 text-xs text-slate-500">Loading…</p>
       ) : !appointment ? (
-        <div className="mt-3 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-center text-xs text-slate-500">
+        <div className="mt-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-4 text-center text-xs text-slate-400">
           No upcoming appointments.
         </div>
       ) : (
         <div className="mt-3 flex items-start gap-3">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
             <Calendar size={18} />
           </span>
           <div className="min-w-0 flex-1">

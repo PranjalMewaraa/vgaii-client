@@ -4,6 +4,7 @@ import { getUser } from "@/middleware/auth";
 import { adminClientUpdateSchema } from "@/lib/validators/client";
 import { getErrorMessage } from "@/lib/errors";
 import { logAudit } from "@/lib/audit";
+import { syncReviewSite } from "@/lib/google-reviews";
 import { NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -15,8 +16,8 @@ const cleanString = (v: string | null | undefined): string | null => {
 };
 
 // Super-admin-only client patch. Used to set integration details
-// (googlePlaceId, bookingUrl) at any time after creation, plus rename,
-// plan, subscription, and the existing branding fields. CLIENT_ADMIN can
+// (googlePlaceId) at any time after creation, plus rename, plan,
+// subscription, and the existing branding fields. CLIENT_ADMIN can
 // only modify branding via /api/client/settings.
 export async function PATCH(req: Request, ctx: RouteContext) {
   try {
@@ -47,8 +48,8 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     if (data.googlePlaceId !== undefined) {
       update.googlePlaceId = data.googlePlaceId ?? null;
     }
-    if (data.bookingUrl !== undefined) {
-      update.bookingUrl = data.bookingUrl ?? null;
+    if (data.googleMapsUrl !== undefined) {
+      update.googleMapsUrl = cleanString(data.googleMapsUrl);
     }
     if (data.subscriptionKey !== undefined) {
       update.subscriptionKey = data.subscriptionKey ?? null;
@@ -72,7 +73,7 @@ export async function PATCH(req: Request, ctx: RouteContext) {
           subscriptionStatus: true,
           renewalDate: true,
           googlePlaceId: true,
-          bookingUrl: true,
+          googleMapsUrl: true,
           subscriptionKey: true,
           profileSlug: true,
           customDomain: true,
@@ -99,6 +100,24 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     }
 
     const changed = Object.keys(data);
+
+    // When any field that identifies the business to the review service changes,
+    // register/update the website with a2zcloud so the reviews path can just
+    // fetch. Best-effort — syncReviewSite swallows its own errors.
+    if (
+      ["googleMapsUrl", "googlePlaceId", "profileSlug", "name"].some(f =>
+        changed.includes(f),
+      )
+    ) {
+      await syncReviewSite({
+        id: client.id,
+        name: client.name,
+        profileSlug: client.profileSlug,
+        googleMapsUrl: client.googleMapsUrl,
+        googlePlaceId: client.googlePlaceId,
+      });
+    }
+
     await logAudit(req, { actorType: "user", user }, {
       action: "admin.client.updated",
       entityType: "Client",

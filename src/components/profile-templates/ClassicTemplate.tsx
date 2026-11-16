@@ -172,7 +172,7 @@ export default function ClassicTemplate({
                 key={i}
                 className="rounded-xl border border-gray-100 bg-slate-50 p-8 shadow-sm transition duration-300 hover:shadow-lg"
               >
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-sky-700">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 text-sky-700">
                   <svg
                     className="h-6 w-6"
                     fill="none"

@@ -19,6 +19,7 @@ export async function GET(req: Request) {
         reviews: [],
         syncedAt: null,
         pending: false,
+        data: null,
       });
     }
     const result = await readCachedReviews(user.clientId);

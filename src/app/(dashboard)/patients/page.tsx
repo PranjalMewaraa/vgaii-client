@@ -18,6 +18,7 @@ import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddPatientModal from "@/components/AddPatientModal";
 import StatCard from "@/components/StatCard";
+import Avatar from "@/components/Avatar";
 
 type PatientRow = {
   kind: "lead" | "direct";
@@ -323,17 +324,17 @@ function PatientsPageInner() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Patients</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Patients</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Qualified leads and walk-ins. Inactive = no completed visit in the
             last 12 months.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
             <input
               type="file"
               accept=".csv,text/csv"
@@ -350,14 +351,14 @@ function PatientsPageInner() {
           <button
             type="button"
             onClick={exportCsv}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Export CSV
           </button>
           <button
             type="button"
             onClick={() => setShowCreate(true)}
-            className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
           >
             + New patient
           </button>
@@ -374,12 +375,12 @@ function PatientsPageInner() {
       />
 
       {importMsg && (
-        <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+        <p className="rounded-xl border border-slate-200/70 bg-white px-4 py-3 text-sm text-slate-700">
           {importMsg}
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         <StatCard
           title="Total Patients"
           value={stats.total}
@@ -417,7 +418,7 @@ function PatientsPageInner() {
         />
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
         <div className="flex flex-wrap items-end gap-3">
           <label className="block flex-1 min-w-[220px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -427,7 +428,7 @@ function PatientsPageInner() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Name or phone…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block w-full min-w-[160px] sm:w-auto sm:flex-1">
@@ -438,22 +439,22 @@ function PatientsPageInner() {
               value={area}
               onChange={e => setArea(e.target.value)}
               placeholder="e.g. Andheri…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={() => setShowFilters(true)}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors ${
               activeFilterCount > 0
-                ? "border-indigo-300 bg-indigo-50 text-indigo-700"
+                ? "border-green-300 bg-green-50 text-green-700"
                 : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
             <Filter size={12} />
             Filters
             {activeFilterCount > 0 && (
-              <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-semibold text-white">
+              <span className="ml-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#1f3d2b] px-1 text-[10px] font-semibold text-white">
                 {activeFilterCount}
               </span>
             )}
@@ -462,7 +463,7 @@ function PatientsPageInner() {
             <button
               type="button"
               onClick={clearAllFilters}
-              className="text-xs text-indigo-600 hover:underline"
+              className="text-xs text-green-600 hover:underline"
             >
               Clear all
             </button>
@@ -521,15 +522,15 @@ function PatientsPageInner() {
       )}
 
       {someSelected && (
-        <div className="sticky top-2 z-20 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2">
+        <div className="sticky top-2 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 shadow-sm">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-indigo-900">
+            <p className="text-sm font-semibold text-green-900">
               {effectiveSelected.size} selected
             </p>
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="text-xs text-indigo-700 hover:underline"
+              className="text-xs text-green-700 hover:underline"
             >
               Clear
             </button>
@@ -539,7 +540,7 @@ function PatientsPageInner() {
               type="button"
               onClick={exportSelected}
               disabled={bulkBusy}
-              className="rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
+              className="rounded-lg border border-green-200 bg-white px-3 py-1.5 text-xs font-medium text-green-700 shadow-sm transition-colors hover:bg-green-100 disabled:opacity-60"
             >
               Export CSV
             </button>
@@ -547,7 +548,7 @@ function PatientsPageInner() {
               type="button"
               onClick={() => setShowSetSource(o => !o)}
               disabled={bulkBusy}
-              className="rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
+              className="rounded-lg border border-green-200 bg-white px-3 py-1.5 text-xs font-medium text-green-700 shadow-sm transition-colors hover:bg-green-100 disabled:opacity-60"
             >
               Set source
             </button>
@@ -556,7 +557,7 @@ function PatientsPageInner() {
       )}
 
       {showSetSource && someSelected && (
-        <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200/70 bg-white p-6">
           <label className="block flex-1 min-w-[200px]">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               New source value
@@ -565,14 +566,14 @@ function PatientsPageInner() {
               value={newSourceValue}
               onChange={e => setNewSourceValue(e.target.value)}
               placeholder="e.g. instagram-ad"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={() => runBulk("set_source", newSourceValue.trim())}
             disabled={bulkBusy || !newSourceValue.trim()}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             Apply to {effectiveSelected.size}
           </button>
@@ -590,14 +591,14 @@ function PatientsPageInner() {
       )}
 
       {bulkMsg && (
-        <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+        <p className="rounded-xl border border-slate-200/70 bg-white px-4 py-3 text-sm text-slate-700">
           {bulkMsg}
         </p>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             All Patients
           </h2>
           <span className="text-xs text-slate-500">
@@ -606,35 +607,35 @@ function PatientsPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
         ) : visible.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">
+          <p className="px-5 py-4 text-sm text-slate-500">
             No patients match these filters.
           </p>
         ) : (
           <div className="overflow-x-auto" data-tour="patients-list">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-3">
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3">
                     <input
                       type="checkbox"
                       checked={allSelected}
                       onChange={toggleAll}
                       aria-label="Select all visible"
-                      className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-4 w-4 cursor-pointer rounded border-slate-300 text-green-600 focus:ring-green-500"
                     />
                   </th>
-                  <th className="px-4 py-2 text-left">Name</th>
-                  <th className="px-4 py-2 text-left">Phone</th>
-                  <th className="px-4 py-2 text-left">Age</th>
-                  <th className="px-4 py-2 text-left">Source</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-right">Last appt</th>
-                  <th className="px-2 py-2" aria-label="Actions" />
+                  <th className="px-6 py-3 text-left">Name</th>
+                  <th className="px-6 py-3 text-left">Phone</th>
+                  <th className="px-6 py-3 text-left">Age</th>
+                  <th className="px-6 py-3 text-left">Source</th>
+                  <th className="px-6 py-3 text-left">Status</th>
+                  <th className="px-6 py-3 text-right">Last appt</th>
+                  <th className="px-6 py-3" aria-label="Actions" />
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {pagedVisible.map(p => {
                   const selectable = p.kind === "lead";
                   const checked = selectable && selectedIds.has(p.id);
@@ -642,12 +643,12 @@ function PatientsPageInner() {
                     <tr
                       key={`${p.kind}-${p.id}`}
                       onClick={() => router.push(`/patients/${p.id}`)}
-                      className={`cursor-pointer border-t border-slate-200 hover:bg-slate-50 ${
-                        checked ? "bg-indigo-50/40" : ""
+                      className={`cursor-pointer transition-colors hover:bg-slate-50/70 ${
+                        checked ? "bg-green-50/40" : ""
                       }`}
                     >
                       <td
-                        className="px-4 py-4"
+                        className="px-6 py-3.5"
                         onClick={e => e.stopPropagation()}
                       >
                         {selectable ? (
@@ -656,7 +657,7 @@ function PatientsPageInner() {
                             checked={checked}
                             onChange={() => toggleOne(p.id)}
                             aria-label={`Select ${p.name}`}
-                            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-green-600 focus:ring-green-500"
                           />
                         ) : (
                           <span
@@ -667,41 +668,46 @@ function PatientsPageInner() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-2.5 font-medium text-slate-900">
-                        {p.name}
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={p.name} size="md" />
+                          <span className="font-semibold text-slate-900">
+                            {p.name}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-4 py-2.5 text-slate-700">{p.phone}</td>
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-6 py-3.5 text-slate-700">{p.phone}</td>
+                      <td className="px-6 py-3.5 text-slate-600">
                         {typeof p.age === "number" ? `${p.age}y` : "—"}
                       </td>
-                      <td className="px-4 py-2.5 text-slate-600">
+                      <td className="px-6 py-3.5 text-slate-600">
                         {p.source ? (
-                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600">
+                          <span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">
                             {p.source}
                           </span>
                         ) : (
                           <span className="text-xs text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-2.5">
+                      <td className="px-6 py-3.5">
                         <StatusPill
                           status={p.kind === "direct" ? "direct" : p.status}
                         />
                       </td>
-                      <td className="px-4 py-2.5 text-right text-xs text-slate-500">
+                      <td className="px-6 py-3.5 text-right text-xs text-slate-500">
                         {p.lastAppointmentDate
                           ? new Date(p.lastAppointmentDate).toLocaleDateString()
                           : "—"}
                       </td>
                       <td
-                        className="px-2 py-2.5 text-right"
+                        className="px-6 py-3.5 text-right"
                         onClick={e => e.stopPropagation()}
                       >
                         <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"
                             onClick={() => router.push(`/patients/${p.id}`)}
-                            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                             aria-label={`View ${p.name}`}
                             title="View"
                           >
@@ -710,7 +716,7 @@ function PatientsPageInner() {
                           <button
                             type="button"
                             onClick={() => router.push(`/patients/${p.id}?edit=1`)}
-                            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                             aria-label={`Edit ${p.name}`}
                             title="Edit"
                           >
@@ -727,13 +733,13 @@ function PatientsPageInner() {
         )}
 
         {visible.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-2.5 text-xs text-slate-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/70 px-6 py-3.5 text-xs text-slate-600">
             <label className="inline-flex items-center gap-2">
               <span>Rows per page:</span>
               <select
                 value={rowsPerPage}
                 onChange={e => setRowsPerPage(Number(e.target.value))}
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="rounded-md border border-slate-200/70 bg-white px-2 py-1 text-xs text-slate-700 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 {[10, 25, 50, 100].map(n => (
                   <option key={n} value={n}>
@@ -751,18 +757,18 @@ function PatientsPageInner() {
                 type="button"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={safePage <= 1}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 ‹ Previous
               </button>
-              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-indigo-600 px-2 text-xs font-semibold text-white">
+              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-[#1f3d2b] px-2 text-xs font-semibold text-white">
                 {safePage}
               </span>
               <button
                 type="button"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={safePage >= totalPages}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next ›
               </button>
@@ -782,12 +788,12 @@ function FilterChip({
   onClear: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-medium text-indigo-700">
+    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-medium text-green-700">
       {label}
       <button
         type="button"
         onClick={onClear}
-        className="text-indigo-500 hover:text-indigo-700"
+        className="text-green-500 transition-colors hover:text-green-700"
         aria-label={`Remove ${label}`}
       >
         <X size={10} />
@@ -838,13 +844,13 @@ function PatientsFilterModal({
       aria-modal="true"
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl"
+        className="w-full max-w-md overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-2.5">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-3.5">
           <div>
-            <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
-              <Filter size={14} className="text-indigo-600" />
+            <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
+              <Filter size={14} className="text-green-600" />
               Filter patients
             </h2>
             <p className="mt-1 text-xs text-slate-500">
@@ -854,14 +860,14 @@ function PatientsFilterModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50"
+            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
             aria-label="Close"
           >
             <X size={14} />
           </button>
         </div>
 
-        <div className="space-y-3 px-4 py-2.5">
+        <div className="space-y-3 px-5 py-4">
           <FilterGroup
             title="Status"
             description="Active = had a completed visit in the last 12 months."
@@ -881,7 +887,7 @@ function PatientsFilterModal({
             <select
               value={sourceFilter}
               onChange={e => setSourceFilter(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             >
               <option value="">All sources</option>
               {sources.map(s => (
@@ -921,7 +927,7 @@ function PatientsFilterModal({
           </FilterGroup>
         </div>
 
-        <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-4 py-2">
+        <div className="flex items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3.5">
           <button
             type="button"
             onClick={onClearAll}
@@ -932,7 +938,7 @@ function PatientsFilterModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f]"
           >
             Apply
           </button>
@@ -982,7 +988,7 @@ function Pills<T extends string>({
           onClick={() => onChange(o.value)}
           className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
             value === o.value
-              ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+              ? "border-green-500 bg-green-50 text-green-700"
               : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
           }`}
         >

@@ -6,16 +6,19 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
-  CreditCard,
+  Activity,
+  Droplet,
   Globe,
   Mail,
   MapPin,
   Pencil,
   Phone,
+  Pill,
+  RefreshCw,
+  Stethoscope,
 } from "lucide-react";
 import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
-import BookingEmbed from "@/components/BookingEmbed";
 import SlotBookingPane from "@/components/SlotBookingPane";
 import AttachmentsSection from "@/components/AttachmentsSection";
 import VitalsTrendChart, {
@@ -23,8 +26,12 @@ import VitalsTrendChart, {
 } from "@/components/charts/VitalsTrendChart";
 import EditAppointmentModal from "@/components/EditAppointmentModal";
 import EditPatientModal from "@/components/EditPatientModal";
+import CreatePrescriptionModal, {
+  type PrescriptionInitial,
+} from "@/components/CreatePrescriptionModal";
 import { formatRupees } from "@/lib/currency";
-import { type LeadStatus } from "@/lib/constants";
+import { type LeadStatus, RX_FREQUENCIES } from "@/lib/constants";
+import type { PrescriptionItem } from "@/lib/validators/prescription";
 
 type DetailTab =
   | "overview"
@@ -44,9 +51,14 @@ type Lead = {
   status?: LeadStatus;
   outcomeRating?: number;
   notes?: string;
+  bloodGroup?: string | null;
+  allergies?: string | null;
   createdAt?: string;
   statusUpdatedAt?: string;
 };
+
+// A medicine row may be a legacy plain string or a structured item.
+type MedicineEntry = string | PrescriptionItem;
 
 type Appointment = {
   id: string;
@@ -57,12 +69,25 @@ type Appointment = {
   source?: string;
   notes?: string;
   diagnosis?: string;
-  medicines?: string[];
+  encounterType?: string | null;
+  diagnosisCode?: string | null;
+  diagnosisStatus?: string | null;
+  observations?: string | null;
+  medicines?: MedicineEntry[];
   completedAt?: string;
   weightKg?: number | null;
   sugarMgDl?: number | null;
   bpSystolic?: number | null;
   bpDiastolic?: number | null;
+};
+
+// EMR timeline filters (which sections show + a date-range window).
+type EmrFilters = {
+  diagnosis: boolean;
+  observations: boolean;
+  medicines: boolean;
+  from: string;
+  to: string;
 };
 
 type Feedback = {
@@ -80,7 +105,6 @@ type DetailResponse =
       lead: Lead;
       appointments: Appointment[];
       feedbacks: Feedback[];
-      bookingUrl?: string | null;
     }
   | { kind: "direct"; appointment: Appointment }
   | { error: string };
@@ -143,9 +167,25 @@ function PatientDetailPageInner({
   const [notesDraft, setNotesDraft] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
-  // Cal.com scheduling
-  const [bookingUrl, setBookingUrl] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
+
+  // Structured prescription modal. `appointmentId` set → the modal completes
+  // that existing visit (Mark visited); otherwise it creates a new visit.
+  // `initial` pre-fills it (Repeat Rx, or an appointment's existing data).
+  const [rx, setRx] = useState<{
+    appointmentId?: string;
+    mode?: "complete" | "edit";
+    initial?: PrescriptionInitial;
+  } | null>(null);
+
+  // EMR timeline filters. All sections on and no date window by default.
+  const [filters, setFilters] = useState<EmrFilters>({
+    diagnosis: true,
+    observations: true,
+    medicines: true,
+    from: "",
+    to: "",
+  });
 
   // Profile edit (name/email/age/gender/area — phone is locked).
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -193,7 +233,6 @@ function PatientDetailPageInner({
         setData(d);
         if ("kind" in d && d.kind === "lead") {
           setNotesDraft(d.lead.notes ?? "");
-          setBookingUrl(d.bookingUrl ?? null);
         }
       });
 
@@ -235,11 +274,24 @@ function PatientDetailPageInner({
     }
   };
 
+  const openCreateRx = () => setRx({});
+
+  // Clone a past visit's clinical content into a fresh prescription draft.
+  const openRepeatRx = (a: Appointment) =>
+    setRx({ initial: initialFromAppointment(a) });
+
+  // Mark visited = complete this scheduled appointment via the structured
+  // prescription form, pre-filled with whatever it already holds.
+  const startMarkVisited = (a: Appointment) =>
+    setRx({ appointmentId: a.id, mode: "complete", initial: initialFromAppointment(a) });
+
+  // Edit a recorded visit in the same structured form (no flattening) —
+  // PATCHes the appointment's clinical fields in place.
+  const openEditRx = (a: Appointment) =>
+    setRx({ appointmentId: a.id, mode: "edit", initial: initialFromAppointment(a) });
+
   const startEdit = (a: Appointment) =>
     setEditTarget({ appointment: a, mode: "edit" });
-
-  const startMarkVisited = (a: Appointment) =>
-    setEditTarget({ appointment: a, mode: "visit" });
 
   const markNoShow = async (apptId: string) => {
     setBusyApptId(apptId);
@@ -315,10 +367,10 @@ function PatientDetailPageInner({
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <Link
         href="/patients"
-        className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:underline"
+        className="inline-flex items-center gap-1 text-sm text-green-600 hover:underline"
       >
         <ArrowLeft size={14} />
         Back to patients
@@ -327,17 +379,17 @@ function PatientDetailPageInner({
       {/* HEADER: identity + primary CTA */}
       <div
         data-tour="patient-header"
-        className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3"
+        className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200/70 bg-white p-6"
       >
         <div className="flex min-w-0 items-center gap-4">
           <div
-            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-bold text-white ${avatarBg}`}
+            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-xl font-semibold text-white ${avatarBg}`}
           >
             {initials || "?"}
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="truncate text-xl font-bold text-slate-900">
+              <h1 className="truncate text-2xl font-bold tracking-tight text-slate-900">
                 {lead.name}
               </h1>
               <span
@@ -355,14 +407,28 @@ function PatientDetailPageInner({
                 {inactive ? "Inactive" : "Active"}
               </span>
             </div>
-            <p className="text-sm text-slate-600">{meta || "—"}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <p className="text-sm text-slate-600">{meta || "—"}</p>
+              {lead.bloodGroup && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 ring-1 ring-inset ring-rose-100">
+                  <Droplet size={11} />
+                  Blood Group: {lead.bloodGroup}
+                </span>
+              )}
+            </div>
+            {lead.allergies && (
+              <p className="mt-1 text-sm">
+                <span className="font-semibold text-rose-600">Allergies:</span>{" "}
+                <span className="text-slate-700">{lead.allergies}</span>
+              </p>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setEditProfileOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
             aria-label="Edit patient profile"
             title="Edit patient profile"
           >
@@ -372,35 +438,40 @@ function PatientDetailPageInner({
           <button
             type="button"
             onClick={() => {
-              const params = new URLSearchParams({
-                tab: "payment",
-                leadId: lead.id,
-                name: lead.name,
-                phone: lead.phone,
-              });
-              router.push(`/finances?${params.toString()}`);
+              setTab("medical-history");
+              // Let the tab mount, then bring the vitals trend into view.
+              setTimeout(() => {
+                document
+                  .querySelector('[data-tour="vitals-trend"]')
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 50);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <CreditCard size={14} />
-            Record payment
+            <Activity size={14} />
+            View vitals
           </button>
           <button
             type="button"
             onClick={() => setBookingOpen(true)}
-            className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            + Schedule appointment
+            New appointment
+          </button>
+          <button
+            type="button"
+            onClick={openCreateRx}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
+          >
+            <Pill size={14} />
+            Create Prescription
           </button>
         </div>
       </div>
 
       {/* TAB NAV */}
-      <div
-        data-tour="patient-tabs"
-        className="rounded-lg border border-slate-200 bg-white"
-      >
-        <div className="flex border-b border-slate-200">
+      <div data-tour="patient-tabs">
+        <div className="flex gap-6 overflow-x-auto border-b border-slate-200 px-1">
           {TAB_DEFS.map(({ key, label }) => {
             const isActive = tab === key;
             return (
@@ -408,10 +479,10 @@ function PatientDetailPageInner({
                 key={key}
                 type="button"
                 onClick={() => setTab(key)}
-                className={`flex-1 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                className={`-mb-px shrink-0 border-b-2 px-1 py-3 text-sm font-semibold transition-colors ${
                   isActive
-                    ? "border-indigo-600 text-indigo-700"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    ? "border-green-600 text-green-700"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 {label}
@@ -422,11 +493,11 @@ function PatientDetailPageInner({
       </div>
 
       {tab === "overview" && (
-        <div className="grid gap-3 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-3">
           {/* LEFT COLUMN — Contact + Notes */}
-          <div className="space-y-3 lg:col-span-1">
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-              <p className="text-base font-semibold text-slate-900">Contact</p>
+          <div className="space-y-4 lg:col-span-1">
+            <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+              <p className="text-base font-semibold tracking-tight text-slate-900">Contact</p>
               <dl className="mt-3 space-y-2 text-sm">
                 <ContactRow
                   icon={<Phone size={14} />}
@@ -480,9 +551,9 @@ function PatientDetailPageInner({
               )}
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+            <div className="rounded-xl border border-slate-200/70 bg-white p-6">
               <div className="flex items-center justify-between">
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-base font-semibold tracking-tight text-slate-900">
                   Patient notes
                 </p>
                 {dirtyNotes && (
@@ -493,7 +564,7 @@ function PatientDetailPageInner({
                 value={notesDraft}
                 onChange={e => setNotesDraft(e.target.value)}
                 rows={6}
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-2 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 placeholder="Allergies, chronic conditions, preferences, follow-up reminders…"
               />
               <div className="mt-2 flex justify-end">
@@ -501,7 +572,7 @@ function PatientDetailPageInner({
                   type="button"
                   onClick={saveNotes}
                   disabled={!dirtyNotes || savingNotes}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                 >
                   {savingNotes ? "Saving…" : "Save notes"}
                 </button>
@@ -513,20 +584,22 @@ function PatientDetailPageInner({
           <div className="lg:col-span-2">
             <MedicalHistory
               appointments={past.filter(a => a.status === "completed")}
-              apptCardProps={apptCardProps}
+              filters={ALL_VISIBLE}
+              onRepeat={openRepeatRx}
+              onEdit={openEditRx}
             />
           </div>
         </div>
       )}
 
       {tab === "appointments" && (
-        <div className="space-y-3">
+        <div className="space-y-5">
           <section>
             <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Upcoming ({upcoming.length})
             </h2>
             {upcoming.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
                 No upcoming appointments.
               </div>
             ) : (
@@ -543,7 +616,7 @@ function PatientDetailPageInner({
               Past ({past.length})
             </h2>
             {past.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
                 No past appointments yet.
               </div>
             ) : (
@@ -558,10 +631,13 @@ function PatientDetailPageInner({
       )}
 
       {tab === "medical-history" && (
-        <div className="space-y-3">
+        <div className="space-y-5">
+          <EmrFilterBar filters={filters} onChange={setFilters} />
           <MedicalHistory
             appointments={past.filter(a => a.status === "completed")}
-            apptCardProps={apptCardProps}
+            filters={filters}
+            onRepeat={openRepeatRx}
+            onEdit={openEditRx}
           />
 
           {feedbacks.length > 0 && (
@@ -569,10 +645,10 @@ function PatientDetailPageInner({
               <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Feedback ({feedbacks.length})
               </h2>
-              <div className="rounded-lg border border-slate-200 bg-white">
-                <ul className="divide-y divide-slate-200">
+              <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
+                <ul className="divide-y divide-slate-100">
                   {feedbacks.map(f => (
-                    <li key={f.id} className="px-4 py-2">
+                    <li key={f.id} className="px-6 py-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-slate-800">
@@ -628,10 +704,25 @@ function PatientDetailPageInner({
           age: lead.age,
           gender: lead.gender,
           area: lead.area,
+          bloodGroup: lead.bloodGroup,
+          allergies: lead.allergies,
         }}
         onClose={() => setEditProfileOpen(false)}
         onSaved={() => {
           setEditProfileOpen(false);
+          load();
+        }}
+      />
+
+      <CreatePrescriptionModal
+        open={rx !== null}
+        patient={{ leadId: lead.id, name: lead.name, phone: lead.phone }}
+        appointmentId={rx?.appointmentId}
+        mode={rx?.appointmentId ? (rx.mode ?? "complete") : "create"}
+        initial={rx?.initial}
+        onClose={() => setRx(null)}
+        onCreated={() => {
+          setRx(null);
           load();
         }}
       />
@@ -649,11 +740,11 @@ function PatientDetailPageInner({
         >
           <div
             onClick={e => e.stopPropagation()}
-            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
           >
-            <div className="flex items-start justify-between border-b border-slate-200 px-4 py-2.5">
+            <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
               <div>
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-sm font-semibold tracking-tight text-slate-900">
                   Schedule appointment
                 </p>
                 <p className="text-xs text-slate-500">
@@ -661,7 +752,7 @@ function PatientDetailPageInner({
                   <span className="font-medium text-slate-700">
                     {lead.name}
                   </span>
-                  . The new appointment will appear once Cal.com confirms.
+                  . The new appointment will appear here once booked.
                 </p>
               </div>
               <button
@@ -670,13 +761,13 @@ function PatientDetailPageInner({
                   setBookingOpen(false);
                   load();
                 }}
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-500 hover:bg-slate-50"
+                className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Close"
               >
                 ✕
               </button>
             </div>
-            <div className="flex-1 overflow-auto px-4 py-3">
+            <div className="flex-1 overflow-auto px-5 py-4">
               <SlotBookingPane
                 leadId={lead.id}
                 name={lead.name}
@@ -688,28 +779,14 @@ function PatientDetailPageInner({
                   setBookingOpen(false);
                 }}
                 fallback={
-                  !bookingUrl ? (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                      No Cal.com booking URL is configured for this client. Ask
-                      your admin to set it on the{" "}
-                      <Link href="/settings" className="font-semibold underline">
-                        Settings
-                      </Link>{" "}
-                      page, or enable self-hosted booking there.
-                    </div>
-                  ) : (
-                    <BookingEmbed
-                      url={bookingUrl}
-                      name={lead.name}
-                      email={lead.email}
-                      phone={lead.phone}
-                      onScheduled={() => {
-                        load();
-                        setTimeout(() => load(), 1500);
-                        setBookingOpen(false);
-                      }}
-                    />
-                  )
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Online booking isn&apos;t enabled for this clinic yet. Ask
+                    your admin to enable it on the{" "}
+                    <Link href="/settings" className="font-semibold underline">
+                      Settings
+                    </Link>{" "}
+                    page.
+                  </div>
                 }
               />
             </div>
@@ -728,7 +805,7 @@ type LeadSearchHit = {
 };
 
 const AVATAR_COLORS = [
-  "bg-indigo-500",
+  "bg-green-500",
   "bg-emerald-500",
   "bg-amber-500",
   "bg-sky-500",
@@ -827,7 +904,7 @@ function AppointmentCard({
 
   return (
     <article
-      className={`rounded-lg border border-slate-200 border-l-4 bg-white px-4 py-2.5 ${stripe}`}
+      className={`rounded-xl border border-slate-200/70 border-l-4 bg-white p-6 ${stripe}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <button
@@ -864,7 +941,7 @@ function AppointmentCard({
               <button
                 type="button"
                 onClick={onMarkVisited}
-                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-emerald-700"
               >
                 Mark visited
               </button>
@@ -872,7 +949,7 @@ function AppointmentCard({
                 type="button"
                 onClick={onNoShow}
                 disabled={busy}
-                className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
               >
                 No show
               </button>
@@ -881,7 +958,7 @@ function AppointmentCard({
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             Edit
           </button>
@@ -889,7 +966,7 @@ function AppointmentCard({
             type="button"
             onClick={onDelete}
             disabled={busy}
-            className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+            className="rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
           >
             {busy ? "…" : "Delete"}
           </button>
@@ -917,7 +994,7 @@ function AppointmentCard({
                   </p>
                   <ul className="mt-1 list-disc pl-5 text-slate-700">
                     {a.medicines.map((m, i) => (
-                      <li key={i}>{m}</li>
+                      <li key={i}>{medicineLabel(m)}</li>
                     ))}
                   </ul>
                 </div>
@@ -975,20 +1052,20 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
   }, [payments]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Payment history ({payments.length})
         </h2>
         <Link
           href={`/finances?tab=payment&leadId=${encodeURIComponent(lead.id)}&name=${encodeURIComponent(lead.name)}&phone=${encodeURIComponent(lead.phone)}`}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+          className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           + Record payment
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         <SummaryTile
           label="Collected"
           value={formatRupees(totals.collected)}
@@ -1008,29 +1085,29 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
         />
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
         {isLoading ? (
-          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-6 py-4 text-sm text-slate-500">Loading…</p>
         ) : payments.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">
+          <p className="px-6 py-4 text-sm text-slate-500">
             No payments recorded for this patient yet.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-2 text-left">Date</th>
-                  <th className="px-4 py-2 text-left">Items</th>
-                  <th className="px-4 py-2 text-left">Method</th>
-                  <th className="px-4 py-2 text-left">Collected by</th>
-                  <th className="px-4 py-2 text-right">Final</th>
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Date</th>
+                  <th className="px-6 py-3 text-left">Items</th>
+                  <th className="px-6 py-3 text-left">Method</th>
+                  <th className="px-6 py-3 text-left">Collected by</th>
+                  <th className="px-6 py-3 text-right">Final</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {payments.map(p => (
-                  <tr key={p.id} className="border-t border-slate-200">
-                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                  <tr key={p.id} className="transition-colors hover:bg-slate-50/70">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {new Date(p.createdAt).toLocaleString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -1039,7 +1116,7 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-700">
+                    <td className="px-6 py-3.5 text-slate-700">
                       <span>{p.items.map(i => i.title).join(" + ")}</span>
                       {p.discount > 0 && (
                         <span className="ml-1 text-[11px] text-slate-500">
@@ -1047,15 +1124,15 @@ function PaymentsHistory({ lead }: { lead: Lead }) {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5">
-                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600">
+                    <td className="px-6 py-3.5">
+                      <span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider text-slate-600 ring-1 ring-inset ring-slate-200">
                         {p.paymentMethod}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                    <td className="px-6 py-3.5 text-xs text-slate-500">
                       {p.collectedBy?.name ?? p.collectedBy?.email ?? "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-medium text-slate-900">
+                    <td className="px-6 py-3.5 text-right font-medium text-slate-900">
                       {formatRupees(p.finalAmount)}
                     </td>
                   </tr>
@@ -1086,11 +1163,11 @@ function SummaryTile({
     slate: "text-slate-900",
   };
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </p>
-      <p className={`mt-0.5 text-xl font-bold leading-tight ${toneClass[tone]}`}>
+      <p className={`mt-0.5 text-xl font-semibold tracking-tight leading-tight ${toneClass[tone]}`}>
         {value}
       </p>
       {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
@@ -1100,10 +1177,14 @@ function SummaryTile({
 
 function MedicalHistory({
   appointments,
-  apptCardProps,
+  filters,
+  onRepeat,
+  onEdit,
 }: {
   appointments: Appointment[];
-  apptCardProps: (a: Appointment) => React.ComponentProps<typeof AppointmentCard>;
+  filters: EmrFilters;
+  onRepeat: (a: Appointment) => void;
+  onEdit: (a: Appointment) => void;
 }) {
   // Sort oldest → newest for the trend chart's X axis (so the line goes
   // left-to-right in time). The timeline below reverses to most-recent
@@ -1130,16 +1211,24 @@ function MedicalHistory({
     diastolic: a.bpDiastolic ?? null,
   }));
 
-  // Reverse for the timeline so the latest visit is on top — same order
-  // the API returns past[] in, but explicit so future API changes don't
-  // surprise the layout.
-  const timeline = useMemo(
-    () =>
-      [...appointments]
-        .filter(a => a.date)
-        .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime()),
-    [appointments],
-  );
+  // Reverse for the timeline so the latest visit is on top, then apply the
+  // date-range window from the filter bar.
+  const timeline = useMemo(() => {
+    const fromTs = filters.from ? new Date(filters.from).getTime() : null;
+    // Include the whole "to" day (end-of-day), not just its midnight.
+    const toTs = filters.to
+      ? new Date(filters.to).getTime() + 24 * 60 * 60 * 1000
+      : null;
+    return [...appointments]
+      .filter(a => a.date)
+      .filter(a => {
+        const ts = new Date(a.date!).getTime();
+        if (fromTs !== null && ts < fromTs) return false;
+        if (toTs !== null && ts >= toTs) return false;
+        return true;
+      })
+      .sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime());
+  }, [appointments, filters.from, filters.to]);
 
   if (appointments.length === 0) {
     return (
@@ -1147,21 +1236,21 @@ function MedicalHistory({
         <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Medical history
         </h2>
-        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500">
-          No past visits yet. After the first appointment is completed, its
-          diagnosis and medicines will appear here.
+        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
+          No past visits yet. After the first appointment is completed, or a
+          prescription is created, it will appear here.
         </div>
       </section>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <section data-tour="vitals-trend">
         <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Vitals trend
         </h2>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           <VitalsTrendChart
             title="Weight"
             unit="kg"
@@ -1188,35 +1277,347 @@ function MedicalHistory({
         <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Visits ({timeline.length})
         </h2>
-        <ol className="relative ml-3 space-y-4 border-l-2 border-slate-200 pl-5">
-          {timeline.map(a => {
-            const dt = new Date(a.date!);
-            return (
+        {timeline.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-10 text-center text-sm text-slate-400">
+            No visits in the selected date range.
+          </div>
+        ) : (
+          <ol className="relative ml-3 space-y-5 border-l-2 border-slate-200 pl-5">
+            {timeline.map(a => (
               <li key={a.id} className="relative">
                 {/* Dot marker on the timeline */}
                 <span
-                  className="absolute -left-[27px] top-1.5 inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-indigo-500 shadow"
+                  className="absolute -left-[27px] top-2 inline-flex h-3 w-3 items-center justify-center rounded-full border-2 border-white bg-green-500 shadow"
                   aria-hidden
                 />
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  {dt.toLocaleDateString(undefined, {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </p>
-                <div className="mt-2">
-                  <AppointmentCard {...apptCardProps(a)} />
-                </div>
+                <EmrVisitCard
+                  appointment={a}
+                  filters={filters}
+                  onRepeat={() => onRepeat(a)}
+                  onEdit={() => onEdit(a)}
+                />
               </li>
-            );
-          })}
-        </ol>
+            ))}
+          </ol>
+        )}
       </section>
     </div>
   );
 }
+
+// ── EMR helpers ──────────────────────────────────────────────────────
+
+// Normalise a medicine entry (legacy string or structured item) to a
+// PrescriptionItem so both old and new data render through one path.
+function normalizeMedicine(m: MedicineEntry): PrescriptionItem {
+  return typeof m === "string" ? { name: m } : m;
+}
+
+// One-line label for compact lists (e.g. the Appointments tab).
+function medicineLabel(m: MedicineEntry): string {
+  const it = normalizeMedicine(m);
+  const parts = [it.dosage, it.frequency, it.duration, it.instructions].filter(
+    Boolean,
+  );
+  return parts.length ? `${it.name} — ${parts.join(" · ")}` : it.name;
+}
+
+// Seed the prescription modal from an appointment's existing clinical data —
+// used by both Repeat Rx (clone) and Mark visited (complete in place).
+function initialFromAppointment(a: Appointment): PrescriptionInitial {
+  return {
+    encounterType: a.encounterType ?? undefined,
+    diagnosis: a.diagnosis || undefined,
+    diagnosisCode: a.diagnosisCode ?? undefined,
+    diagnosisStatus: a.diagnosisStatus ?? undefined,
+    observations: a.observations ?? undefined,
+    medicines: (a.medicines ?? []).map(normalizeMedicine),
+    weightKg: a.weightKg ?? null,
+    sugarMgDl: a.sugarMgDl ?? null,
+    bpSystolic: a.bpSystolic ?? null,
+    bpDiastolic: a.bpDiastolic ?? null,
+  };
+}
+
+// Pill colour per dosing frequency, echoing the mockup (OD sky, BD amber,
+// TDS/QID violet, others slate).
+const FREQ_PILL: Record<string, string> = {
+  OD: "bg-sky-50 text-sky-700",
+  BD: "bg-amber-50 text-amber-700",
+  TDS: "bg-violet-50 text-violet-700",
+  QID: "bg-violet-50 text-violet-700",
+  HS: "bg-indigo-50 text-indigo-700",
+  SOS: "bg-slate-100 text-slate-600",
+  STAT: "bg-red-50 text-red-700",
+};
+
+const freqLabel = (code?: string) => {
+  if (!code) return null;
+  const found = RX_FREQUENCIES.find(f => f.code === code);
+  return found ? found.label : code;
+};
+
+// Status pill colour on the diagnosis row.
+const DX_STATUS_PILL: Record<string, string> = {
+  Improving: "bg-emerald-50 text-emerald-700",
+  Stable: "bg-emerald-50 text-emerald-700",
+  Resolved: "bg-emerald-50 text-emerald-700",
+  "Initial Entry": "bg-amber-50 text-amber-700",
+  Worsening: "bg-red-50 text-red-700",
+};
+
+const EMR_SECTION_TOGGLES: Array<{
+  k: "diagnosis" | "observations" | "medicines";
+  label: string;
+}> = [
+  { k: "diagnosis", label: "Diagnosis" },
+  { k: "observations", label: "Observations" },
+  { k: "medicines", label: "Prescribed Medicines" },
+];
+
+function EmrFilterBar({
+  filters,
+  onChange,
+}: {
+  filters: EmrFilters;
+  onChange: (f: EmrFilters) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200/70 bg-white px-5 py-3">
+      <div className="flex flex-wrap items-center gap-5">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          Filters
+        </span>
+        {EMR_SECTION_TOGGLES.map(({ k, label }) => (
+          <label
+            key={k}
+            className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-700"
+          >
+            <input
+              type="checkbox"
+              checked={filters[k]}
+              onChange={() => onChange({ ...filters, [k]: !filters[k] })}
+              className="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-200"
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+      <div className="flex items-center gap-2 text-sm text-slate-600">
+        <input
+          type="date"
+          value={filters.from}
+          onChange={e => onChange({ ...filters, from: e.target.value })}
+          className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+          aria-label="From date"
+        />
+        <span className="text-xs text-slate-400">→</span>
+        <input
+          type="date"
+          value={filters.to}
+          onChange={e => onChange({ ...filters, to: e.target.value })}
+          className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+          aria-label="To date"
+        />
+        {(filters.from || filters.to) && (
+          <button
+            type="button"
+            onClick={() => onChange({ ...filters, from: "", to: "" })}
+            className="text-xs font-medium text-green-600 hover:underline"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmrVisitCard({
+  appointment: a,
+  filters,
+  onRepeat,
+  onEdit,
+}: {
+  appointment: Appointment;
+  filters: EmrFilters;
+  onRepeat: () => void;
+  onEdit: () => void;
+}) {
+  const meds = (a.medicines ?? []).map(normalizeMedicine);
+  const dateStr = a.date
+    ? new Date(a.date).toLocaleDateString(undefined, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "—";
+  const hasVitals =
+    a.weightKg != null ||
+    a.sugarMgDl != null ||
+    a.bpSystolic != null ||
+    a.bpDiastolic != null;
+
+  return (
+    <article className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
+      {/* Card header: date + encounter type + repeat */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-5 py-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-sm font-semibold text-slate-700">
+            {dateStr}
+          </span>
+          {a.encounterType && (
+            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-600">
+              {a.encounterType}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
+            title="Edit this visit's diagnosis & prescription"
+          >
+            <Pencil size={11} />
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={onRepeat}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+            title="Repeat this prescription in a new visit"
+          >
+            <RefreshCw size={11} />
+            Repeat Rx
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-3 px-5 py-4">
+        {filters.diagnosis && a.diagnosis && (
+          <EmrSection icon={<Stethoscope size={13} />} label="Diagnosis">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-medium text-slate-900">{a.diagnosis}</span>
+              {a.diagnosisCode && (
+                <span className="font-mono text-xs text-slate-400">
+                  ({a.diagnosisCode})
+                </span>
+              )}
+              {a.diagnosisStatus && (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    DX_STATUS_PILL[a.diagnosisStatus] ?? "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {a.diagnosisStatus}
+                </span>
+              )}
+            </div>
+          </EmrSection>
+        )}
+
+        {filters.observations && a.observations && (
+          <EmrSection icon={<Activity size={13} />} label="Observations">
+            <p className="whitespace-pre-line text-slate-600">{a.observations}</p>
+          </EmrSection>
+        )}
+
+        {filters.medicines && meds.length > 0 && (
+          <EmrSection icon={<Pill size={13} />} label="Prescribed Medicines">
+            <PrescriptionTable items={meds} />
+          </EmrSection>
+        )}
+
+        {hasVitals && <VitalsBadges appointment={a} />}
+
+        {!a.diagnosis && !a.observations && meds.length === 0 && !hasVitals && (
+          <p className="text-xs italic text-slate-400">
+            No clinical details recorded for this visit.
+          </p>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function EmrSection({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg bg-slate-50/60 px-3.5 py-2.5">
+      <p className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <span className="text-slate-400">{icon}</span>
+        {label}
+      </p>
+      <div className="text-sm">{children}</div>
+    </div>
+  );
+}
+
+function PrescriptionTable({ items }: { items: PrescriptionItem[] }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-slate-200/70 bg-white">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200/70 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            <th className="px-3 py-2">Medicine</th>
+            <th className="px-3 py-2">Dosage &amp; Frequency</th>
+            <th className="px-3 py-2">Duration</th>
+            <th className="px-3 py-2">Instructions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {items.map((m, i) => (
+            <tr key={i} className="align-top">
+              <td className="px-3 py-2.5 font-medium text-slate-900">{m.name}</td>
+              <td className="px-3 py-2.5 text-slate-700">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {m.dosage && <span>{m.dosage}</span>}
+                  {m.dosage && m.frequency && (
+                    <span className="text-slate-300">—</span>
+                  )}
+                  {m.frequency && (
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-xs font-semibold ${
+                        FREQ_PILL[m.frequency] ?? "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {freqLabel(m.frequency)}
+                    </span>
+                  )}
+                  {m.timing && (
+                    <span className="text-xs text-slate-400">[{m.timing}]</span>
+                  )}
+                </div>
+              </td>
+              <td className="px-3 py-2.5 text-slate-700">{m.duration || "—"}</td>
+              <td className="px-3 py-2.5 text-slate-600">
+                {m.instructions || "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// Constant "everything visible" filter for surfaces without a filter bar
+// (the Overview tab's embedded timeline).
+const ALL_VISIBLE: EmrFilters = {
+  diagnosis: true,
+  observations: true,
+  medicines: true,
+  from: "",
+  to: "",
+};
 
 function VitalsBadges({ appointment: a }: { appointment: Appointment }) {
   const hasAny =
@@ -1312,14 +1713,14 @@ function DirectAppointmentView({
   };
 
   return (
-    <div className="space-y-3">
-      <Link href="/patients" className="text-sm text-indigo-600 hover:underline">
+    <div className="space-y-6">
+      <Link href="/patients" className="text-sm text-green-600 hover:underline">
         ← Back to patients
       </Link>
 
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
-          <h1 className="text-base font-bold text-slate-900">
+          <h1 className="text-base font-semibold tracking-tight text-slate-900">
             {a.name || "Unnamed"}
           </h1>
           <StatusPill status="direct" />
@@ -1337,9 +1738,9 @@ function DirectAppointmentView({
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="rounded-xl border border-slate-200/70 bg-white overflow-hidden">
+        <div className="border-b border-slate-200/70 px-6 py-3.5">
+          <h2 className="text-sm font-semibold tracking-tight text-slate-900">
             Link to existing patient
           </h2>
           <p className="text-xs text-slate-500">
@@ -1351,12 +1752,12 @@ function DirectAppointmentView({
             if it isn&apos;t already.
           </p>
         </div>
-        <div className="px-4 py-3">
+        <div className="px-6 py-4">
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Name or phone…"
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           {error && (
             <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -1370,11 +1771,11 @@ function DirectAppointmentView({
             <p className="mt-3 text-xs text-slate-500">No matches.</p>
           )}
           {results.length > 0 && (
-            <ul className="mt-3 divide-y divide-slate-200 rounded-lg border border-slate-200">
+            <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200/70 overflow-hidden">
               {results.map(r => (
                 <li
                   key={r.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3"
+                  className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-slate-50/70"
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-slate-900">
@@ -1389,7 +1790,7 @@ function DirectAppointmentView({
                     type="button"
                     onClick={() => link(r.id)}
                     disabled={linking === r.id}
-                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                    className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                   >
                     {linking === r.id ? "Linking…" : "Link"}
                   </button>

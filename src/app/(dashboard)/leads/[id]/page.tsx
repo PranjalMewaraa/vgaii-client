@@ -4,7 +4,6 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import StatusPill from "@/components/StatusPill";
-import BookingEmbed from "@/components/BookingEmbed";
 import SlotBookingPane from "@/components/SlotBookingPane";
 import RoleGuard from "@/components/RoleGuard";
 import {
@@ -81,7 +80,6 @@ function LeadDetailPageInner({
   const router = useRouter();
   const { id } = use(params);
   const [lead, setLead] = useState<Lead | null>(null);
-  const [bookingUrl, setBookingUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // notes editor
@@ -95,14 +93,10 @@ function LeadDetailPageInner({
   const [busy, setBusy] = useState(false);
   const [transitionError, setTransitionError] = useState<string | null>(null);
 
-  const applyLead = (data: {
-    lead?: Lead;
-    bookingUrl?: string | null;
-  }) => {
+  const applyLead = (data: { lead?: Lead }) => {
     if (!data.lead) return;
     setLead(data.lead);
     setNotesDraft(data.lead.notes ?? "");
-    setBookingUrl(data.bookingUrl ?? null);
   };
 
   const refreshLead = () =>
@@ -193,21 +187,21 @@ function LeadDetailPageInner({
   const showBookingAction = status === "qualified";
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <button
         type="button"
         onClick={() => router.push("/leads")}
-        className="text-sm text-indigo-600 hover:underline"
+        className="text-sm text-green-600 hover:underline"
       >
         ← Back to leads
       </button>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <div className="rounded-xl border border-slate-200/70 bg-white p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-base font-bold text-slate-900">{lead.name}</h1>
+                <h1 className="text-base font-semibold tracking-tight text-slate-900">{lead.name}</h1>
                 <StatusPill status={status} />
               </div>
               <p className="text-sm text-slate-600">{lead.phone}</p>
@@ -226,8 +220,8 @@ function LeadDetailPageInner({
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Next step
           </p>
 
@@ -244,7 +238,7 @@ function LeadDetailPageInner({
                   type="button"
                   onClick={() => setBookingOpen(o => !o)}
                   disabled={busy}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                 >
                   {bookingOpen ? "Hide booking" : "Book appointment"}
                 </button>
@@ -263,8 +257,8 @@ function LeadDetailPageInner({
                     disabled={busy}
                     className={
                       isRetry
-                        ? "rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-                        : "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                        ? "rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
+                        : "rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
                     }
                   >
                     {TRANSITION_LABELS[next] ?? STATUS_LABELS[next]}
@@ -288,20 +282,18 @@ function LeadDetailPageInner({
       </div>
 
       {showBookingAction && bookingOpen && (
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <div className="rounded-xl border border-slate-200/70 bg-white p-6">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Book via Cal.com
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              Book appointment
             </p>
-            {bookingUrl && (
-              <p className="text-xs text-slate-500">
-                Status will move to{" "}
-                <span className="font-medium text-slate-700">
-                  appointment booked
-                </span>{" "}
-                automatically once a slot is selected.
-              </p>
-            )}
+            <p className="text-xs text-slate-500">
+              Status will move to{" "}
+              <span className="font-medium text-slate-700">
+                appointment booked
+              </span>{" "}
+              automatically once a slot is selected.
+            </p>
           </div>
 
           <SlotBookingPane
@@ -311,38 +303,28 @@ function LeadDetailPageInner({
             email={lead.email}
             onBooked={() => refreshLead()}
             fallback={
-              !bookingUrl ? (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  No Cal.com booking URL is configured for this client. Ask
-                  your admin to set it on the{" "}
-                  <Link href="/settings" className="font-semibold underline">
-                    Settings
-                  </Link>{" "}
-                  page, or enable self-hosted booking there.
-                </div>
-              ) : (
-                <BookingEmbed
-                  url={bookingUrl}
-                  name={lead.name}
-                  email={lead.email}
-                  phone={lead.phone}
-                  onScheduled={() => refreshLead()}
-                />
-              )
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Online booking isn&apos;t enabled for this clinic yet. Ask
+                your admin to enable it on the{" "}
+                <Link href="/settings" className="font-semibold underline">
+                  Settings
+                </Link>{" "}
+                page.
+              </div>
             }
           />
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           Internal notes
         </p>
         <textarea
           value={notesDraft}
           onChange={e => setNotesDraft(e.target.value)}
           rows={4}
-          className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+          className="mt-2 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           placeholder="Track call attempts, customer preferences, follow-ups…"
         />
         <div className="mt-2 flex justify-end">
@@ -350,7 +332,7 @@ function LeadDetailPageInner({
             type="button"
             onClick={saveNotes}
             disabled={!dirtyNotes || savingNotes}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {savingNotes ? "Saving…" : "Save notes"}
           </button>

@@ -56,7 +56,7 @@ const VitalTooltip = ({
   const p = payload[0]?.payload;
   if (!p) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs shadow-md">
       <p className="font-medium text-slate-900">
         {new Date(p.date).toLocaleDateString(undefined, {
           weekday: "long",
@@ -95,8 +95,8 @@ export default function VitalsTrendChart({
   // grid keeps its visual rhythm.
   if (series.length < 2) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <div className="rounded-xl border border-slate-200/70 bg-white px-5 py-4 shadow-sm">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           {title}
         </p>
         <p className="mt-2 text-xs text-slate-400">
@@ -107,9 +107,9 @@ export default function VitalsTrendChart({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="rounded-xl border border-slate-200/70 bg-white px-5 py-4 shadow-sm">
       <div className="flex items-baseline justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           {title}
         </p>
         <p className="text-[11px] text-slate-400">{unit}</p>

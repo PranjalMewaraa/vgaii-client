@@ -77,11 +77,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <ImpersonationBanner />
               <ResumeTourBanner />
 
-              <main className="min-w-0 flex-1 px-4 py-4 md:px-6">{children}</main>
+              <main className="mx-auto w-full min-w-0 max-w-screen-2xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                {children}
+              </main>
 
-              <footer className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-500 md:px-8">
-                <span>© {YEAR} VGAII. All rights reserved.</span>
-                <span>Version {APP_VERSION}</span>
+              <footer className="mt-auto border-t border-slate-200/80 bg-white/60">
+                <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-3 text-xs text-slate-400 sm:px-6 lg:px-8">
+                  <span>© {YEAR} VGAII. All rights reserved.</span>
+                  <span className="font-medium">Version {APP_VERSION}</span>
+                </div>
               </footer>
             </div>
           </div>

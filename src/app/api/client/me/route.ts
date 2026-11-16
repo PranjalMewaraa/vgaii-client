@@ -4,11 +4,11 @@ import { getErrorMessage } from "@/lib/errors";
 import { NextResponse } from "next/server";
 
 // Returns only the fields a CLIENT_ADMIN should see about their own tenant.
-// Platform-managed values (googlePlaceId, bookingUrl, webhookKey) and the
-// webhook integration URLs are intentionally excluded — they live on the
-// super-admin clients page only. The dashboard, public profile, and
-// patient/lead detail pages still read googlePlaceId / bookingUrl through
-// dedicated endpoints that don't expose them in plaintext to the user.
+// Platform-managed values (googlePlaceId, webhookKey) and the webhook
+// integration URLs are intentionally excluded — they live on the
+// super-admin clients page only. The dashboard and public profile pages
+// still read googlePlaceId through dedicated endpoints that don't expose
+// it in plaintext to the user.
 export async function GET(req: Request) {
   try {
     const user = getUser(req);

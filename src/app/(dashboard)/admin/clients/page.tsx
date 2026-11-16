@@ -4,10 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import {
-  AlertCircle,
   Braces,
   Building2,
-  Calendar,
   CalendarDays,
   Check,
   ChevronDown,
@@ -16,17 +14,13 @@ import {
   Copy,
   ExternalLink,
   Globe,
-  HelpCircle,
-  Info,
   KeyRound,
   MapPin,
   MessageSquare,
   Pencil,
   Plug,
   Plus,
-  RefreshCw,
   RotateCcw,
-  Server,
   ShieldCheck,
   type LucideIcon,
   UserRound,
@@ -65,7 +59,7 @@ type ClientRow = {
   profileSlug?: string;
   customDomain?: string;
   googlePlaceId?: string;
-  bookingUrl?: string;
+  googleMapsUrl?: string;
   subscriptionKey?: string;
   webhookKey?: string;
   createdAt?: string;
@@ -132,11 +126,11 @@ function AdminClientsPageInner() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Clients</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Clients</h1>
+          <p className="mt-1 text-sm text-slate-500">
             Every client on the platform with their team, integrations, and
             webhooks. Click a row to expand. Use Impersonate to view the
             panel as that user.
@@ -144,7 +138,7 @@ function AdminClientsPageInner() {
         </div>
         <Link
           href="/admin/clients/new"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           <Plus size={14} />
           Onboard new clinic
@@ -152,16 +146,16 @@ function AdminClientsPageInner() {
       </header>
 
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       )}
 
 
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-          <h2 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-6 py-4">
+          <h2 className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
               <Building2 size={14} />
             </span>
             All Clients
@@ -172,11 +166,11 @@ function AdminClientsPageInner() {
         </div>
 
         {isLoading ? (
-          <p className="px-4 py-3 text-sm text-slate-500">Loading…</p>
+          <p className="px-5 py-4 text-sm text-slate-500">Loading…</p>
         ) : clients.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">No clients yet.</p>
+          <p className="px-5 py-4 text-sm text-slate-500">No clients yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-200">
+          <ul className="divide-y divide-slate-100">
             {clients.map(c => {
               const isOpen = expanded.has(c.id);
               const subStyle =
@@ -187,7 +181,7 @@ function AdminClientsPageInner() {
                   <button
                     type="button"
                     onClick={() => toggle(c.id)}
-                    className="flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-between gap-4 px-5 py-3 text-left transition-colors hover:bg-slate-50/70"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -213,15 +207,6 @@ function AdminClientsPageInner() {
                           >
                             <Globe size={10} />
                             Google
-                          </span>
-                        )}
-                        {c.bookingUrl && (
-                          <span
-                            className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-violet-700"
-                            title="Cal.com booking URL configured"
-                          >
-                            <Calendar size={10} />
-                            Cal.com
                           </span>
                         )}
                         {c.subscriptionKey && (
@@ -266,7 +251,7 @@ function AdminClientsPageInner() {
                   </button>
 
                   {isOpen && (
-                    <div className="space-y-3 bg-slate-50/60 px-6 pb-5 pt-1">
+                    <div className="space-y-4 bg-slate-50/60 px-6 pb-5 pt-1">
                       <ClientAdminBlock
                         client={c}
                         busyId={busyId}
@@ -290,17 +275,11 @@ function AdminClientsPageInner() {
                           <Link
                             href={`/p/${c.profileSlug}`}
                             target="_blank"
-                            className="inline-flex items-center gap-1 text-indigo-600 hover:underline"
+                            className="inline-flex items-center gap-1 text-green-600 hover:underline"
                           >
                             <ExternalLink size={11} />
                             View public profile
                           </Link>
-                        )}
-                        {c.customDomain && (
-                          <span className="inline-flex items-center gap-1">
-                            <MapPin size={11} />
-                            {c.customDomain}
-                          </span>
                         )}
                         {c.renewalDate && (
                           <span className="inline-flex items-center gap-1">
@@ -334,7 +313,7 @@ function ClientAdminBlock({
   onUpdated: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -359,7 +338,7 @@ function ClientAdminBlock({
             type="button"
             onClick={() => onImpersonate(client.admin!.id)}
             disabled={busyId === client.admin.id}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             <UserRound size={12} />
             {busyId === client.admin.id ? "Switching…" : "Impersonate"}
@@ -389,7 +368,7 @@ function ClientStaffBlock({
   onUpdated: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
       <div className="border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Users size={11} />
@@ -399,7 +378,7 @@ function ClientStaffBlock({
       {staff.length === 0 ? (
         <p className="px-4 py-3 text-sm text-slate-500">No staff yet.</p>
       ) : (
-        <ul className="divide-y divide-slate-200">
+        <ul className="divide-y divide-slate-100">
           {staff.map(s => (
             <li
               key={s.id}
@@ -427,7 +406,7 @@ function ClientStaffBlock({
                 type="button"
                 onClick={() => onImpersonate(s.id)}
                 disabled={busyId === s.id}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
               >
                 <UserRound size={12} />
                 {busyId === s.id ? "Switching…" : "Impersonate"}
@@ -540,7 +519,7 @@ function UserSecurityActions({
         <button
           type="button"
           onClick={() => open("password")}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
         >
           <KeyRound size={11} />
           Reset password
@@ -548,7 +527,7 @@ function UserSecurityActions({
         <button
           type="button"
           onClick={() => open("email")}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
         >
           <Pencil size={11} />
           Change email
@@ -567,14 +546,14 @@ function UserSecurityActions({
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="≥8 chars, letters + a digit"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-1.5 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={resetPassword}
             disabled={busy || password.length < 8}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {busy ? "Saving…" : "Set password"}
           </button>
@@ -592,14 +571,14 @@ function UserSecurityActions({
               value={newEmail}
               onChange={e => setNewEmail(e.target.value)}
               placeholder="user@example.com"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-1.5 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <button
             type="button"
             onClick={changeEmail}
             disabled={busy || !newEmail.trim()}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
           >
             {busy ? "Saving…" : "Save email"}
           </button>
@@ -624,18 +603,16 @@ function ClientIntegrationsBlock({
 }) {
   const [editing, setEditing] = useState(false);
   const [googlePlaceId, setGooglePlaceId] = useState(client.googlePlaceId ?? "");
-  const [bookingUrl, setBookingUrl] = useState(client.bookingUrl ?? "");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState(client.googleMapsUrl ?? "");
   const [subscriptionKey, setSubscriptionKey] = useState(client.subscriptionKey ?? "");
-  const [customDomain, setCustomDomain] = useState(client.customDomain ?? "");
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
   const startEdit = () => {
     setGooglePlaceId(client.googlePlaceId ?? "");
-    setBookingUrl(client.bookingUrl ?? "");
+    setGoogleMapsUrl(client.googleMapsUrl ?? "");
     setSubscriptionKey(client.subscriptionKey ?? "");
-    setCustomDomain(client.customDomain ?? "");
     setErr(null);
     setSavedAt(null);
     setEditing(true);
@@ -655,9 +632,8 @@ function ClientIntegrationsBlock({
         headers: authHeaders(),
         body: JSON.stringify({
           googlePlaceId: googlePlaceId.trim() || null,
-          bookingUrl: bookingUrl.trim() || null,
+          googleMapsUrl: googleMapsUrl.trim() || null,
           subscriptionKey: subscriptionKey.trim() || null,
-          customDomain: customDomain.trim() || null,
         }),
       });
       const data = await res.json();
@@ -676,7 +652,7 @@ function ClientIntegrationsBlock({
   };
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Plug size={11} />
@@ -686,7 +662,7 @@ function ClientIntegrationsBlock({
           <button
             type="button"
             onClick={startEdit}
-            className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline"
+            className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline"
           >
             <Pencil size={11} />
             Edit
@@ -702,12 +678,11 @@ function ClientIntegrationsBlock({
               hint="Empty to clear."
             />
             <Field
-              label="Cal.com booking URL"
-              value={bookingUrl}
-              onChange={setBookingUrl}
-              type="url"
-              placeholder="https://cal.com/account/event"
-              hint="Empty to clear."
+              label="Google Maps URL"
+              value={googleMapsUrl}
+              onChange={setGoogleMapsUrl}
+              placeholder="https://www.google.com/maps/place/…"
+              hint="Optional but preferred for review fetching — paste the business's full Maps link. Empty to clear."
             />
             <Field
               label="Subscription key"
@@ -716,14 +691,6 @@ function ClientIntegrationsBlock({
               placeholder="External subscription token"
               hint="Empty to clear. Sent to the subscription API as form field 'key'."
             />
-            <Field
-              label="Custom domain"
-              value={customDomain}
-              onChange={setCustomDomain}
-              placeholder="example-clinic.com"
-              hint="Hostname only (no http://, no path). Empty to clear."
-            />
-            <CustomDomainSetupGuide domain={customDomain || undefined} />
             {err && (
               <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
                 {err}
@@ -733,7 +700,7 @@ function ClientIntegrationsBlock({
               <button
                 type="button"
                 onClick={cancel}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
               >
                 Cancel
               </button>
@@ -741,7 +708,7 @@ function ClientIntegrationsBlock({
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
               >
                 <Check size={12} />
                 {saving ? "Saving…" : "Save"}
@@ -757,9 +724,10 @@ function ClientIntegrationsBlock({
               copyable
             />
             <ReadRow
-              label="Cal.com booking URL"
-              icon={Calendar}
-              value={client.bookingUrl}
+              label="Google Maps URL"
+              icon={Globe}
+              value={client.googleMapsUrl}
+              copyable
             />
             <ReadRow
               label="Subscription key"
@@ -768,11 +736,6 @@ function ClientIntegrationsBlock({
               copyable
               mono
             />
-            <CustomDomainRow
-              clientId={client.id}
-              customDomain={client.customDomain}
-            />
-            <CustomDomainSetupGuide domain={client.customDomain} />
             {savedAt && (
               <p className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
                 <Check size={12} />
@@ -802,7 +765,6 @@ function ClientWebhooksBlock({
     typeof window !== "undefined" ? window.location.origin : "";
   const leadUrl = `${origin}/api/webhooks/leads`;
   const leadStatusUrl = `${origin}/api/webhooks/leads/status`;
-  const bookingUrl = `${origin}/api/webhooks/booking`;
   const feedbackUrl = `${origin}/api/webhooks/feedback`;
 
   const rotate = async () => {
@@ -836,7 +798,7 @@ function ClientWebhooksBlock({
   };
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
         <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
           <Webhook size={11} />
@@ -846,7 +808,7 @@ function ClientWebhooksBlock({
           type="button"
           onClick={rotate}
           disabled={rotating}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
         >
           <RotateCcw size={12} />
           {rotating ? "Rotating…" : "Rotate key"}
@@ -884,15 +846,6 @@ function ClientWebhooksBlock({
             />
             <WebhookRow
               method="POST"
-              label="Cal.com booking"
-              hint="Cal.com → Settings → Developer → Webhooks → BOOKING_CREATED."
-              url={bookingUrl}
-              webhookKey={client.webhookKey}
-              defaultMode="query"
-              schema={CAL_BOOKING_SCHEMA}
-            />
-            <WebhookRow
-              method="POST"
               label="Feedback capture"
               hint="External survey tools / SMS providers POST patient feedback here."
               url={feedbackUrl}
@@ -906,453 +859,6 @@ function ClientWebhooksBlock({
           </p>
         )}
       </div>
-    </div>
-  );
-}
-
-// DNS targets the registrar must point at. These are Vercel's published
-// values — keep in sync with the verify-domain endpoint and the official
-// docs at https://vercel.com/docs/projects/domains.
-const VERCEL_CNAME_TARGET = "cname.vercel-dns.com";
-const VERCEL_A_TARGET = "76.76.21.21";
-
-function CustomDomainSetupGuide({ domain }: { domain?: string }) {
-  const [open, setOpen] = useState(!domain);
-  // Default tab depends on the domain's shape: a single dot ⇒ apex,
-  // multiple dots ⇒ likely a subdomain. Cheap heuristic, the operator
-  // can flip the tab anyway.
-  const isLikelySubdomain = !!domain && (domain.match(/\./g)?.length ?? 0) > 1;
-  const [recordType, setRecordType] = useState<"a" | "cname">(
-    isLikelySubdomain ? "cname" : "a",
-  );
-  const example = domain || "yourdomain.com";
-
-  return (
-    <div className="rounded-lg border border-indigo-100 bg-indigo-50/40">
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left"
-        aria-expanded={open}
-      >
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-900">
-          <HelpCircle size={12} />
-          How to set up a custom domain
-        </span>
-        <span className="text-indigo-600">
-          {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        </span>
-      </button>
-
-      {open && (
-        <div className="space-y-3 border-t border-indigo-100 px-4 py-4">
-          <p className="text-xs leading-relaxed text-slate-600">
-            A custom domain lets your client&apos;s public profile live at
-            their own URL, like{" "}
-            <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-slate-800">
-              {example}
-            </code>
-            , instead of the default <code className="font-mono">/p/&lt;slug&gt;</code>{" "}
-            URL on this app. Setup takes about 5 minutes once DNS propagates.
-          </p>
-
-          {/* Step 1 — DNS at registrar */}
-          <Step
-            number={1}
-            icon={Server}
-            title={`At the domain registrar (where ${example} was bought)`}
-            description="Log into wherever the domain was purchased — GoDaddy, Namecheap, Cloudflare DNS, Google Domains, etc. Find the DNS settings page and add one record:"
-          >
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <div className="mb-3 inline-flex rounded-lg border border-slate-200 p-0.5 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => setRecordType("a")}
-                  className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
-                    recordType === "a"
-                      ? "bg-indigo-600 text-white"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  Root domain
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRecordType("cname")}
-                  className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
-                    recordType === "cname"
-                      ? "bg-indigo-600 text-white"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  Subdomain
-                </button>
-              </div>
-
-              <p className="mb-2 text-[11px] text-slate-500">
-                {recordType === "a" ? (
-                  <>
-                    Use this if the domain is the bare/root form like{" "}
-                    <code className="font-mono">example-clinic.com</code>.
-                  </>
-                ) : (
-                  <>
-                    Use this if the domain has a prefix like{" "}
-                    <code className="font-mono">profile.example-clinic.com</code>{" "}
-                    or <code className="font-mono">book.example-clinic.com</code>.
-                  </>
-                )}
-              </p>
-
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
-                  <tr>
-                    <th className="px-2 py-1.5 font-semibold">Field</th>
-                    <th className="px-2 py-1.5 font-semibold">Value</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {recordType === "a" ? (
-                    <>
-                      <DnsRow label="Type" value="A" />
-                      <DnsRow
-                        label="Name / Host"
-                        value="@"
-                        hint="The literal “@” means the root domain."
-                      />
-                      <DnsRow label="Value / Points to" value={VERCEL_A_TARGET} copy />
-                      <DnsRow
-                        label="TTL"
-                        value="3600"
-                        hint="Or whatever default the registrar uses — TTL doesn't affect functionality."
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <DnsRow label="Type" value="CNAME" />
-                      <DnsRow
-                        label="Name / Host"
-                        value={
-                          domain && domain.includes(".")
-                            ? domain.split(".")[0]
-                            : "profile"
-                        }
-                        hint="The subdomain part — everything before the first dot."
-                      />
-                      <DnsRow
-                        label="Value / Points to"
-                        value={VERCEL_CNAME_TARGET}
-                        copy
-                      />
-                      <DnsRow label="TTL" value="3600" />
-                    </>
-                  )}
-                </tbody>
-              </table>
-
-              {recordType === "a" && (
-                <p className="mt-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">
-                  <strong>Tip:</strong> if the registrar offers{" "}
-                  <code className="font-mono">ALIAS</code>,{" "}
-                  <code className="font-mono">ANAME</code>, or
-                  &ldquo;CNAME flattening&rdquo; for the root, prefer that
-                  with the value{" "}
-                  <code className="font-mono">{VERCEL_CNAME_TARGET}</code> —
-                  it&apos;s safer if Vercel rotates IPs.
-                </p>
-              )}
-
-              <p className="mt-2 text-[11px] text-slate-500">
-                Don&apos;t forget the <code className="font-mono">www.</code>{" "}
-                version: add a second CNAME with name{" "}
-                <code className="font-mono">www</code> pointing to{" "}
-                <code className="font-mono">{VERCEL_CNAME_TARGET}</code>.
-              </p>
-            </div>
-          </Step>
-
-          {/* Step 2 — Vercel */}
-          <Step
-            number={2}
-            icon={Globe}
-            title="Add the domain to Vercel"
-            description="Our app is hosted on Vercel. Vercel needs to know the domain so it accepts traffic for it and issues an SSL certificate."
-          >
-            <ol className="list-decimal space-y-1 pl-5 text-xs leading-relaxed text-slate-600">
-              <li>
-                Open{" "}
-                <a
-                  href="https://vercel.com/dashboard"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-indigo-600 hover:underline"
-                >
-                  the Vercel dashboard <ExternalLink size={10} />
-                </a>{" "}
-                and pick this app&apos;s project.
-              </li>
-              <li>
-                Go to <strong>Settings</strong> → <strong>Domains</strong>.
-              </li>
-              <li>
-                Click <strong>Add</strong>, type{" "}
-                <code className="rounded bg-white px-1 font-mono text-[11px]">
-                  {example}
-                </code>
-                , and confirm. Repeat for{" "}
-                <code className="rounded bg-white px-1 font-mono text-[11px]">
-                  www.{example}
-                </code>
-                .
-              </li>
-              <li>
-                Vercel will show <strong>Invalid Configuration</strong> until
-                DNS propagates — that&apos;s expected. Once DNS resolves,
-                Vercel auto-issues a Let&apos;s Encrypt certificate (usually
-                under a minute).
-              </li>
-            </ol>
-          </Step>
-
-          {/* Step 3 — verify */}
-          <Step
-            number={3}
-            icon={ShieldCheck}
-            title="Save here and click Verify"
-            description="Once both steps above are done, save the domain in this form and use the Verify button. It runs two checks:"
-          >
-            <ul className="space-y-1 text-xs text-slate-600">
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700">
-                  1
-                </span>
-                <span>
-                  <strong>DNS:</strong> does{" "}
-                  <code className="font-mono">{example}</code> resolve to
-                  Vercel?
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700">
-                  2
-                </span>
-                <span>
-                  <strong>HTTPS:</strong> does{" "}
-                  <code className="font-mono">https://{example}/</code> reply
-                  successfully? (Tells you if Vercel issued the cert.)
-                </span>
-              </li>
-            </ul>
-            <p className="mt-2 inline-flex items-start gap-1.5 rounded border border-slate-200 bg-white px-2 py-1.5 text-[11px] text-slate-600">
-              <Info size={12} className="mt-0.5 shrink-0 text-indigo-500" />
-              DNS propagation usually takes 5–15 minutes but can take up to
-              24 hours. If Verify fails, wait a bit and try again.
-            </p>
-          </Step>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Step({
-  number,
-  icon: Icon,
-  title,
-  description,
-  children,
-}: {
-  number: number;
-  icon: typeof Globe;
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex gap-3">
-      <div className="flex shrink-0 flex-col items-center">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
-          {number}
-        </span>
-      </div>
-      <div className="min-w-0 flex-1 space-y-2">
-        <div>
-          <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-            <Icon size={13} className="text-indigo-600" />
-            {title}
-          </p>
-          <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
-            {description}
-          </p>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function DnsRow({
-  label,
-  value,
-  hint,
-  copy,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  copy?: boolean;
-}) {
-  return (
-    <tr>
-      <td className="px-2 py-1.5 align-top font-medium text-slate-700">
-        {label}
-      </td>
-      <td className="px-2 py-1.5">
-        <div className="flex items-center gap-2">
-          <code className="rounded bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-slate-800">
-            {value}
-          </code>
-          {copy && <CopyButton value={value} />}
-        </div>
-        {hint && <p className="mt-0.5 text-[10px] text-slate-500">{hint}</p>}
-      </td>
-    </tr>
-  );
-}
-
-type VerifyResult = {
-  domain: string;
-  dns: {
-    resolved: boolean;
-    cname?: string[];
-    a?: string[];
-    pointsToVercel: boolean;
-    error?: string;
-  };
-  http: {
-    ok: boolean;
-    status?: number;
-    error?: string;
-  };
-  verified: boolean;
-  error?: string;
-};
-
-function CustomDomainRow({
-  clientId,
-  customDomain,
-}: {
-  clientId: string;
-  customDomain?: string;
-}) {
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<VerifyResult | null>(null);
-
-  const verify = async () => {
-    setBusy(true);
-    setResult(null);
-    try {
-      const res = await fetch(
-        `/api/admin/clients/${clientId}/verify-domain`,
-        { method: "POST", headers: authHeaders() },
-      );
-      const data = (await res.json()) as VerifyResult;
-      setResult(res.ok ? data : { ...data, error: data.error ?? "Failed" });
-    } catch {
-      setResult({
-        domain: customDomain ?? "",
-        dns: { resolved: false, pointsToVercel: false },
-        http: { ok: false },
-        verified: false,
-        error: "Network error",
-      });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div>
-      <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-        <Globe size={11} />
-        Custom domain
-      </p>
-      <div className="mt-1 flex items-stretch gap-2">
-        <code
-          className={`flex-1 truncate rounded-lg bg-slate-50 px-3 py-2 text-xs ${
-            customDomain ? "text-slate-700" : "text-slate-400"
-          }`}
-        >
-          {customDomain || "(not set)"}
-        </code>
-        {customDomain && <CopyButton value={customDomain} />}
-        {customDomain && (
-          <button
-            type="button"
-            onClick={verify}
-            disabled={busy}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-          >
-            <RefreshCw size={12} className={busy ? "animate-spin" : ""} />
-            {busy ? "Verifying…" : "Verify"}
-          </button>
-        )}
-      </div>
-      {result && <VerifyResultPanel result={result} />}
-    </div>
-  );
-}
-
-function VerifyResultPanel({ result }: { result: VerifyResult }) {
-  const tone = result.verified
-    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-    : "border-amber-200 bg-amber-50 text-amber-900";
-  const Icon = result.verified ? Check : AlertCircle;
-  return (
-    <div
-      className={`mt-2 space-y-1.5 rounded-lg border px-3 py-2 text-[11px] ${tone}`}
-    >
-      <p className="inline-flex items-center gap-1.5 font-semibold">
-        <Icon size={12} />
-        {result.verified
-          ? "Verified — domain resolves to us and serves over HTTPS."
-          : "Not yet verified."}
-        {result.error && <span className="font-normal">— {result.error}</span>}
-      </p>
-      <ul className="space-y-0.5 pl-4">
-        <li className="list-disc">
-          <span className="font-medium">DNS:</span>{" "}
-          {result.dns.resolved
-            ? result.dns.pointsToVercel
-              ? "resolves to Vercel."
-              : "resolves but not to Vercel — check the DNS target."
-            : "didn't resolve. Check the registrar for typos and propagation."}
-          {result.dns.cname && result.dns.cname.length > 0 && (
-            <span className="ml-1 text-[10px] opacity-80">
-              CNAME: {result.dns.cname.join(", ")}
-            </span>
-          )}
-          {result.dns.a && result.dns.a.length > 0 && (
-            <span className="ml-1 text-[10px] opacity-80">
-              A: {result.dns.a.join(", ")}
-            </span>
-          )}
-        </li>
-        <li className="list-disc">
-          <span className="font-medium">HTTPS:</span>{" "}
-          {result.http.ok
-            ? `OK (${result.http.status ?? 200}).`
-            : result.http.error
-              ? `failed — ${result.http.error}`
-              : `failed (${result.http.status ?? "?"}). If DNS is right, the cert may still be issuing.`}
-        </li>
-      </ul>
-      {!result.verified && (
-        <p className="text-[10px] opacity-80">
-          Add the domain in Vercel → Project → Settings → Domains if you
-          haven&apos;t. DNS may take a few minutes to propagate.
-        </p>
-      )}
     </div>
   );
 }
@@ -1472,44 +978,6 @@ const FEEDBACK_SCHEMA: WebhookSchema = {
   notes: "leadMatched: true means the phone matched a Lead within this client, so the feedback is linked and the lead's status flipped to visited. leadMatched: false stores it standalone — still queryable from the Feedbacks tab.",
 };
 
-const CAL_BOOKING_SCHEMA: WebhookSchema = {
-  fields: [
-    { name: "triggerEvent", type: "string", required: true, description: "Cal.com event type. Only BOOKING_CREATED is acted on; others are accepted and ignored." },
-    { name: "payload.startTime", type: "ISO date", required: true, description: "Appointment date/time. Stored on the new Appointment row." },
-    { name: "payload.attendees[0]", type: "object", required: true, description: "First attendee — uses .name, .email, .phoneNumber to build the patient record." },
-    { name: "payload.responses", type: "object", required: false, description: "Cal.com booking-form answers. Used as a fallback for phone if attendees[0].phoneNumber is empty." },
-  ],
-  exampleRequest: `{
-  "triggerEvent": "BOOKING_CREATED",
-  "payload": {
-    "startTime": "2026-04-20T10:00:00Z",
-    "attendees": [
-      {
-        "name": "Riya Sharma",
-        "email": "riya@example.com",
-        "phoneNumber": "+91 98765 43210"
-      }
-    ],
-    "responses": {
-      "phone": { "label": "Phone", "value": "+91 98765 43210" }
-    }
-  }
-}`,
-  exampleResponse: `{
-  "appointment": {
-    "id": "cmox4def1234567890",
-    "name": "Riya Sharma",
-    "phone": "+91 98765 43210",
-    "date": "2026-04-20T10:00:00.000Z",
-    "status": "scheduled",
-    "leadId": "cmox4abc1234567890",
-    "source": "cal.com"
-  }
-}`,
-  responseStatus: "200 OK",
-  notes: "Cal.com sends this payload automatically — you don't construct it. If a Lead with the same phone exists in this client, the appointment links to it and the lead status flips to appointment_booked.",
-};
-
 function WebhookRow({
   method,
   label,
@@ -1533,7 +1001,7 @@ function WebhookRow({
   const display = mode === "query" ? queryUrl : url;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+    <div className="rounded-xl border border-slate-200/70 bg-slate-50/60 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -1541,13 +1009,13 @@ function WebhookRow({
           </p>
           {hint && <p className="text-xs text-slate-500">{hint}</p>}
         </div>
-        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-[11px]">
+        <div className="inline-flex rounded-lg border border-slate-200/70 bg-white p-0.5 text-[11px]">
           <button
             type="button"
             onClick={() => setMode("header")}
             className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
               mode === "header"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -1558,7 +1026,7 @@ function WebhookRow({
             onClick={() => setMode("query")}
             className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
               mode === "query"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
@@ -1569,7 +1037,7 @@ function WebhookRow({
 
       <div className="mt-2 flex items-stretch gap-2">
         <code className="flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs text-slate-700">
-          <span className="text-indigo-600">{method}</span> {display}
+          <span className="text-green-600">{method}</span> {display}
         </code>
         <CopyButton value={display} />
       </div>
@@ -1594,7 +1062,7 @@ function WebhookRow({
           <button
             type="button"
             onClick={() => setShowSchema(s => !s)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-indigo-600 hover:underline"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-green-600 hover:underline"
             aria-expanded={showSchema}
           >
             {showSchema ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
@@ -1615,7 +1083,7 @@ function SchemaPanel({ schema }: { schema: WebhookSchema }) {
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
           Fields
         </p>
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-slate-200/70 bg-white">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
               <tr>
@@ -1666,7 +1134,7 @@ function SchemaPanel({ schema }: { schema: WebhookSchema }) {
           </p>
           <CopyButton value={schema.exampleRequest} />
         </div>
-        <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-900 p-3 text-[11px] leading-relaxed text-slate-100">
+        <pre className="overflow-x-auto rounded-lg border border-slate-200/70 bg-slate-900 p-3 text-[11px] leading-relaxed text-slate-100">
           {schema.exampleRequest}
         </pre>
       </div>
@@ -1678,13 +1146,13 @@ function SchemaPanel({ schema }: { schema: WebhookSchema }) {
           </p>
           <CopyButton value={schema.exampleResponse} />
         </div>
-        <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-700">
+        <pre className="overflow-x-auto rounded-lg border border-slate-200/70 bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-700">
           {schema.exampleResponse}
         </pre>
       </div>
 
       {schema.notes && (
-        <p className="rounded-lg border border-slate-200 bg-amber-50/60 px-3 py-2 text-[11px] text-slate-700">
+        <p className="rounded-lg border border-slate-200/70 bg-amber-50/60 px-3 py-2 text-[11px] text-slate-700">
           {schema.notes}
         </p>
       )}
@@ -1707,7 +1175,7 @@ function CopyButton({ value }: { value: string }) {
     <button
       type="button"
       onClick={copy}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copied" : "Copy"}
@@ -1736,7 +1204,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </span>
       <input
@@ -1746,7 +1214,7 @@ function Field({
         required={required}
         minLength={minLength}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </label>
@@ -1768,22 +1236,22 @@ function PlaceIdField({
   return (
     <div>
       <label className="block">
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        <span className="mb-1.5 block text-sm font-medium text-slate-700">
           Google Place ID
         </span>
-        <div className="mt-1 flex items-stretch gap-2">
+        <div className="flex items-stretch gap-2">
           <input
             type="text"
             value={value}
             onChange={e => onChange(e.target.value)}
             placeholder="ChIJ…"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="flex-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
             onClick={() => setOpen(true)}
             title="Search a business and grab its Place ID"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             <MapPin size={12} />
             Locate

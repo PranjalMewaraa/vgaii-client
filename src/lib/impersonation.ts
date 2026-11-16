@@ -67,6 +67,16 @@ export const startImpersonation = async (userId: string) => {
 export const isImpersonating = () =>
   typeof window !== "undefined" && !!localStorage.getItem(STASH_TOKEN);
 
+// Drop a stale impersonation stash without restoring it. Used on logout, so
+// a leftover stash never leaks the "You are impersonating" banner into a
+// later, unrelated login on the same browser.
+export const clearImpersonationStash = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(STASH_TOKEN);
+  localStorage.removeItem(STASH_USER);
+  notify();
+};
+
 export const stopImpersonation = () => {
   const original = localStorage.getItem(STASH_TOKEN);
   const originalUser = localStorage.getItem(STASH_USER);

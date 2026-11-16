@@ -31,7 +31,6 @@ type FormState = {
   adminEmail: string;
   adminPassword: string;
   googlePlaceId: string;
-  bookingUrl: string;
 };
 
 type SetFn = <K extends keyof FormState>(k: K, v: FormState[K]) => void;
@@ -46,7 +45,6 @@ const INITIAL: FormState = {
   adminEmail: "",
   adminPassword: "",
   googlePlaceId: "",
-  bookingUrl: "",
 };
 
 const authHeaders = () => ({
@@ -78,9 +76,9 @@ function StepIndicator({ current }: { current: number }) {
             <span
               className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all ${
                 done
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-green-600 text-white"
                   : active
-                  ? "border-2 border-indigo-600 bg-white text-indigo-600"
+                  ? "border-2 border-green-600 bg-white text-green-600"
                   : "border-2 border-slate-200 bg-white text-slate-400"
               }`}
             >
@@ -89,7 +87,7 @@ function StepIndicator({ current }: { current: number }) {
             <span
               className={`text-[11px] font-semibold uppercase tracking-wider ${
                 active
-                  ? "text-indigo-600"
+                  ? "text-green-600"
                   : done
                   ? "text-slate-600"
                   : "text-slate-400"
@@ -117,12 +115,12 @@ function Field({
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className={`block ${className ?? ""}`}>
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </span>
       <input
         {...props}
-        className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+        className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
       {hint && (
         <p className="mt-0.5 text-[11px] text-slate-400">{hint}</p>
@@ -149,15 +147,15 @@ function RadioCard<T extends string>({
     <button
       type="button"
       onClick={() => onChange(value)}
-      className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-all ${
+      className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
         active
-          ? "border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500"
+          ? "border-green-500 bg-green-50 ring-1 ring-green-500"
           : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
       }`}
     >
       <span
         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-          active ? "border-indigo-600 bg-indigo-600" : "border-slate-300"
+          active ? "border-green-600 bg-green-600" : "border-slate-300"
         }`}
       >
         {active && (
@@ -188,7 +186,7 @@ function CopyButton({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? "Copied!" : "Copy"}
@@ -207,16 +205,16 @@ function ReviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
-      <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-2.5">
-        <span className="flex h-6 w-6 items-center justify-center rounded bg-indigo-50 text-indigo-600">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
+      <div className="flex items-center gap-2 border-b border-slate-100 px-6 py-4">
+        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
           <Icon size={13} />
         </span>
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           {title}
         </span>
       </div>
-      <dl className="divide-y divide-slate-100 px-4">{children}</dl>
+      <dl className="divide-y divide-slate-100 px-6">{children}</dl>
     </div>
   );
 }
@@ -257,7 +255,7 @@ function StepClinic({ form, set }: { form: FormState; set: SetFn }) {
       />
 
       <div>
-        <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+        <p className="mb-2.5 text-sm font-medium text-slate-700">
           Plan
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -279,7 +277,7 @@ function StepClinic({ form, set }: { form: FormState; set: SetFn }) {
       </div>
 
       <div>
-        <p className="mb-2.5 text-xs font-medium uppercase tracking-wider text-slate-500">
+        <p className="mb-2.5 text-sm font-medium text-slate-700">
           Subscription status
         </p>
         <div className="grid grid-cols-3 gap-3">
@@ -353,10 +351,10 @@ function StepAdmin({
       />
 
       <label className="block">
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        <span className="mb-1.5 block text-sm font-medium text-slate-700">
           Temporary password *
         </span>
-        <div className="relative mt-1">
+        <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             value={form.adminPassword}
@@ -364,12 +362,12 @@ function StepAdmin({
             minLength={8}
             placeholder="At least 8 characters"
             required
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pr-10 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 pr-10 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-700"
           >
             {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
@@ -400,21 +398,21 @@ function StepSettings({
       </p>
 
       <div>
-        <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        <span className="mb-1.5 block text-sm font-medium text-slate-700">
           Google Place ID
         </span>
-        <div className="mt-1 flex gap-2">
+        <div className="flex gap-2">
           <input
             type="text"
             value={form.googlePlaceId}
             onChange={e => set("googlePlaceId", e.target.value)}
             placeholder="ChIJ…"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="flex-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
           <button
             type="button"
             onClick={onOpenPlacePicker}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             <MapPin size={14} />
             Find
@@ -424,15 +422,6 @@ function StepSettings({
           Pulls Google Business reviews and info for the clinic.
         </p>
       </div>
-
-      <Field
-        label="Cal.com booking URL"
-        type="url"
-        value={form.bookingUrl}
-        onChange={e => set("bookingUrl", e.target.value)}
-        placeholder="https://cal.com/account/event"
-        hint="Embedded in the patient booking modal when self-hosted booking is off."
-      />
 
       <Field
         label="Subscription key"
@@ -453,7 +442,7 @@ const STATUS_BADGE: Record<SubStatus, string> = {
 };
 const PLAN_BADGE: Record<Plan, string> = {
   basic: "bg-slate-100 text-slate-700",
-  pro: "bg-indigo-100 text-indigo-700",
+  pro: "bg-green-100 text-green-700",
 };
 
 function StepReview({ form, error }: { form: FormState; error: string | null }) {
@@ -509,10 +498,6 @@ function StepReview({ form, error }: { form: FormState; error: string | null }) 
           value={form.googlePlaceId || "—"}
         />
         <ReviewRow
-          label="Booking URL"
-          value={form.bookingUrl || "—"}
-        />
-        <ReviewRow
           label="Subscription key"
           value={form.subscriptionKey ? "Set" : "—"}
         />
@@ -539,11 +524,11 @@ function SuccessScreen({
 }) {
   return (
     <div className="mx-auto max-w-lg py-12">
-      <div className="rounded-xl border border-emerald-200 bg-white p-8 text-center shadow-sm">
+      <div className="rounded-xl border border-emerald-200 bg-white p-8 text-center">
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
           <Check size={28} className="text-emerald-600" />
         </span>
-        <h2 className="text-xl font-bold text-slate-900">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
           {clinicName} is live!
         </h2>
         <p className="mt-1 text-sm text-slate-500">
@@ -551,11 +536,11 @@ function SuccessScreen({
         </p>
 
         {webhookKey && (
-          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-left">
+          <div className="mt-6 rounded-lg border border-slate-200/70 bg-slate-50 p-4 text-left">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Webhook key
             </p>
-            <p className="mb-3 break-all rounded border border-slate-200 bg-white px-3 py-2 font-mono text-xs text-slate-800">
+            <p className="mb-3 break-all rounded border border-slate-200/70 bg-white px-3 py-2 font-mono text-xs text-slate-800">
               {webhookKey}
             </p>
             <CopyButton value={webhookKey} />
@@ -569,7 +554,7 @@ function SuccessScreen({
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/admin/clients"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             <ArrowLeft size={15} />
             Go to clients list
@@ -577,7 +562,7 @@ function SuccessScreen({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1f3d2b] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
           >
             <Plus size={15} />
             Onboard another clinic
@@ -626,7 +611,6 @@ function OnboardClientWizard() {
           renewalDate: form.renewalDate || undefined,
           subscriptionKey: form.subscriptionKey.trim() || undefined,
           googlePlaceId: form.googlePlaceId.trim() || undefined,
-          bookingUrl: form.bookingUrl.trim() || undefined,
           admin: {
             name: form.adminName.trim(),
             email: form.adminEmail.trim().toLowerCase(),
@@ -669,24 +653,24 @@ function OnboardClientWizard() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5">
+    <div className="mx-auto max-w-2xl space-y-6">
       <Link
         href="/admin/clients"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-slate-800"
       >
         <ArrowLeft size={14} />
         Back to clients
       </Link>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
         {/* Header */}
         <div className="border-b border-slate-200 px-6 pt-6 pb-5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-600 ring-1 ring-inset ring-green-100">
               <Building2 size={18} />
             </span>
             <div>
-              <h1 className="text-base font-bold text-slate-900">
+              <h1 className="text-base font-semibold tracking-tight text-slate-900">
                 Onboard new clinic
               </h1>
               <p className="text-xs text-slate-500">
@@ -726,7 +710,7 @@ function OnboardClientWizard() {
             type="button"
             onClick={() => setStep(s => s - 1)}
             disabled={step === 1}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40"
           >
             <ArrowLeft size={14} />
             Back
@@ -745,7 +729,7 @@ function OnboardClientWizard() {
                 type="button"
                 onClick={() => setStep(s => s + 1)}
                 disabled={!canAdvance}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-50"
               >
                 Next
                 <ArrowRight size={14} />
@@ -755,7 +739,7 @@ function OnboardClientWizard() {
                 type="button"
                 onClick={submit}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#1f3d2b] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-50"
               >
                 {busy ? (
                   "Creating…"

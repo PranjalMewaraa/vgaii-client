@@ -35,7 +35,7 @@ const PaymentsTooltip = ({
   const p = payload[0]?.payload;
   if (!p) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs shadow-md">
       <p className="font-medium text-slate-900">
         {new Date(`${p.date}T00:00:00`).toLocaleDateString(undefined, {
           weekday: "long",
@@ -86,9 +86,9 @@ export default function PaymentsTrendChart({
           <Line
             type="monotone"
             dataKey="collected"
-            stroke="#6366f1"
+            stroke="#16a34a"
             strokeWidth={2}
-            dot={{ r: 3, fill: "#6366f1" }}
+            dot={{ r: 3, fill: "#16a34a" }}
             activeDot={{ r: 5 }}
             isAnimationActive={false}
           />

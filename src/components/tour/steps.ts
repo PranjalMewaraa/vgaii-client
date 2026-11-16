@@ -99,7 +99,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="appointments-add-btn"]',
     title: "Book or import appointments",
     content:
-      "Manual add works for walk-ins. Cal.com bookings flow in automatically via webhook — you'll see them show up here.",
+      "Manual add works for walk-ins. Once online booking is enabled, patient-booked slots show up here automatically.",
     placement: "left",
   },
   {
@@ -108,7 +108,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="appt-modal-mode-tabs"]',
     title: "Two ways to add",
     content:
-      "Default is Cal.com booking — the patient picks a slot themselves. Manual entry is for walk-ins or back-dated visits.",
+      "Book a slot lets the patient pick a time from your available hours. Manual entry is for walk-ins or back-dated visits.",
     placement: "bottom",
   },
   {

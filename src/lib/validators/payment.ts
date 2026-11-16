@@ -54,3 +54,23 @@ export const expenseCreateSchema = z.object({
   paymentMethod: z.enum(PAYMENT_METHODS),
   notes: z.string().max(2000).optional(),
 });
+
+export const expensePresetCreateSchema = z.object({
+  title: z.string().min(1).max(120),
+  category: z.enum(EXPENSE_CATEGORIES),
+  amount: paiseField,
+  active: z.boolean().optional(),
+  sortOrder: z.number().int().min(0).max(9999).optional(),
+});
+
+export const expensePresetUpdateSchema = z
+  .object({
+    title: z.string().min(1).max(120).optional(),
+    category: z.enum(EXPENSE_CATEGORIES).optional(),
+    amount: paiseField.optional(),
+    active: z.boolean().optional(),
+    sortOrder: z.number().int().min(0).max(9999).optional(),
+  })
+  .refine(d => Object.values(d).some(v => v !== undefined), {
+    message: "At least one field is required",
+  });

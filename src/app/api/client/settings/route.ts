@@ -13,8 +13,8 @@ const cleanString = (v: string | null | undefined): string | null => {
 };
 
 // CLIENT_ADMIN can self-serve their business contact details (name, email,
-// mobile). Slug + custom domain, integrations (googlePlaceId, bookingUrl),
-// and webhook secrets are platform-managed via the super-admin clients page.
+// mobile). Slug + custom domain, integrations (googlePlaceId), and webhook
+// secrets are platform-managed via the super-admin clients page.
 export async function PATCH(req: Request) {
   try {
     const user = getUser(req);

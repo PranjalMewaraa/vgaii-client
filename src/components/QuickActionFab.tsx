@@ -43,28 +43,28 @@ const ACTIONS: FabAction[] = [
     href: "/leads?add=1",
     label: "Add lead",
     icon: UserPlus,
-    iconClass: "bg-indigo-100 text-indigo-600",
+    iconClass: "bg-green-50 text-green-600 ring-1 ring-inset ring-green-100",
     module: "leads",
   },
   {
     href: "/patients?add=1",
     label: "Add patient",
     icon: Users,
-    iconClass: "bg-emerald-100 text-emerald-600",
+    iconClass: "bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100",
     module: "patients",
   },
   {
     href: "/appointments?add=1",
     label: "New appointment",
     icon: CalendarPlus,
-    iconClass: "bg-sky-100 text-sky-600",
+    iconClass: "bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-100",
     module: "appointments",
   },
   {
     href: "/finances?tab=payment&new=1",
     label: "Record payment",
     icon: Wallet,
-    iconClass: "bg-amber-100 text-amber-600",
+    iconClass: "bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100",
     module: "payments",
   },
 ];
@@ -138,7 +138,7 @@ export default function QuickActionFab() {
                     animation: "fab-chip-in 160ms ease-out backwards",
                     animationDelay: `${i * 30}ms`,
                   }}
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-lg ring-1 ring-slate-200 hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-lg ring-1 ring-slate-200 transition-colors hover:bg-slate-50"
                 >
                   <span>{a.label}</span>
                   <span
@@ -158,10 +158,10 @@ export default function QuickActionFab() {
           aria-expanded={open}
           aria-haspopup="menu"
           aria-label={open ? "Close quick actions" : "Open quick actions"}
-          className={`inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition focus:outline-none focus:ring-4 focus:ring-indigo-200 ${
+          className={`inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition focus:outline-none focus:ring-4 focus:ring-green-200 ${
             open
-              ? "rotate-90 bg-slate-700 hover:bg-slate-800"
-              : "bg-indigo-600 hover:bg-indigo-700"
+              ? "rotate-90 bg-slate-700 hover:bg-[#16301f]"
+              : "bg-green-600 hover:bg-[#16301f]"
           }`}
           style={{ transitionProperty: "transform, background-color" }}
         >

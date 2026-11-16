@@ -53,7 +53,7 @@ environment variables (e.g. `CLIENT_ID`, `CRM_BASE`) instead of editing by hand.
 ## CRM endpoints this relies on (already in this repo)
 
 - `GET /api/public/profile?id=…` — open, CORS-enabled. Returns
-  `{ id, template, profile, bookingUrl }`.
+  `{ id, template, profile }`.
 - `POST /api/p/[clientId]/lead` — CORS-enabled (+ `OPTIONS`) for cross-origin
   form posts.
 

@@ -20,7 +20,8 @@ type LogInput = {
     | "Feedback"
     | "Payment"
     | "Expense"
-    | "PresetCharge";
+    | "PresetCharge"
+    | "ExpensePreset";
   entityId?: string | null;
   entityLabel?: string;
   summary?: string;

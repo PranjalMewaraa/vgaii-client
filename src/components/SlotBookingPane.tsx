@@ -13,8 +13,8 @@ const authHeaders = () => ({
 });
 
 // Slot-based booking for a known patient (used on the patient/lead detail
-// modals). When self-hosted booking is disabled it renders `fallback` (the
-// Cal.com embed / amber notice the page already had).
+// modals). When self-hosted booking is disabled it renders `fallback` (an
+// amber notice pointing the operator to Settings).
 export default function SlotBookingPane({
   leadId,
   name,
@@ -74,10 +74,10 @@ export default function SlotBookingPane({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <SlotPicker value={slot} onChange={setSlot} advanceDays={config.advanceDays} />
       {error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </p>
       )}
@@ -86,7 +86,7 @@ export default function SlotBookingPane({
           type="button"
           onClick={book}
           disabled={busy || !slot}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-[#1f3d2b] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16301f] disabled:opacity-60"
         >
           {busy ? "Booking…" : "Confirm booking"}
         </button>

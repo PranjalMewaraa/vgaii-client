@@ -64,7 +64,7 @@ export default function FeedbackPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
-      <section className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8">
+      <section className="w-full max-w-md rounded-xl border border-slate-200/70 bg-white p-8">
         <div className="mb-6">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             We&apos;re sorry to hear that
@@ -127,7 +127,7 @@ export default function FeedbackPage({
                     onClick={() => setRating(n)}
                     className={`flex flex-col items-start gap-1 rounded-lg border px-3 py-2 text-left transition ${
                       rating === n
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        ? "border-green-500 bg-green-50 text-green-700"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                     }`}
                     aria-label={`${n} star${n > 1 ? "s" : ""}: ${label}`}
@@ -150,7 +150,7 @@ export default function FeedbackPage({
                 value={comment}
                 onChange={e => setComment(e.target.value)}
                 rows={4}
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-2 w-full rounded-lg border border-slate-200/70 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 placeholder="Tell us about your experience…"
               />
             </label>
@@ -158,7 +158,7 @@ export default function FeedbackPage({
             <button
               type="submit"
               disabled={submitting || rating < 1}
-              className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-[#1f3d2b] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#16301f] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Submitting…" : "Submit feedback"}
             </button>

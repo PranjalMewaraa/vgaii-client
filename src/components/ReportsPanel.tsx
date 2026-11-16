@@ -65,7 +65,7 @@ const PRESET_LABELS: Record<Preset, string> = {
 const FUNNEL_STAGES: Array<{ key: keyof Funnel; label: string; color: string }> = [
   { key: "new", label: "New", color: "bg-slate-500" },
   { key: "contacted", label: "Contacted", color: "bg-sky-500" },
-  { key: "qualified", label: "Qualified", color: "bg-indigo-500" },
+  { key: "qualified", label: "Qualified", color: "bg-green-500" },
   { key: "appointment_booked", label: "Booked", color: "bg-violet-500" },
   { key: "visited", label: "Visited", color: "bg-emerald-500" },
 ];
@@ -153,14 +153,14 @@ export default function ReportsPanel() {
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <div
         className="flex flex-wrap items-end justify-between gap-3"
         data-tour="reports-charts"
       >
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Reports</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Reports</h2>
+          <p className="mt-1 text-sm text-slate-500">
             Funnel, source attribution, and clinical outcomes for the
             selected period.
           </p>
@@ -175,7 +175,7 @@ export default function ReportsPanel() {
                 onClick={() => setPreset(p)}
                 className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
                   preset === p
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -187,7 +187,7 @@ export default function ReportsPanel() {
             onClick={() => setPreset("custom")}
             className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
               preset === "custom"
-                ? "bg-indigo-600 text-white"
+                ? "bg-green-600 text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -197,7 +197,7 @@ export default function ReportsPanel() {
       </div>
 
       {preset === "custom" && (
-        <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+        <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200/70 bg-white px-5 py-4 shadow-sm">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               From
@@ -206,7 +206,7 @@ export default function ReportsPanel() {
               type="date"
               value={fromCustom}
               onChange={e => setFromCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
           <label className="block">
@@ -217,7 +217,7 @@ export default function ReportsPanel() {
               type="date"
               value={toCustom}
               onChange={e => setToCustom(e.target.value)}
-              className="mt-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </div>
@@ -255,49 +255,35 @@ export default function ReportsPanel() {
         />
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-        <h3 className="text-base font-semibold text-slate-900">Funnel</h3>
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+      <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-semibold tracking-tight text-slate-900">
+          Appointment outcomes
+        </h3>
         <p className="text-xs text-slate-500">
-          Each stage shows leads that reached it or moved past. {lost} also
-          flagged as lost (excluded from drop-off).
+          All appointments dated in this period, by current status.
         </p>
-        <div className="mt-4 space-y-3">
-          {FUNNEL_STAGES.map((stage, i) => {
-            const count = funnel[stage.key];
-            const ratio = count / funnelMax;
-            const prevCount = i > 0 ? funnel[FUNNEL_STAGES[i - 1].key] : count;
-            const dropOff = prevCount - count;
-            return (
-              <div key={stage.key}>
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span className="font-semibold uppercase tracking-wider text-slate-700">
-                    {stage.label}
-                  </span>
-                  <span>
-                    {count}
-                    {i > 0 && prevCount > 0 && (
-                      <span className="ml-2 text-slate-400">
-                        {pct(count, prevCount)} from previous
-                        {dropOff > 0 && ` · −${dropOff}`}
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full ${stage.color}`}
-                    style={{ width: `${Math.max(ratio * 100, count > 0 ? 4 : 0)}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
+        <div className="mt-4 space-y-2">
+          <ApptRow label="Scheduled" count={appointments.scheduled} total={appointments.total} color="bg-sky-500" />
+          <ApptRow label="Visited" count={appointments.completed} total={appointments.total} color="bg-emerald-500" />
+          <ApptRow label="No-show" count={appointments.no_show} total={appointments.total} color="bg-red-500" />
+          <ApptRow label="Cancelled" count={appointments.cancelled} total={appointments.total} color="bg-slate-400" />
         </div>
+        {appointments.completed + appointments.no_show > 0 && (
+          <p className="mt-4 rounded-lg border border-slate-200/70 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            Of {appointments.completed + appointments.no_show} appointments
+            that resolved,{" "}
+            <span className="font-semibold text-slate-900">
+              {Math.round(appointments.noShowRate * 100)}%
+            </span>{" "}
+            ended as no-show.
+          </p>
+        )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <h3 className="text-base font-semibold text-slate-900">
+      <section className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
+        <div className="border-b border-slate-200 px-5 py-3.5">
+          <h3 className="text-sm font-semibold tracking-tight text-slate-900">
             Source attribution
           </h3>
           <p className="text-xs text-slate-500">
@@ -305,41 +291,41 @@ export default function ReportsPanel() {
           </p>
         </div>
         {sources.length === 0 ? (
-          <p className="px-4 py-3 text-sm text-slate-500">
+          <p className="px-5 py-4 text-sm text-slate-500">
             No leads captured in this range.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-2 text-left">Source</th>
-                  <th className="px-4 py-2 text-right">Leads</th>
-                  <th className="px-4 py-2 text-right">Booked</th>
-                  <th className="px-4 py-2 text-right">Visited</th>
-                  <th className="px-4 py-2 text-right">Lost</th>
-                  <th className="px-4 py-2 text-right">Conversion</th>
+              <thead className="bg-slate-50/70">
+                <tr className="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-3 text-left">Source</th>
+                  <th className="px-4 py-3 text-right">Leads</th>
+                  <th className="px-4 py-3 text-right">Booked</th>
+                  <th className="px-4 py-3 text-right">Visited</th>
+                  <th className="px-4 py-3 text-right">Lost</th>
+                  <th className="px-4 py-3 text-right">Conversion</th>
                 </tr>
               </thead>
               <tbody>
                 {sources.map(s => (
-                  <tr key={s.source} className="border-t border-slate-200">
-                    <td className="px-4 py-2 font-medium text-slate-900">
+                  <tr key={s.source} className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
+                    <td className="px-4 py-3 font-medium text-slate-900">
                       {s.source}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-700">
+                    <td className="px-4 py-3 text-right text-slate-700">
                       {s.total}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-700">
+                    <td className="px-4 py-3 text-right text-slate-700">
                       {s.booked}
                     </td>
-                    <td className="px-4 py-2 text-right text-emerald-700">
+                    <td className="px-4 py-3 text-right text-emerald-700">
                       {s.visited}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-500">
+                    <td className="px-4 py-3 text-right text-slate-500">
                       {s.lost}
                     </td>
-                    <td className="px-4 py-2 text-right font-semibold text-indigo-700">
+                    <td className="px-4 py-3 text-right font-semibold text-green-700">
                       {pct(s.visited, s.total)}
                     </td>
                   </tr>
@@ -349,37 +335,13 @@ export default function ReportsPanel() {
           </div>
         )}
       </section>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h3 className="text-base font-semibold text-slate-900">
-            Appointment outcomes
-          </h3>
-          <p className="text-xs text-slate-500">
-            All appointments dated in this period, by current status.
-          </p>
-          <div className="mt-4 space-y-2">
-            <ApptRow label="Scheduled" count={appointments.scheduled} total={appointments.total} color="bg-sky-500" />
-            <ApptRow label="Visited" count={appointments.completed} total={appointments.total} color="bg-emerald-500" />
-            <ApptRow label="No-show" count={appointments.no_show} total={appointments.total} color="bg-red-500" />
-            <ApptRow label="Cancelled" count={appointments.cancelled} total={appointments.total} color="bg-slate-400" />
-          </div>
-          {appointments.completed + appointments.no_show > 0 && (
-            <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-              Of {appointments.completed + appointments.no_show} appointments
-              that resolved,{" "}
-              <span className="font-semibold text-slate-900">
-                {Math.round(appointments.noShowRate * 100)}%
-              </span>{" "}
-              ended as no-show.
-            </p>
-          )}
-        </section>
-
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold tracking-tight text-slate-900">
                 Patient ratings
               </h3>
               <p className="text-xs text-slate-500">
@@ -388,13 +350,13 @@ export default function ReportsPanel() {
                   : "Star distribution from your Google Business listing (all-time)."}
               </p>
             </div>
-            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 text-[11px]">
+            <div className="inline-flex rounded-lg border border-slate-200/70 p-0.5 text-[11px]">
               <button
                 type="button"
                 onClick={() => setRatingsSource("internal")}
                 className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
                   ratingsSource === "internal"
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
@@ -405,7 +367,7 @@ export default function ReportsPanel() {
                 onClick={() => setRatingsSource("google")}
                 className={`rounded-md px-2 py-1 font-medium uppercase tracking-wider transition ${
                   ratingsSource === "google"
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
@@ -436,7 +398,7 @@ export default function ReportsPanel() {
             // Aggregate-only fallback when DataForSEO doesn't return
             // rating_distribution. Show the rating + total reviews so the
             // panel isn't blank.
-            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700">
+            <div className="mt-4 rounded-lg border border-slate-200/70 bg-slate-50 px-3 py-3 text-sm text-slate-700">
               <p>
                 <span className="font-semibold">
                   ⭐ {(data.googleRatings.rating ?? 0).toFixed(1)}
@@ -462,15 +424,55 @@ export default function ReportsPanel() {
             />
           )}
         </section>
+
+        <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
+          <h3 className="text-sm font-semibold tracking-tight text-slate-900">Funnel</h3>
+          <p className="text-xs text-slate-500">
+            Each stage shows leads that reached it or moved past. {lost} also
+            flagged as lost (excluded from drop-off).
+          </p>
+          <div className="mt-4 space-y-3">
+            {FUNNEL_STAGES.map((stage, i) => {
+              const count = funnel[stage.key];
+              const ratio = count / funnelMax;
+              const prevCount = i > 0 ? funnel[FUNNEL_STAGES[i - 1].key] : count;
+              const dropOff = prevCount - count;
+              return (
+                <div key={stage.key}>
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span className="font-semibold uppercase tracking-wider text-slate-700">
+                      {stage.label}
+                    </span>
+                    <span>
+                      {count}
+                      {i > 0 && prevCount > 0 && (
+                        <span className="ml-2 text-slate-400">
+                          {pct(count, prevCount)} from previous
+                          {dropOff > 0 && ` · −${dropOff}`}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full ${stage.color}`}
+                      style={{ width: `${Math.max(ratio * 100, count > 0 ? 4 : 0)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-        <h3 className="text-base font-semibold text-slate-900">Daily volume</h3>
+      <section className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
+        <h3 className="text-sm font-semibold tracking-tight text-slate-900">Daily volume</h3>
         <p className="text-xs text-slate-500">
           Leads captured and appointments dated for each day in the range.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-          <Legend swatch="bg-indigo-500" label="Leads" />
+          <Legend swatch="bg-green-500" label="Leads" />
           <Legend swatch="bg-emerald-500" label="Appointments" />
         </div>
         <div className="mt-4 flex items-end gap-1 overflow-x-auto pb-2">
@@ -485,7 +487,7 @@ export default function ReportsPanel() {
               >
                 <div className="flex h-32 items-end gap-0.5">
                   <div
-                    className="w-1.5 rounded-t bg-indigo-500"
+                    className="w-1.5 rounded-t bg-green-500"
                     style={{ height: `${Math.max(leadsHeight, d.leads > 0 ? 4 : 0)}%` }}
                   />
                   <div
@@ -519,12 +521,12 @@ function Stat({
   tone?: "warn";
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5">
+    <div className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-sm">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         {label}
       </p>
       <p
-        className={`mt-1 text-lg font-bold ${
+        className={`mt-1 text-2xl font-semibold tracking-tight ${
           tone === "warn" ? "text-amber-600" : "text-slate-900"
         }`}
       >

@@ -184,7 +184,7 @@ export const appointments = [
     medicines: [] as string[],
     clientId: ids.clients.dental,
     leadId: ids.leads.dentalTwo,
-    source: "cal.com",
+    source: "manual",
   },
   {
     id: ids.appointments.dentalTwo,
@@ -200,7 +200,7 @@ export const appointments = [
     medicines: [] as string[],
     clientId: ids.clients.dental,
     leadId: ids.leads.dentalThree,
-    source: "cal.com",
+    source: "manual",
   },
   {
     id: ids.appointments.fitnessOne,
@@ -216,7 +216,7 @@ export const appointments = [
     medicines: [] as string[],
     clientId: ids.clients.fitness,
     leadId: ids.leads.fitnessOne,
-    source: "cal.com",
+    source: "manual",
   },
   {
     id: ids.appointments.fitnessOrphan,
@@ -232,7 +232,7 @@ export const appointments = [
     medicines: [] as string[],
     clientId: ids.clients.fitness,
     leadId: null,
-    source: "cal.com",
+    source: "manual",
   },
 ];
 

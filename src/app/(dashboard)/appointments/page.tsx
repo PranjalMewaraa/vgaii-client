@@ -8,6 +8,8 @@ import StatusPill from "@/components/StatusPill";
 import RoleGuard from "@/components/RoleGuard";
 import AddAppointmentModal from "@/components/AddAppointmentModal";
 import EditAppointmentModal from "@/components/EditAppointmentModal";
+import CreatePrescriptionModal from "@/components/CreatePrescriptionModal";
+import type { PrescriptionItem } from "@/lib/validators/prescription";
 
 type Appointment = {
   id: string;
@@ -19,7 +21,11 @@ type Appointment = {
   status?: string;
   notes?: string;
   diagnosis?: string;
-  medicines?: string[];
+  encounterType?: string | null;
+  diagnosisCode?: string | null;
+  diagnosisStatus?: string | null;
+  observations?: string | null;
+  medicines?: Array<string | PrescriptionItem>;
   weightKg?: number | null;
   sugarMgDl?: number | null;
   bpSystolic?: number | null;
@@ -41,7 +47,7 @@ const AVATAR_TONES = [
   "bg-amber-100 text-amber-700",
   "bg-emerald-100 text-emerald-700",
   "bg-sky-100 text-sky-700",
-  "bg-indigo-100 text-indigo-700",
+  "bg-green-100 text-green-700",
   "bg-violet-100 text-violet-700",
 ];
 const avatarTone = (name?: string) => {
@@ -229,6 +235,10 @@ function AppointmentsPageInner() {
     mode: "edit" | "visit";
   } | null>(null);
 
+  // Mark-visited opens the structured prescription modal to complete the
+  // appointment (diagnosis + observations + medicines), not the freeform editor.
+  const [rxComplete, setRxComplete] = useState<Appointment | null>(null);
+
   // datetime-local seed for the Add modal when opened from a calendar slot.
   const [prefillDate, setPrefillDate] = useState<string | undefined>(undefined);
 
@@ -381,12 +391,12 @@ function AppointmentsPageInner() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Appointments</h1>
-          <p className="text-sm text-slate-500">
-            Booked via Cal.com. After each visit, click <strong>Mark
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Appointments</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            After each visit, click <strong>Mark
             visited</strong> to record diagnosis and medicines.
           </p>
         </div>
@@ -397,7 +407,7 @@ function AppointmentsPageInner() {
             setAddOpen(true);
           }}
           data-tour="appointments-add-btn"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
         >
           + Add appointment
         </button>
@@ -427,6 +437,38 @@ function AppointmentsPageInner() {
         />
       )}
 
+      {rxComplete && (
+        <CreatePrescriptionModal
+          open
+          mode="complete"
+          appointmentId={rxComplete.id}
+          patient={{
+            name: rxComplete.name ?? "Patient",
+            phone: rxComplete.phone,
+          }}
+          initial={{
+            encounterType: rxComplete.encounterType ?? undefined,
+            diagnosis: rxComplete.diagnosis || undefined,
+            diagnosisCode: rxComplete.diagnosisCode ?? undefined,
+            diagnosisStatus: rxComplete.diagnosisStatus ?? undefined,
+            observations: rxComplete.observations ?? undefined,
+            medicines: (rxComplete.medicines ?? []).map(m =>
+              typeof m === "string" ? { name: m } : m,
+            ),
+            weightKg: rxComplete.weightKg ?? null,
+            sugarMgDl: rxComplete.sugarMgDl ?? null,
+            bpSystolic: rxComplete.bpSystolic ?? null,
+            bpDiastolic: rxComplete.bpDiastolic ?? null,
+          }}
+          onClose={() => setRxComplete(null)}
+          onCreated={() => {
+            setRxComplete(null);
+            refreshTable();
+            refreshNow();
+          }}
+        />
+      )}
+
       {(active || next) && (
         <div
           className={`grid gap-4 ${
@@ -439,9 +481,7 @@ function AppointmentsPageInner() {
               label="Active appointment"
               appointment={active}
               busy={busyId === active.id}
-              onMarkVisited={() =>
-                setEditTarget({ appointment: active, mode: "visit" })
-              }
+              onMarkVisited={() => setRxComplete(active)}
               onNoShow={() => markNoShow(active.id)}
             />
           )}
@@ -455,7 +495,7 @@ function AppointmentsPageInner() {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-xl border border-slate-200/70 bg-white">
         <div className="flex border-b border-slate-200">
           {TAB_DEFS.map(({ key, label, icon: Icon }) => {
             const isActive = tab === key;
@@ -466,10 +506,10 @@ function AppointmentsPageInner() {
                 onClick={() => {
                   setTab(key);
                 }}
-                className={`flex flex-1 items-center justify-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+                className={`-mb-px flex flex-1 items-center justify-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
                   isActive
-                    ? "border-indigo-600 text-indigo-700"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    ? "border-green-600 text-green-700"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 <Icon size={16} />
@@ -487,9 +527,9 @@ function AppointmentsPageInner() {
                 key={p}
                 type="button"
                 onClick={() => setPreset(p)}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
                   !specificDate && activePreset === p
-                    ? "bg-indigo-600 text-white shadow-sm"
+                    ? "bg-green-600 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -504,7 +544,7 @@ function AppointmentsPageInner() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="🔍  Search by name, phone or email…"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="inline-flex items-center gap-2 text-xs text-slate-500">
@@ -513,14 +553,14 @@ function AppointmentsPageInner() {
                 type="date"
                 value={specificDate}
                 onChange={e => setSpecificDate(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             {filtersActive && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="text-xs text-indigo-600 hover:underline"
+                className="text-xs text-green-600 hover:underline"
               >
                 Clear filters
               </button>
@@ -548,9 +588,9 @@ function AppointmentsPageInner() {
       )}
 
       {tab !== "calendar" && (
-      <div className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5">
-          <h2 className="text-base font-semibold text-slate-900">
+      <div className="overflow-hidden rounded-xl border border-slate-200/70 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-4">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">
             {tab === "upcoming" ? "Upcoming Appointments" : "Appointment History"}
           </h2>
           <span className="text-xs text-slate-500">
@@ -570,24 +610,24 @@ function AppointmentsPageInner() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  <th className="px-4 py-2 text-left">Patient</th>
-                  <th className="px-4 py-2 text-left">Schedule</th>
-                  <th className="px-4 py-2 text-left">Source</th>
-                  <th className="px-4 py-2 text-right">Actions</th>
+              <thead className="bg-slate-50/60">
+                <tr className="border-b border-slate-200/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <th className="px-6 py-3 text-left">Patient</th>
+                  <th className="px-6 py-3 text-left">Schedule</th>
+                  <th className="px-6 py-3 text-left">Source</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {pagedVisible.map(a => {
                   const isScheduled = !a.status || a.status === "scheduled";
                   const dt = new Date(a.date);
                   return (
                     <tr
                       key={a.id}
-                      className="border-t border-slate-200 hover:bg-slate-50"
+                      className="transition-colors hover:bg-slate-50/70"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-3.5">
                         <div className="flex items-center gap-3">
                           <span
                             className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${avatarTone(a.name)}`}
@@ -604,7 +644,7 @@ function AppointmentsPageInner() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-3.5">
                         <div className="flex flex-col items-start gap-1">
                           <StatusPill status={a.status ?? "scheduled"} />
                           <span className="text-xs text-slate-500">
@@ -622,20 +662,18 @@ function AppointmentsPageInner() {
                           <VitalsBadges appointment={a} />
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-700">
+                      <td className="px-6 py-3.5 text-slate-700">
                         {a.source || "—"}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-6 py-3.5">
                         <div className="flex items-center justify-end gap-1.5">
                           {isScheduled && (
                             <>
                               <button
                                 type="button"
-                                onClick={() =>
-                                  setEditTarget({ appointment: a, mode: "visit" })
-                                }
+                                onClick={() => setRxComplete(a)}
                                 disabled={busyId === a.id}
-                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-60"
                               >
                                 ✓ Mark visited
                               </button>
@@ -643,7 +681,7 @@ function AppointmentsPageInner() {
                                 type="button"
                                 onClick={() => markNoShow(a.id)}
                                 disabled={busyId === a.id}
-                                className="rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+                                className="rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
                               >
                                 No show
                               </button>
@@ -654,7 +692,7 @@ function AppointmentsPageInner() {
                               type="button"
                               onClick={() => reopen(a.id)}
                               disabled={busyId === a.id}
-                              className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                              className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-60"
                             >
                               Reopen
                             </button>
@@ -664,7 +702,7 @@ function AppointmentsPageInner() {
                             onClick={() =>
                               setEditTarget({ appointment: a, mode: "edit" })
                             }
-                            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                             aria-label={`View ${a.name ?? "appointment"}`}
                             title="View"
                           >
@@ -675,7 +713,7 @@ function AppointmentsPageInner() {
                             onClick={() =>
                               setEditTarget({ appointment: a, mode: "edit" })
                             }
-                            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-indigo-600"
+                            className="rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-green-600"
                             aria-label={`Edit ${a.name ?? "appointment"}`}
                             title="Edit"
                           >
@@ -692,13 +730,13 @@ function AppointmentsPageInner() {
         )}
 
         {visible.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-2.5 text-xs text-slate-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/70 px-6 py-3.5 text-xs text-slate-600">
             <label className="inline-flex items-center gap-2">
               <span>Rows per page:</span>
               <select
                 value={rowsPerPage}
                 onChange={e => setRowsPerPage(Number(e.target.value))}
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="rounded-md border border-slate-200/70 bg-white px-2 py-1 text-xs text-slate-700 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               >
                 {[10, 25, 50, 100].map(n => (
                   <option key={n} value={n}>
@@ -716,18 +754,18 @@ function AppointmentsPageInner() {
                 type="button"
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={safePage <= 1}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-slate-200/70 bg-white px-3 py-1 font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 ‹ Previous
               </button>
-              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-indigo-600 px-2 text-xs font-semibold text-white">
+              <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md bg-[#1f3d2b] px-2 text-xs font-semibold text-white">
                 {safePage}
               </span>
               <button
                 type="button"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={safePage >= totalPages}
-                className="rounded-md border border-slate-200 bg-white px-3 py-1 font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-slate-200/70 bg-white px-3 py-1 font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next ›
               </button>
@@ -790,8 +828,8 @@ function SpotlightCard({
 }) {
   const isActive = tone === "active";
   const containerCls = isActive
-    ? "rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3"
-    : "rounded-lg border border-slate-200 bg-white px-4 py-3";
+    ? "rounded-xl border border-emerald-200 bg-emerald-50 p-6"
+    : "rounded-xl border border-slate-200/70 bg-white p-6";
   const labelCls = isActive ? "text-emerald-700" : "text-slate-500";
   const date = new Date(appointment.date);
 
@@ -804,7 +842,7 @@ function SpotlightCard({
           >
             {label}
           </p>
-          <p className="mt-1 text-lg font-bold text-slate-900">
+          <p className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
             {appointment.name || "Unnamed"}
           </p>
           <p className="text-sm text-slate-700">{date.toLocaleString()}</p>
@@ -822,7 +860,7 @@ function SpotlightCard({
               type="button"
               onClick={onMarkVisited}
               disabled={busy}
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60"
             >
               Mark visited
             </button>
@@ -830,7 +868,7 @@ function SpotlightCard({
               type="button"
               onClick={onNoShow}
               disabled={busy}
-              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+              className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
             >
               No show
             </button>
@@ -898,32 +936,32 @@ function CalendarWeekGrid({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-2.5">
+    <div className="rounded-xl border border-slate-200/70 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 px-6 py-4">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onPrevWeek}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             ← Prev
           </button>
           <button
             type="button"
             onClick={onToday}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             Today
           </button>
           <button
             type="button"
             onClick={onNextWeek}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-200/70 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             Next →
           </button>
         </div>
-        <p className="text-sm font-semibold text-slate-900">{weekLabel}</p>
+        <p className="text-sm font-semibold tracking-tight text-slate-900">{weekLabel}</p>
       </div>
 
       <div className="overflow-x-auto">
@@ -937,7 +975,7 @@ function CalendarWeekGrid({
                 <div
                   key={i}
                   className={`border-r border-slate-200 px-2 py-2 text-center text-xs ${
-                    isToday ? "bg-indigo-50" : ""
+                    isToday ? "bg-green-50" : ""
                   }`}
                 >
                   <div className="font-semibold text-slate-700">
@@ -945,7 +983,7 @@ function CalendarWeekGrid({
                   </div>
                   <div
                     className={`mt-0.5 ${
-                      isToday ? "font-bold text-indigo-700" : "text-slate-500"
+                      isToday ? "font-bold text-green-700" : "text-slate-500"
                     }`}
                   >
                     {d.getDate()}
@@ -998,7 +1036,7 @@ function CalendarWeekGrid({
                     );
                   }}
                   className={`relative cursor-pointer border-r border-slate-200 ${
-                    isToday ? "bg-indigo-50/30" : ""
+                    isToday ? "bg-green-50/30" : ""
                   }`}
                   style={{ height: WEEK_GRID_HOURS * HOUR_PX }}
                 >

@@ -65,8 +65,8 @@ const METHOD_DEFS: Array<{
     key: "upi",
     label: "UPI",
     icon: Smartphone,
-    className: "border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50",
-    activeClass: "border-indigo-500 bg-indigo-600 text-white shadow-sm",
+    className: "border-green-200 bg-white text-green-700 hover:bg-green-50",
+    activeClass: "border-green-500 bg-green-600 text-white shadow-sm",
   },
   {
     key: "card",
@@ -242,12 +242,12 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
   };
 
   return (
-    <div className="grid gap-3 lg:grid-cols-3">
+    <div className="grid gap-4 lg:grid-cols-3">
       {/* Left + middle column: patient + charges + payment method */}
-      <div className="space-y-3 lg:col-span-2">
+      <div className="space-y-5 lg:col-span-2">
         {/* Patient picker */}
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h2 className="text-base font-semibold text-slate-900">Patient</h2>
+        <section className="rounded-xl border border-slate-200/70 bg-white p-6">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">Patient</h2>
           <p className="text-xs text-slate-500">
             Enter a phone number first — we&apos;ll auto-link if it matches
             an existing patient.
@@ -267,7 +267,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 inputMode="tel"
                 autoFocus
                 placeholder="10-digit number"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
 
@@ -296,7 +296,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                   Existing {leadHits.length === 1 ? "patient" : "patients"}{" "}
                   with this number:
                 </p>
-                <ul className="divide-y divide-slate-100 rounded-lg border border-indigo-200 bg-indigo-50/40">
+                <ul className="divide-y divide-slate-100 rounded-lg border border-green-200 bg-green-50/40">
                   {leadHits.slice(0, 4).map(h => (
                     <li
                       key={h.id}
@@ -313,7 +313,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                       <button
                         type="button"
                         onClick={() => linkLead(h)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#1f3d2b] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#16301f]"
                       >
                         <Link2 size={12} />
                         Link
@@ -337,7 +337,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                       ? "No match — enter walk-in name"
                       : "Patient name"
                   }
-                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 />
               </label>
             )}
@@ -345,9 +345,9 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
         </section>
 
         {/* Preset charges */}
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <section className="rounded-xl border border-slate-200/70 bg-white p-6">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-slate-900">Charges</h2>
+            <h2 className="text-base font-semibold tracking-tight text-slate-900">Charges</h2>
             <span className="text-xs text-slate-500">
               Tap to add. Multiple charges combine into one payment.
             </span>
@@ -365,7 +365,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                   key={p.id}
                   type="button"
                   onClick={() => addPreset(p)}
-                  className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-white px-3 py-1.5 text-sm font-medium text-green-700 transition hover:bg-green-50"
                 >
                   <Plus size={12} />
                   <span>{p.title}</span>
@@ -387,7 +387,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 value={customTitle}
                 onChange={e => setCustomTitle(e.target.value)}
                 placeholder="e.g. Suture removal"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <label className="block">
@@ -399,14 +399,14 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 onChange={e => setCustomAmount(e.target.value)}
                 inputMode="numeric"
                 placeholder="0"
-                className="mt-1 w-28 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-28 rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
             <button
               type="button"
               onClick={addCustom}
               disabled={!customTitle.trim() || !Number(customAmount)}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
             >
               <UserPlus size={12} />
               Add line
@@ -415,7 +415,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
 
           {/* Selected lines */}
           {items.length > 0 && (
-            <ul className="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200">
+            <ul className="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200/70">
               {items.map(i => (
                 <li
                   key={i.key}
@@ -442,8 +442,8 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
         </section>
 
         {/* Payment method */}
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h2 className="text-base font-semibold text-slate-900">
+        <section className="rounded-xl border border-slate-200/70 bg-white p-6">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">
             Payment method
           </h2>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
@@ -469,9 +469,9 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
       </div>
 
       {/* Right column: totals + notes + save */}
-      <aside className="space-y-3 lg:col-span-1">
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-          <h2 className="text-base font-semibold text-slate-900">Total</h2>
+      <aside className="space-y-5 lg:col-span-1">
+        <section className="rounded-xl border border-slate-200/70 bg-white p-6">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900">Total</h2>
 
           <div className="mt-3 space-y-2 text-sm">
             <div className="flex items-center justify-between">
@@ -487,18 +487,18 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
                 onChange={e => setDiscountInput(e.target.value)}
                 inputMode="numeric"
                 placeholder="0"
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
               />
             </label>
           </div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 text-base font-bold">
+          <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 text-base font-semibold tracking-tight">
             <span className="text-slate-700">Final</span>
-            <span className="text-indigo-700">{formatRupees(finalPaise)}</span>
+            <span className="text-green-700">{formatRupees(finalPaise)}</span>
           </div>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <section className="rounded-xl border border-slate-200/70 bg-white p-6">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Notes
@@ -508,7 +508,7 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
               onChange={e => setNotes(e.target.value)}
               rows={3}
               placeholder="Anything to remember about this payment…"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 w-full rounded-lg border border-slate-200/70 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
             />
           </label>
         </section>
@@ -528,14 +528,14 @@ export default function PaymentEntryTab({ prefillLead, onSaved }: Props = {}) {
           type="button"
           onClick={save}
           disabled={busy || items.length === 0}
-          className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
+          className="w-full rounded-lg bg-[#1f3d2b] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#16301f] disabled:opacity-60"
         >
           {busy ? "Saving…" : `Save payment · ${formatRupees(finalPaise)}`}
         </button>
         <button
           type="button"
           onClick={reset}
-          className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
         >
           <Trash2 size={12} className="-mt-0.5 mr-1 inline" />
           Clear form

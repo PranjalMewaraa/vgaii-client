@@ -36,7 +36,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   if (!allowed) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-        <div className="rounded-2xl border border-white/10 bg-white/10 px-6 py-4 shadow-2xl backdrop-blur-md">
+        <div className="rounded-xl border border-white/10 bg-white/10 px-6 py-4 shadow-2xl backdrop-blur-md">
           Checking session...
         </div>
       </div>

@@ -78,7 +78,7 @@ export type BookingConfig = z.infer<typeof bookingConfigSchema>;
 export type BookingRange = z.infer<typeof rangeSchema>;
 
 // Fallback used when Client.bookingConfig is null or invalid. Disabled by
-// default, so existing clients keep their current Cal.com/manual behavior.
+// default, so existing clients keep their current manual-entry behavior.
 export const DEFAULT_BOOKING_CONFIG: BookingConfig = {
   enabled: false,
   timezone: "Asia/Kolkata",

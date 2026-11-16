@@ -28,7 +28,6 @@ export async function GET(req: Request) {
             subscriptionStatus: true,
             renewalDate: true,
             subscriptionKey: true,
-            bookingUrl: true,
           },
         })
       : null;
@@ -220,7 +219,6 @@ export async function GET(req: Request) {
       businessInfo,
       topSources,
       weeklyLeads,
-      bookingUrl: client?.bookingUrl ?? null,
     });
   } catch (err: unknown) {
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });

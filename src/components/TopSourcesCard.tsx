@@ -9,7 +9,7 @@ type SourceEntry = {
 };
 
 // Fixed palette for up to 4 slices. The 5th+ slices roll into "Other".
-const PALETTE = ["#6366f1", "#10b981", "#f59e0b", "#0ea5e9", "#94a3b8"];
+const PALETTE = ["#16a34a", "#10b981", "#f59e0b", "#0ea5e9", "#94a3b8"];
 
 const TITLE_CASE = (s: string) =>
   s
@@ -42,7 +42,7 @@ const PieTooltip = ({
   const slice = payload[0]?.payload;
   if (!slice) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs shadow-md">
+    <div className="rounded-lg border border-slate-200/70 bg-white px-2.5 py-1.5 text-xs shadow-md">
       <p className="font-medium text-slate-900">{slice.label}</p>
       <p className="text-slate-500">
         {slice.value} {slice.value === 1 ? "lead" : "leads"} ·{" "}
@@ -70,8 +70,8 @@ export default function TopSourcesCard({
   }, [sources]);
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-      <h2 className="text-base font-semibold text-slate-900">Top Sources</h2>
+    <div className="rounded-xl border border-slate-200/70 bg-white p-6">
+      <h2 className="text-base font-semibold tracking-tight text-slate-900">Top Sources</h2>
       <p className="text-xs text-slate-500">Where your leads are coming from</p>
 
       {data.length === 0 ? (
