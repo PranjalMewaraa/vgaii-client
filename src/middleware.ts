@@ -14,9 +14,23 @@ const isVercelAppHost = (host: string) => host.endsWith(".vercel.app");
 // (e.g. "client-vgaii-abc.vercel.app"). Treat it as a main host too.
 const VERCEL_URL = (process.env.VERCEL_URL ?? "").toLowerCase();
 
+// Any loopback address counts as the main app regardless of port. `next dev`
+// silently falls back to a random free port when 3000 is taken, and without
+// this every such port would be treated as a customer custom domain and get
+// rewritten into the /host/ lookup — which 404s.
+const isLoopbackHost = (host: string) => {
+  const hostname = host.replace(/:\d+$/, "");
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]"
+  );
+};
+
 const isMainHost = (host: string) => {
   if (APP_HOSTS.includes(host)) return true;
   if (APP_HOSTS.includes(host.replace(/^www\./, ""))) return true;
+  if (isLoopbackHost(host)) return true;
   if (isVercelAppHost(host)) return true;
   if (VERCEL_URL && host === VERCEL_URL) return true;
   return false;
